@@ -104,7 +104,7 @@ def backtest_with_capital(p):
         # try:
         now = datetime.now() + timedelta(hours=5, minutes=30)
         # now = datetime.now() 
-        print(f'Present Time: {now}')
+        log(f'Present Time: {now}')
         market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 9)
         # market_open  = (now.hour >= 8)
         market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 55)
@@ -119,8 +119,7 @@ def backtest_with_capital(p):
         df = fetch_with_retry(symbol, interval)
 
         df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
-        print("now-----------------")
-        print(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
+        log(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
 
 
         df = normalize(df)
@@ -131,31 +130,26 @@ def backtest_with_capital(p):
         df['ATR'] = ATR(df, 14)
         # Calculate RSI (14-period default)
         df['RSI'] = RSIIndicator(close=df['Close'], window=14).rsi()
-
+        log(df.columns)
         print(f"✅ Data fetched: {len(df)} bars | Last candle at {df.index[-1]}")
-        print("now2 ------------------------------")
         df = generate_signals(df, p)
 
         i = -2
         cur = df.iloc[i]
         nxt = df.iloc[i+1]
         t_next = df.index[i+1]
-        # dt = pd.to_datetime(cur['datetime'])
-        # tradingsymbol = "GOLDM26JANFUT"
         exchange = "MCX"
-        # Exit logic
         # Fetch all open positions
         positions = kite.positions()
-        # symbol = "GOLDM26JANFUT"
 
         # Filter the position list
         pos = next((p for p in positions["net"] if p["tradingsymbol"] == symbol), None)
         position1 = position
         if pos:
-            print(f"🟢 Symbol: {pos['tradingsymbol']}")
-            print(f"📊 Quantity: {pos['quantity']}")
-            print(f"💰 Avg Price: {pos['average_price']}")
-            print(f"📈 P&L: {pos['pnl']}")
+            log(f"🟢 Symbol: {pos['tradingsymbol']}")
+            log(f"📊 Quantity: {pos['quantity']}")
+            log(f"💰 Avg Price: {pos['average_price']}")
+            log(f"📈 P&L: {pos['pnl']}")
             if pos['quantity'] > 0:
                 position1 = 1
                 entry_price = pos['average_price']
@@ -168,9 +162,9 @@ def backtest_with_capital(p):
             if position1 != position:
                 position = position1
         else:
-            print(f"⚪ No open position in {symbol}")
+            log(f"⚪ No open position in {symbol}")
             # position = 0
-        print(position)
+        log(position)
     # df['entry_long'] | df['entry_pullback_long'] | df['entry_kumo_break_long'] | df['entry_sideways_break_long'] | df['entry_gap_long'] | df['entry_long_price'] | df['entry_long_price_cloud']
     # df['entry_short'] | df['entry_pullback_short'] | df['entry_kumo_break_short'] | df['entry_sideways_break_short'] | df['entry_gap_short'] | df['entry_short_price'] | df['entry_short_price_cloud']
     # df['exit_long'] | df['exit_long_below_cloud'] | df['exit_long_tkcross'] | df['exit_long_price_cloud'] | df['exit_long_tenkan'] | df['exit_long_kijun'] | df['trailing_stop_long']

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import math
 from ta.trend import ADXIndicator
 from ta.momentum import RSIIndicator
+import time
 # from strategy import log
 # ---------------------------
 # Ichimoku
@@ -487,14 +488,6 @@ def normalize(df):
         raise ValueError("No datetime/date/timestamp column found in CSV.")
     # Rename to 'datetime'
     df = df.rename(columns={dt_col: 'datetime'})
-    # convert to datetime safely
-    # df['datetime'] = pd.to_datetime(df[dt_col], errors='coerce')
-    # Sort by datetime and set index
-    # df = df.sort_values('datetime').set_index('datetime')
-    # print(df.columns)
-    # print(df)
-    # drop missing or failed datetime values
-    # df = df.dropna(subset=['datetime'])
 
     # --- rename core financial columns ---
     rename_map = {}
@@ -524,3 +517,20 @@ def normalize(df):
     # df = df.sort_values('datetime').set_index('datetime')
     print(df.tail(5))
     return df
+def wait_until_next_15min_plus30():
+    """Wait until next 5-minute candle + 30 seconds mark."""
+    now = datetime.now() + timedelta(hours=5, minutes=30)
+    # now = datetime.now()
+    print(now)
+    # Find the next 15-minute multiple
+    min = 15
+    next_minute = (now.minute // min + 1) * min
+    next_time = now.replace(minute=0, second=30, microsecond=0) + timedelta(minutes=next_minute)
+    if next_minute >= 60:
+        next_time = now.replace(hour=(now.hour + 1) % 24, minute=0, second=30, microsecond=0)
+    wait_seconds = (next_time - now).total_seconds()
+    if wait_seconds < 0:
+        wait_seconds += (60*min)  # just in case of rounding errors
+    print(f"⏳ Waiting {int(wait_seconds)} sec until next candle time {next_time.strftime('%H:%M:%S')}...")
+
+    time.sleep(wait_seconds)

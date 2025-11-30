@@ -61,22 +61,7 @@ def fetch_with_retry(symbol, interval, retries=3, delay=5):
             else:
                 raise
 
-def wait_until_next_5min_plus20():
-    """Wait until next 5-minute candle + 30 seconds mark."""
-    now = datetime.now() + timedelta(hours=5, minutes=30)
-    # now = datetime.now()
-    print(now)
-    # Find the next 5-minute multiple
-    next_minute = (now.minute // 1 + 1) * 1
-    next_time = now.replace(minute=0, second=30, microsecond=0) + timedelta(minutes=next_minute)
-    if next_minute >= 60:
-        next_time = now.replace(hour=(now.hour + 1) % 24, minute=0, second=30, microsecond=0)
-    wait_seconds = (next_time - now).total_seconds()
-    if wait_seconds < 0:
-        wait_seconds += (60*1)  # just in case of rounding errors
-    print(f"⏳ Waiting {int(wait_seconds)} sec until next candle time {next_time.strftime('%H:%M:%S')}...")
 
-    time.sleep(wait_seconds)
 
 def backtest_with_capital(p):
     # ==============================
@@ -92,7 +77,7 @@ def backtest_with_capital(p):
     total_diff = 0
     # exchange = "MCX"
     symbol = "GOLDM26JANFUT"   # example instrument
-    # tradingsymbol = "GOLDM26JANFUT"
+    tradingsymbol = "GOLDM26JANFUT"
     interval = "15minute"
     days = 5
     qty = p['quantity']
@@ -113,7 +98,8 @@ def backtest_with_capital(p):
         if not (market_open and not market_close):
             print("🕘 MCX Market Closed — sleeping...")
             log("🕘 MCX Market Closed — sleeping...")
-            time.sleep(600)
+            wait_until_next_15min_plus30()
+            # time.sleep(600)
             continue
 
         df = fetch_with_retry(symbol, interval)
@@ -236,7 +222,6 @@ def backtest_with_capital(p):
                 position = 1
                 buy_sell = "BUY"
                 quantity = qty
-                tradingsymbol = "GOLDM25DECFUT"
                 kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
                 print("Buy price. ",entry_time, entry_price)
                 log("Buy price. ",entry_time, entry_price)
@@ -257,7 +242,7 @@ def backtest_with_capital(p):
                 log("Sell price. ",entry_time, entry_price)
         # except Exception as e:
         #     print("⚠️ Error:", e)
-        wait_until_next_5min_plus20()
+        wait_until_next_15min_plus30()
 
 
 def log(msg):

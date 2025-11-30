@@ -121,6 +121,39 @@ def stop():
     STRATEGY_RUNNING = False
     return redirect("/dashboard")
 
+@app.route("/start_silver", methods=["POST"])
+def start_silver():
+    global STRATEGY_RUNNING
+    access_token = read_access_token()
+    quantity = int(request.form.get("quantity"))
+
+    params = {
+        # Ichimoku
+        'tenkan': 9,
+        'kijun': 26,
+        'senkou_b': 52,
+        # Participation filters
+        'vol_ma_window': 50,
+        'oi_ma_window': 50,
+        # Capital & risk
+        'starting_capital': 5000000,   # ₹ 20 lakh
+        'risk_per_trade': 1,          # 2% of capital per trade
+        'contract_value': 10,           # ₹ per 1 price point (change this if 1 tick = ₹100)
+        # Execution / costs
+        'slippage': 0.0,
+        'commission': 20,                # ₹50 per side per trade
+        'verbose': True,
+        "quantity": quantity
+    }
+    # mark running
+    STRATEGY_RUNNING = True
+    
+
+    thread = threading.Thread(target=run_strategy, args=(API_KEY, access_token, params))
+    thread.daemon = True
+    thread.start()
+
+    return redirect("/dashboard")
 
 @app.route("/strategy_status")
 def strategy_status():

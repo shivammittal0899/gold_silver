@@ -112,6 +112,7 @@ def backtest_with_capital(p):
 
         if not (market_open and not market_close):
             print("🕘 MCX Market Closed — sleeping...")
+            log("🕘 MCX Market Closed — sleeping...")
             time.sleep(600)
             continue
 

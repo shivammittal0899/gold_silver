@@ -145,10 +145,7 @@ def generate_signals(df, p):
     df['tk_cross_down'] = df['tenkan_below_kijun'] & (~df['tenkan_below_kijun']).shift(1).fillna(False)
     
     df['Market_Regime'] = df.apply(classify_trend_ichimoku, axis=1)
-    rows_needed = 4 * 15 * 10    # 900
-    # df = df.tail(rows_needed)
-    # df= df.iloc[:len(df)-20]
-    print(df.index[0])
+    
     # --- Sideways detection ---
     lookback = 10
     range_high = df['High'].rolling(lookback).max()
@@ -342,7 +339,8 @@ def generate_signals(df, p):
         exit_condition & (df['Low'] >= cloud_top)                      # OTHERWISE
     )
     df['exit_long_price_cloud1'] = exit_condition & (df['Low'] >= cloud_top)
-    extra_condition1 = ((df['Close'] - df['Open']) >= 40).rolling(2).sum() >= 2
+    
+    extra_condition1 = ((df['Close'] - df['Open']) >= 20).rolling(2).sum() >= 2
     df['exit_short_price_cloud'] = entry_condition & (df['High'] <= cloud_top)
     df['exit_short_price_cloud1'] = np.where(
         extra_condition1,
@@ -376,16 +374,26 @@ def generate_signals(df, p):
                                 (df['Close'] > (df['trailing_stop_short']*0.89)) &
                                 ((df['Open']-60) > df['Open'].shift(1)) &
                                 # ((df['Close']-20) > df['Close'].shift(1)) &
-                                ((df['Open']-50) > df['Close'].shift(0)) 
+                                ((df['Open']-0) > df['Close'].shift(0)) 
                                 )
     
+    
 
-    # df['exit_long_below_cloud'] = ((df['Close'] <= df[['senkou_a','senkou_b']].min(axis=1)) &
-    #                                (df['Close'] < df['Close'].shift(0)))
+    
     df['exit_long_below_cloud'] = ((df['Close'] <= df[['senkou_a','senkou_b']].min(axis=1)) &
-                                   ((df['Close']-200) < df['Close'].shift(1)))
+                                   ((df['Close']-40) < df['Close'].shift(1)))
+    
     df['exit_short_above_cloud'] = ((df['Close'] >= df[['senkou_a','senkou_b']].max(axis=1)) &
-                                    (df['Close'] > df['Open'])
+                                    ((df['Close']-50) > df['Close'].shift(1))
+                                    ) 
+    
+    df['exit_long_below_cloud1'] = ((df['Close'] <= df[['senkou_a','senkou_b']].min(axis=1)) &
+                                   ((df['Close']-100) < df['Close'].shift(1)) &
+                                   ((df['Close']+200) > df['tenkan']))
+    
+    df['exit_short_above_cloud1'] = (((df['Close'] )>= df[['senkou_a','senkou_b']].max(axis=1)) &
+                                    ((df['Close']-100) > df['Close'].shift(1)) &
+                                    ((df['Close']-100) < df['tenkan'])
                                     ) 
     # df['exit_long_below_cloud'] = (df['Close'] <= df[['senkou_a','senkou_b']].min(axis=1))
     # df['exit_short_above_cloud'] = (df['Close'] >= df[['senkou_a','senkou_b']].max(axis=1)) 
@@ -405,12 +413,12 @@ def generate_signals(df, p):
             df['Market_Regime'] == 'Volatility Breakout / Regime Shift'
         ],
         [
-             df['entry_kumo_break_long'] | df['entry_sideways_break_long']  ,
-             df['entry_pullback_long'] | df['entry_kumo_break_long'] | df['entry_sideways_break_long'] ,
-            df['entry_long'] | df['entry_pullback_long']  | df['entry_sideways_break_long'] | df['entry_gap_long'] | df['entry_long_price'] ,
+            df['entry_long']  | df['entry_kumo_break_long'] | df['entry_sideways_break_long']  ,
+             df['entry_kumo_break_long'] | df['entry_sideways_break_long']   | df['entry_long_price_cloud'],
+             df['entry_kumo_break_long'] | df['entry_sideways_break_long1']  ,
             df['entry_long']   | df['entry_sideways_break_long1'] 
         ],
-        default= df['entry_long'] | df['entry_pullback_long']  | df['entry_sideways_break_long']
+        default= df['entry_long']   | df['entry_sideways_break_long'] 
     )
     # df['final_entry_long'] = False
     df['exit_long_final'] = np.select(
@@ -421,12 +429,12 @@ def generate_signals(df, p):
             df['Market_Regime'] == 'Volatility Breakout / Regime Shift'
         ],
         [   
-            df['exit_long']      | df['trailing_stop_long']| df['exit_long_price_cloud'],
-            df['exit_long'] | df['exit_long_below_cloud'] | df['exit_long_tkcross']    | df['trailing_stop_long'],
-            df['exit_long']   | df['exit_long_price_cloud']  | df['exit_long_kijun'] | df['trailing_stop_long'],
-             df['exit_long_price_cloud'] | df['exit_long_tenkan'] | df['exit_long_kijun'] 
+            df['exit_long']  | df['exit_long_tkcross']    | df['trailing_stop_long']  ,
+            df['exit_long'] | df['exit_long_below_cloud']   | df['trailing_stop_long']| df['exit_long_tkcross']  ,
+            df['exit_long']   | df['exit_long_below_cloud']  | df['exit_long_price_cloud']   | df['trailing_stop_long'], #| df['exit_long_kijun'] ,
+             df['exit_long_price_cloud']   | df['trailing_stop_long'] | df['exit_long_kijun'] 
         ],
-        default=  df['exit_long_price_cloud'] | df['exit_long_tenkan'] | df['exit_long_kijun'] | df['trailing_stop_long'] #| df['exit_short_above_cloud']
+        default= df['exit_long']   | df['exit_long_price_cloud1'] | df['exit_long_tenkan']  | df['trailing_stop_long'] | df['exit_long_kijun'] | df['exit_short_above_cloud1'] 
     )
     
     df['final_entry_short'] = np.select(
@@ -437,12 +445,12 @@ def generate_signals(df, p):
             df['Market_Regime'] == 'Volatility Breakout / Regime Shift'
         ],
         [   
-             df['entry_kumo_break_short'] | df['entry_sideways_break_short']  | df['entry_short_price'] ,
-             df['entry_kumo_break_short'] | df['entry_sideways_break_short'] | df['entry_gap_short'] | df['entry_short_price'] ,
-            df['entry_pullback_short'] | df['entry_kumo_break_short'] | df['entry_sideways_break_short1'] ,
-            df['entry_sideways_break_short1']  | df['entry_short_price_cloud']
+            df['entry_short']  | df['entry_kumo_break_short'] | df['entry_sideways_break_short']  | df['entry_short_price'] ,
+             df['entry_sideways_break_short']  ,
+            df['entry_short']   | df['entry_kumo_break_short'] | df['entry_sideways_break_short1'] | df['entry_gap_short'] ,
+            df['entry_short']   | df['entry_sideways_break_short1']   | df['entry_short_price_cloud']
         ],
-        default=  df['entry_sideways_break_short'] 
+        default= df['entry_short']  | df['entry_sideways_break_short'] 
         
     )
     # df['final_entry_short'] = False
@@ -454,12 +462,13 @@ def generate_signals(df, p):
             df['Market_Regime'] == 'Volatility Breakout / Regime Shift'
         ],
         [
-             df['exit_short']    | df['exit_short_tenkan']  | df['trailing_stop_short'],
-             df['exit_short_tkcross'] | df['exit_short_price_cloud']  | df['exit_short_kijun'] | df['trailing_stop_short']| df['exit_short_above_cloud'],
+
+            df['exit_short']    | df['exit_short_tenkan']  | df['trailing_stop_short'] | df['exit_short_above_cloud'] ,
+             df['exit_short_tkcross'] | df['exit_short_price_cloud']  | df['exit_short_kijun'] | df['trailing_stop_short'] | df['exit_short_above_cloud'],
              df['exit_short']  | df['exit_short_tkcross']   | df['exit_short_kijun'] | df['trailing_stop_short'],
               df['exit_short_price_cloud'] | df['exit_short_tenkan']  | df['exit_long_below_cloud'] | df['trailing_stop_short'] 
         ],
-        default = df['trailing_stop_short'] | df['exit_short_above_cloud'] | df['exit_long_below_cloud']
+        default =  df['exit_short_above_cloud']  | df['exit_short_price_cloud1']  | df['exit_short_kijun'] | df['trailing_stop_short'] | df['exit_long_below_cloud1']
     )
     # df['exit_long'] | df['exit_long_below_cloud'] | df['exit_long_tkcross'] | df['exit_long_price_cloud'] | df['exit_long_tenkan'] | df['exit_long_kijun'] | df['trailing_stop_long']
     # df['exit_short'] | df['exit_short_above_cloud'] | df['exit_short_tkcross'] | df['exit_short_price_cloud'] | df['exit_short_tenkan'] | df['exit_short_kijun'] | df['trailing_stop_short']

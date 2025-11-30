@@ -87,7 +87,7 @@ def backtest_with_capital(p):
     while  not STOP_FLAG:
         print(STOP_FLAG)
         # try:
-        now = datetime.now() + timedelta(hours=6, minutes=30)
+        now = datetime.now() + timedelta(hours=5, minutes=30)
         # now = datetime.now() 
         log(f'Present Time: {now}')
         market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 9)

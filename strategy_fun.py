@@ -531,6 +531,11 @@ def wait_until_next_15min_plus30():
     wait_seconds = (next_time - now).total_seconds()
     if wait_seconds < 0:
         wait_seconds += (60*min)  # just in case of rounding errors
-    print(f"⏳ Waiting {int(wait_seconds)} sec until next candle time {next_time.strftime('%H:%M:%S')}...")
+    log(f"⏳ Waiting {int(wait_seconds)} sec until next candle time {next_time.strftime('%H:%M:%S')}...")
 
     time.sleep(wait_seconds)
+
+
+def log(msg):
+    with open("static/logs.txt", "a") as f:
+        f.write(f"{datetime.now().strftime('%H:%M:%S')}  {msg}\n")

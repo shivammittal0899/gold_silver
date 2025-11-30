@@ -295,7 +295,7 @@ def generate_signals(df, p):
     df['entry_long_price_cloud'] = (
         entry_condition & 
         (df['High'] <= cloud_top) &
-        (df['Close'] > df['Close'].shift(1))
+        ((df['Close']-100) > df['Close'].shift(1))
     )
     df['entry_short_price_cloud'] = (
         exit_condition & 
@@ -363,16 +363,22 @@ def generate_signals(df, p):
     df['trailing_stop_long'] = (df['Close'].expanding().max() - 2 * df['ATR'])
     df['trailing_stop_long'] = (
                                 (df['Close'] < df['trailing_stop_long']* 1) &
-                                ((df['Open']+0) < df['Open'].shift(1)) &
+                                ((df['Open']-10) < df['Open'].shift(1)) &
                                 # (df['Close'] < df['Close'].shift(1)) &
-                                ((df['Close']-30) > df['Open'].shift(0))
+                                ((df['Close']-50) > df['Open'].shift(0))
+                                )
+    df['trailing_stop_long1'] = (
+                                (df['Close'] < df['trailing_stop_long']* 1) &
+                                ((df['Open']-10) < df['Open'].shift(1)) &
+                                # (df['Close'] < df['Close'].shift(1)) &
+                                ((df['Close']-40) > df['Open'].shift(0))
                                 )
     
 
     df['trailing_stop_short'] = df['Close'].expanding().max() + 2 * df['ATR']
     df['trailing_stop_short'] = (
                                 (df['Close'] > (df['trailing_stop_short']*0.89)) &
-                                ((df['Open']-60) > df['Open'].shift(1)) &
+                                ((df['Open']+20) > df['Open'].shift(1)) &
                                 # ((df['Close']-20) > df['Close'].shift(1)) &
                                 ((df['Open']-0) > df['Close'].shift(0)) 
                                 )
@@ -414,8 +420,8 @@ def generate_signals(df, p):
         ],
         [
             df['entry_long']  | df['entry_kumo_break_long'] | df['entry_sideways_break_long']  ,
-             df['entry_kumo_break_long'] | df['entry_sideways_break_long']   | df['entry_long_price_cloud'],
-             df['entry_kumo_break_long'] | df['entry_sideways_break_long1']  ,
+             df['entry_kumo_break_long'] | df['entry_sideways_break_long']| df['entry_long_price_cloud'],  # | df['entry_long_price_cloud'],
+             df['entry_kumo_break_long'] | df['entry_sideways_break_long1'] | df['entry_long_price_cloud'] ,
             df['entry_long']   | df['entry_sideways_break_long1'] 
         ],
         default= df['entry_long']   | df['entry_sideways_break_long'] 
@@ -430,11 +436,11 @@ def generate_signals(df, p):
         ],
         [   
             df['exit_long']  | df['exit_long_tkcross']    | df['trailing_stop_long']  ,
-            df['exit_long'] | df['exit_long_below_cloud']   | df['trailing_stop_long']| df['exit_long_tkcross']  ,
+            df['exit_long'] | df['exit_long_below_cloud']   | df['trailing_stop_long1']| df['exit_long_tkcross']  ,
             df['exit_long']   | df['exit_long_below_cloud']  | df['exit_long_price_cloud']   | df['trailing_stop_long'], #| df['exit_long_kijun'] ,
              df['exit_long_price_cloud']   | df['trailing_stop_long'] | df['exit_long_kijun'] 
         ],
-        default= df['exit_long']   | df['exit_long_price_cloud1'] | df['exit_long_tenkan']  | df['trailing_stop_long'] | df['exit_long_kijun'] | df['exit_short_above_cloud1'] 
+        default= df['exit_long']   | df['exit_long_price_cloud1'] | df['exit_long_tenkan']   | df['exit_long_kijun'] | df['exit_short_above_cloud1'] #| df['trailing_stop_long']
     )
     
     df['final_entry_short'] = np.select(
@@ -527,17 +533,20 @@ def normalize(df):
     print(df.tail(5))
     return df
 def wait_until_next_15min_plus30():
-    """Wait until next 5-minute candle + 30 seconds mark."""
+    """Wait until next 15-minute candle + 30 seconds mark."""
     now = datetime.now() + timedelta(hours=5, minutes=30)
     # now = datetime.now()
     print(now)
     # Find the next 15-minute multiple
     min = 15
     next_minute = (now.minute // min + 1) * min
+    log(next_minute)
     next_time = now.replace(minute=0, second=30, microsecond=0) + timedelta(minutes=next_minute)
+    log(next_time)
     if next_minute >= 60:
         next_time = now.replace(hour=(now.hour + 1) % 24, minute=0, second=30, microsecond=0)
     wait_seconds = (next_time - now).total_seconds()
+    log(wait_seconds)
     if wait_seconds < 0:
         wait_seconds += (60*min)  # just in case of rounding errors
     log(f"⏳ Waiting {int(wait_seconds)} sec until next candle time {next_time.strftime('%H:%M:%S')}...")

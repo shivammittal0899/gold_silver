@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logs</title>
+</head>
+<body>
+    <h2>Strategy Logs (Live)</h2>
+
+    <div id="logbox" style="white-space: pre-wrap; font-size:15px;"></div>
+
+    <script>
+    function loadLogs() {
+        fetch('/get_logs')
+        .then(res => res.text())
+        .then(data => {
+            document.getElementById("logbox").innerHTML = data;
+        });
+    }
+    setInterval(loadLogs, 1000);
+    loadLogs();
+    </script>
+
+</body>
+</html>

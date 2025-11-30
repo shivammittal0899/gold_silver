@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kite Dashboard</title>
+</head>
+<body>
+    
+
+    <h2>Strategy Dashboard</h2>
+
+    <p><b>Access Token:</b> {{ token }}</p>
+    <div id="statusBox" style="padding:10px; font-size:18px;">
+        Checking status...
+    </div>
+    <form action="/start" method="POST">
+
+        <label>Enter Quantity:</label>
+        <input type="number" name="quantity" value="10" required>
+
+        <br><br>
+        <!-- <button style="padding:10px; font-size:18px;">START STRATEGY</button> -->
+        <button id="startBtn" style="padding:10px; font-size:18px;">
+            Start Strategy
+        </button>
+    </form>
+
+    <br>
+
+    <form action="/stop" method="GET">
+        <!-- <button style="padding:10px; font-size:18px; background:red; color:white;">
+            STOP STRATEGY
+        </button> -->
+        <button id="stopBtn" style="padding:10px; font-size:18px;">
+            Stop Strategy
+        </button>
+    </form>
+
+    <br>
+    <a href="/logs">View Live Logs</a>
+    <h3>Recent Logs</h3>
+
+    <div id="recentLogBox" 
+        style="background:#000; color:#0f0; padding:10px; height:200px; overflow-y:auto; font-family:monospace;">
+        Loading...
+    </div>
+
+    <script>
+    function loadRecentLogs() {
+        fetch('/recent_logs')
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById("recentLogBox").innerHTML = data;
+            });
+    }
+
+    // refresh every 3 seconds
+    setInterval(loadRecentLogs, 3000);
+
+    loadRecentLogs();
+    </script>
+    <script>
+    // auto-update button colors every 2 sec
+    function updateStatus() {
+        fetch("/strategy_status")
+            .then(res => res.text())
+            .then(status => {
+                const startBtn = document.getElementById("startBtn");
+                const stopBtn  = document.getElementById("stopBtn");
+                const statusBox = document.getElementById("statusBox");
+                if (status === "running") {
+
+                    statusBox.innerHTML = "🟢 Strategy is RUNNING";
+                    startBtn.style.background = "green";
+                    startBtn.style.color = "white";
+
+                    stopBtn.style.background = "#ffcccc";  // light red
+                    stopBtn.style.color = "black";
+                } else {
+                    statusBox.innerHTML = "🔴 Strategy is STOPPED";
+                    startBtn.style.background = "#d9ffd9"; // light green background
+                    startBtn.style.color = "black";
+
+                    stopBtn.style.background = "red";
+                    stopBtn.style.color = "white";
+                }
+            });
+    }
+
+    setInterval(updateStatus, 2000);
+    updateStatus();
+    </script>
+
+</body>
+</html>

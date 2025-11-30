@@ -1,0 +1,1216 @@
+19:34:54  🚀 Strategy Started | Qty = 10
+19:34:54  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+19:38:29  🚀 Strategy Started | Qty = 10
+19:38:29  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+19:45:04  🚀 Strategy Started | Qty = 10
+19:45:04  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+19:45:05  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+19:46:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+19:47:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+19:48:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+19:49:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+19:50:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+19:51:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+19:52:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+19:53:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+19:54:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:01:09  🚀 Strategy Started | Qty = 10
+20:01:09  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+20:01:09  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:01:09  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:01:09  False | False | False | True | False | False | False
+20:01:09  False | False | False | False | False | False | False
+20:01:09  False | False | False | False | False | False | False
+20:01:09  False | False | False | False | False | True | False
+20:02:11  🚀 Strategy Started | Qty = 10
+20:02:11  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+20:02:12  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:02:12  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:02:12  False | False | False | True | False | False | False
+20:02:12  False | False | False | False | False | False | False
+20:02:12  False | False | False | False | False | False | False
+20:02:12  False | False | False | False | False | True | False
+20:03:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:03:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:03:30  False | False | False | True | False | False | False
+20:03:30  False | False | False | False | False | False | False
+20:03:30  False | False | False | False | False | False | False
+20:03:30  False | False | False | False | False | True | False
+20:04:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:04:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:04:30  False | False | False | True | False | False | False
+20:04:30  False | False | False | False | False | False | False
+20:04:30  False | False | False | False | False | False | False
+20:04:30  False | False | False | False | False | True | False
+20:05:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:05:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:05:30  False | False | False | True | False | False | False
+20:05:30  False | False | False | False | False | False | False
+20:05:30  False | False | False | False | False | False | False
+20:05:30  False | False | False | False | False | True | False
+20:07:59  🚀 Strategy Started | Qty = 10
+20:07:59  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+20:07:59  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:07:59  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:07:59  False | False | False | True | False | False | False
+20:07:59  False | False | False | False | False | False | False
+20:07:59  False | False | False | False | False | False | False
+20:07:59  False | False | False | False | False | True | False
+20:08:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:08:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:08:30  False | False | False | True | False | False | False
+20:08:30  False | False | False | False | False | False | False
+20:08:30  False | False | False | False | False | False | False
+20:08:30  False | False | False | False | False | True | False
+20:09:23  🚀 Strategy Started | Qty = 10
+20:09:23  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+20:09:23  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:09:24  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:09:24  False | False | False | True | False | False | False
+20:09:24  False | False | False | False | False | False | False
+20:09:24  False | False | False | False | False | False | False
+20:09:24  False | False | False | False | False | True | False
+20:10:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:10:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:10:30  False | False | False | True | False | False | False
+20:10:30  False | False | False | False | False | False | False
+20:10:30  False | False | False | False | False | False | False
+20:10:30  False | False | False | False | False | True | False
+20:11:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:11:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:11:30  False | False | False | True | False | False | False
+20:11:30  False | False | False | False | False | False | False
+20:11:30  False | False | False | False | False | False | False
+20:11:30  False | False | False | False | False | True | False
+20:12:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:12:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:12:30  False | False | False | True | False | False | False
+20:12:30  False | False | False | False | False | False | False
+20:12:30  False | False | False | False | False | False | False
+20:12:30  False | False | False | False | False | True | False
+20:13:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:13:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:13:30  False | False | False | True | False | False | False
+20:13:30  False | False | False | False | False | False | False
+20:13:30  False | False | False | False | False | False | False
+20:13:30  False | False | False | False | False | True | False
+20:13:32  ⛔ Strategy STOP requested.
+20:13:44  🚀 Strategy Started | Qty = 10
+20:13:44  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+20:13:45  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:13:45  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:13:45  False | False | False | True | False | False | False
+20:13:45  False | False | False | False | False | False | False
+20:13:45  False | False | False | False | False | False | False
+20:13:45  False | False | False | False | False | True | False
+20:14:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:14:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:14:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:14:30  False | False | False | True | False | False | False
+20:14:30  False | False | False | False | False | False | False
+20:14:30  False | False | False | False | False | False | False
+20:14:30  False | False | False | False | False | True | False
+20:14:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:14:30  False | False | False | True | False | False | False
+20:14:30  False | False | False | False | False | False | False
+20:14:30  False | False | False | False | False | False | False
+20:14:30  False | False | False | False | False | True | False
+20:15:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:15:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:15:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:15:30  False | False | False | True | False | False | False
+20:15:30  False | False | False | False | False | False | False
+20:15:30  False | False | False | False | False | False | False
+20:15:30  False | False | False | False | False | True | False
+20:15:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:15:30  False | False | False | True | False | False | False
+20:15:30  False | False | False | False | False | False | False
+20:15:30  False | False | False | False | False | False | False
+20:15:30  False | False | False | False | False | True | False
+20:16:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:16:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:16:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:16:30  False | False | False | True | False | False | False
+20:16:30  False | False | False | False | False | False | False
+20:16:30  False | False | False | False | False | False | False
+20:16:30  False | False | False | False | False | True | False
+20:16:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:16:30  False | False | False | True | False | False | False
+20:16:30  False | False | False | False | False | False | False
+20:16:30  False | False | False | False | False | False | False
+20:16:30  False | False | False | False | False | True | False
+20:17:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:17:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:17:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:17:30  False | False | False | True | False | False | False
+20:17:30  False | False | False | False | False | False | False
+20:17:30  False | False | False | False | False | False | False
+20:17:30  False | False | False | False | False | True | False
+20:17:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:17:30  False | False | False | True | False | False | False
+20:17:30  False | False | False | False | False | False | False
+20:17:30  False | False | False | False | False | False | False
+20:17:30  False | False | False | False | False | True | False
+20:18:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:18:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:18:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:18:30  False | False | False | True | False | False | False
+20:18:30  False | False | False | False | False | False | False
+20:18:30  False | False | False | False | False | False | False
+20:18:30  False | False | False | False | False | True | False
+20:18:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:18:30  False | False | False | True | False | False | False
+20:18:30  False | False | False | False | False | False | False
+20:18:30  False | False | False | False | False | False | False
+20:18:30  False | False | False | False | False | True | False
+20:19:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:19:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:19:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:19:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:19:30  False | False | False | True | False | False | False
+20:19:30  False | False | False | True | False | False | False
+20:19:30  False | False | False | False | False | False | False
+20:19:30  False | False | False | False | False | False | False
+20:19:30  False | False | False | False | False | False | False
+20:19:30  False | False | False | False | False | False | False
+20:19:30  False | False | False | False | False | True | False
+20:19:30  False | False | False | False | False | True | False
+20:20:12  ⛔ Strategy STOP requested.
+20:20:30  🟢 Strategy stopped successfully.
+20:20:30  🟢 Strategy stopped successfully.
+20:23:32  🚀 Strategy Started | Qty = 10
+20:23:32  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+20:23:33  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:23:33  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:23:33  False | False | False | True | False | False | False
+20:23:33  False | False | False | False | False | False | False
+20:23:33  False | False | False | False | False | False | False
+20:23:33  False | False | False | False | False | True | False
+20:24:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:24:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:24:30  False | False | False | True | False | False | False
+20:24:30  False | False | False | False | False | False | False
+20:24:30  False | False | False | False | False | False | False
+20:24:30  False | False | False | False | False | True | False
+20:25:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:25:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:25:30  False | False | False | True | False | False | False
+20:25:30  False | False | False | False | False | False | False
+20:25:30  False | False | False | False | False | False | False
+20:25:30  False | False | False | False | False | True | False
+20:26:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:26:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:26:30  False | False | False | True | False | False | False
+20:26:30  False | False | False | False | False | False | False
+20:26:30  False | False | False | False | False | False | False
+20:26:30  False | False | False | False | False | True | False
+20:27:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:27:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:27:30  False | False | False | True | False | False | False
+20:27:30  False | False | False | False | False | False | False
+20:27:30  False | False | False | False | False | False | False
+20:27:30  False | False | False | False | False | True | False
+20:28:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:28:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:28:30  False | False | False | True | False | False | False
+20:28:30  False | False | False | False | False | False | False
+20:28:30  False | False | False | False | False | False | False
+20:28:30  False | False | False | False | False | True | False
+20:29:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:29:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:29:30  False | False | False | True | False | False | False
+20:29:30  False | False | False | False | False | False | False
+20:29:30  False | False | False | False | False | False | False
+20:29:30  False | False | False | False | False | True | False
+20:29:32  ⛔ Strategy STOP requested.
+20:30:09  🚀 Strategy Started | Qty = 10
+20:30:09  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+20:30:10  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:30:10  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:30:10  False | False | False | True | False | False | False
+20:30:10  False | False | False | False | False | False | False
+20:30:10  False | False | False | False | False | False | False
+20:30:10  False | False | False | False | False | True | False
+20:30:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:30:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:30:30  False | False | False | True | False | False | False
+20:30:30  False | False | False | False | False | False | False
+20:30:30  False | False | False | False | False | False | False
+20:30:30  False | False | False | False | False | True | False
+20:30:40  ⛔ Strategy STOP requested.
+20:31:25  🚀 Strategy Started | Qty = 10
+20:31:25  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+20:31:25  10
+20:31:25  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:31:25  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:31:25  False | False | False | True | False | False | False
+20:31:25  False | False | False | False | False | False | False
+20:31:25  False | False | False | False | False | False | False
+20:31:25  False | False | False | False | False | True | False
+20:31:35  ⛔ Strategy STOP requested.
+20:31:40  🚀 Strategy Started | Qty = 15
+20:31:40  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 15}
+20:31:40  15
+20:31:41  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:31:41  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:31:41  False | False | False | True | False | False | False
+20:31:41  False | False | False | False | False | False | False
+20:31:41  False | False | False | False | False | False | False
+20:31:41  False | False | False | False | False | True | False
+20:32:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:32:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:32:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:32:30  False | False | False | True | False | False | False
+20:32:30  False | False | False | False | False | False | False
+20:32:30  False | False | False | False | False | False | False
+20:32:30  False | False | False | False | False | True | False
+20:32:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:32:30  False | False | False | True | False | False | False
+20:32:30  False | False | False | False | False | False | False
+20:32:30  False | False | False | False | False | False | False
+20:32:30  False | False | False | False | False | True | False
+20:36:49  🚀 Strategy Started | Qty = 10
+20:36:49  🚀 Strategy Started | Param = {'tenkan': 9, 'kijun': 26, 'senkou_b': 52, 'vol_ma_window': 50, 'oi_ma_window': 50, 'starting_capital': 5000000, 'risk_per_trade': 1, 'contract_value': 10, 'slippage': 0.0, 'commission': 20, 'verbose': True, 'quantity': 10}
+20:36:49  10
+20:36:49  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:36:49  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:36:49  False | False | False | True | False | False | False
+20:36:49  False | False | False | False | False | False | False
+20:36:49  False | False | False | False | False | False | False
+20:36:49  False | False | False | False | False | True | False
+20:37:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:37:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:37:30  False | False | False | True | False | False | False
+20:37:30  False | False | False | False | False | False | False
+20:37:30  False | False | False | False | False | False | False
+20:37:30  False | False | False | False | False | True | False
+20:38:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:38:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:38:30  False | False | False | True | False | False | False
+20:38:30  False | False | False | False | False | False | False
+20:38:30  False | False | False | False | False | False | False
+20:38:30  False | False | False | False | False | True | False
+20:39:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:39:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:39:30  False | False | False | True | False | False | False
+20:39:30  False | False | False | False | False | False | False
+20:39:30  False | False | False | False | False | False | False
+20:39:30  False | False | False | False | False | True | False
+20:40:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:40:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:40:30  False | False | False | True | False | False | False
+20:40:30  False | False | False | False | False | False | False
+20:40:30  False | False | False | False | False | False | False
+20:40:30  False | False | False | False | False | True | False
+20:41:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:41:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:41:30  False | False | False | True | False | False | False
+20:41:30  False | False | False | False | False | False | False
+20:41:30  False | False | False | False | False | False | False
+20:41:30  False | False | False | False | False | True | False
+20:42:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:42:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:42:30  False | False | False | True | False | False | False
+20:42:30  False | False | False | False | False | False | False
+20:42:30  False | False | False | False | False | False | False
+20:42:30  False | False | False | False | False | True | False
+20:43:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:43:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:43:30  False | False | False | True | False | False | False
+20:43:30  False | False | False | False | False | False | False
+20:43:30  False | False | False | False | False | False | False
+20:43:30  False | False | False | False | False | True | False
+20:44:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:44:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:44:30  False | False | False | True | False | False | False
+20:44:30  False | False | False | False | False | False | False
+20:44:30  False | False | False | False | False | False | False
+20:44:30  False | False | False | False | False | True | False
+20:45:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:45:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:45:30  False | False | False | True | False | False | False
+20:45:30  False | False | False | False | False | False | False
+20:45:30  False | False | False | False | False | False | False
+20:45:30  False | False | False | False | False | True | False
+20:46:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+20:46:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+20:46:30  False | False | False | True | False | False | False
+20:46:30  False | False | False | False | False | False | False
+20:46:30  False | False | False | False | False | False | False
+20:46:30  False | False | False | False | False | True | False
+21:02:40  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:02:40  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:02:40  False | False | False | True | False | False | False
+21:02:40  False | False | False | False | False | False | False
+21:02:40  False | False | False | False | False | False | False
+21:02:40  False | False | False | False | False | True | False
+21:03:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:03:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:03:30  False | False | False | True | False | False | False
+21:03:30  False | False | False | False | False | False | False
+21:03:30  False | False | False | False | False | False | False
+21:03:30  False | False | False | False | False | True | False
+21:04:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:04:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:04:30  False | False | False | True | False | False | False
+21:04:30  False | False | False | False | False | False | False
+21:04:30  False | False | False | False | False | False | False
+21:04:30  False | False | False | False | False | True | False
+21:14:47  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:14:47  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:14:47  False | False | False | True | False | False | False
+21:14:47  False | False | False | False | False | False | False
+21:14:47  False | False | False | False | False | False | False
+21:14:47  False | False | False | False | False | True | False
+21:15:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:15:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:15:30  False | False | False | True | False | False | False
+21:15:30  False | False | False | False | False | False | False
+21:15:30  False | False | False | False | False | False | False
+21:15:30  False | False | False | False | False | True | False
+21:16:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:16:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:16:30  False | False | False | True | False | False | False
+21:16:30  False | False | False | False | False | False | False
+21:16:30  False | False | False | False | False | False | False
+21:16:30  False | False | False | False | False | True | False
+21:17:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:17:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:17:30  False | False | False | True | False | False | False
+21:17:30  False | False | False | False | False | False | False
+21:17:30  False | False | False | False | False | False | False
+21:17:30  False | False | False | False | False | True | False
+21:18:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:18:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:18:30  False | False | False | True | False | False | False
+21:18:30  False | False | False | False | False | False | False
+21:18:30  False | False | False | False | False | False | False
+21:18:30  False | False | False | False | False | True | False
+21:19:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:19:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:19:30  False | False | False | True | False | False | False
+21:19:30  False | False | False | False | False | False | False
+21:19:30  False | False | False | False | False | False | False
+21:19:30  False | False | False | False | False | True | False
+21:20:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:20:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:20:30  False | False | False | True | False | False | False
+21:20:30  False | False | False | False | False | False | False
+21:20:30  False | False | False | False | False | False | False
+21:20:30  False | False | False | False | False | True | False
+21:21:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:21:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:21:30  False | False | False | True | False | False | False
+21:21:30  False | False | False | False | False | False | False
+21:21:30  False | False | False | False | False | False | False
+21:21:30  False | False | False | False | False | True | False
+21:22:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:22:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:22:30  False | False | False | True | False | False | False
+21:22:30  False | False | False | False | False | False | False
+21:22:30  False | False | False | False | False | False | False
+21:22:30  False | False | False | False | False | True | False
+21:23:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:23:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:23:30  False | False | False | True | False | False | False
+21:23:30  False | False | False | False | False | False | False
+21:23:30  False | False | False | False | False | False | False
+21:23:30  False | False | False | False | False | True | False
+21:24:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:24:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:24:30  False | False | False | True | False | False | False
+21:24:30  False | False | False | False | False | False | False
+21:24:30  False | False | False | False | False | False | False
+21:24:30  False | False | False | False | False | True | False
+21:25:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:25:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:25:30  False | False | False | True | False | False | False
+21:25:30  False | False | False | False | False | False | False
+21:25:30  False | False | False | False | False | False | False
+21:25:30  False | False | False | False | False | True | False
+21:26:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:26:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:26:30  False | False | False | True | False | False | False
+21:26:30  False | False | False | False | False | False | False
+21:26:30  False | False | False | False | False | False | False
+21:26:30  False | False | False | False | False | True | False
+21:27:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:27:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:27:30  False | False | False | True | False | False | False
+21:27:30  False | False | False | False | False | False | False
+21:27:30  False | False | False | False | False | False | False
+21:27:30  False | False | False | False | False | True | False
+21:28:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:28:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:28:30  False | False | False | True | False | False | False
+21:28:30  False | False | False | False | False | False | False
+21:28:30  False | False | False | False | False | False | False
+21:28:30  False | False | False | False | False | True | False
+21:29:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:29:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:29:30  False | False | False | True | False | False | False
+21:29:30  False | False | False | False | False | False | False
+21:29:30  False | False | False | False | False | False | False
+21:29:30  False | False | False | False | False | True | False
+21:30:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:30:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:30:30  False | False | False | True | False | False | False
+21:30:30  False | False | False | False | False | False | False
+21:30:30  False | False | False | False | False | False | False
+21:30:30  False | False | False | False | False | True | False
+21:31:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:31:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:31:30  False | False | False | True | False | False | False
+21:31:30  False | False | False | False | False | False | False
+21:31:30  False | False | False | False | False | False | False
+21:31:30  False | False | False | False | False | True | False
+21:32:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:32:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:32:30  False | False | False | True | False | False | False
+21:32:30  False | False | False | False | False | False | False
+21:32:30  False | False | False | False | False | False | False
+21:32:30  False | False | False | False | False | True | False
+21:33:30  
+----- Last 5 Candles -----
+                     datetime    Open    High     Low   Close  Volume     OI
+175 2025-11-28 22:45:00+05:30  128188  128207  128120  128179     654  33679
+176 2025-11-28 23:00:00+05:30  128156  128250  128140  128225     648  33630
+177 2025-11-28 23:15:00+05:30  128225  128350  128167  128299    1293  33663
+178 2025-11-28 23:30:00+05:30  128300  128345  128220  128260     858  33539
+179 2025-11-28 23:45:00+05:30  128231  128381  128231  128355     955  33625
+---------------------
+
+21:33:30  Time: 2025-11-28 23:30:00+05:30, Market Regime: Volatility Breakout / Regime Shift, open: 128300, close: 128260
+21:33:30  False | False | False | True | False | False | False
+21:33:30  False | False | False | False | False | False | False
+21:33:30  False | False | False | False | False | False | False
+21:33:30  False | False | False | False | False | True | False

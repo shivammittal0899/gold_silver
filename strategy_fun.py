@@ -365,13 +365,13 @@ def generate_signals(df, p):
                                 (df['Close'] < df['trailing_stop_long0']* 1) &
                                 ((df['Open']-10) < df['Open'].shift(1)) &
                                 # (df['Close'] < df['Close'].shift(1)) &
-                                ((df['Close']-50) > df['Open'].shift(0))
+                                ((df['Close']-50) > df['Open'].shift(0)) & (df['OI'] < (df['oi_ma']*1.1))
                                 )
     df['trailing_stop_long2'] = (
-                                (df['Close'] < df['trailing_stop_long0']* 1) &
+                                (df['Close'] < df['trailing_stop_long0']* 0.95) &
                                 ((df['Open']-10) < df['Open'].shift(1)) &
                                 # (df['Close'] < df['Close'].shift(1)) &
-                                ((df['Close']-50) > df['Open'].shift(0)) & (df['OI'] < df['oi_ma'])
+                                ((df['Close']-50) > df['Open'].shift(0)) & (df['OI'] < (df['oi_ma']*1.1))
                                 )
     df['trailing_stop_long1'] = (
                                 (df['Close'] < df['trailing_stop_long']* 1) &

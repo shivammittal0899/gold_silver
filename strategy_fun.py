@@ -360,12 +360,18 @@ def generate_signals(df, p):
     df['exit_short_kijun'] = ((df['Close'] > df['kijun']).rolling(3).sum() >= 3)
 
 
-    df['trailing_stop_long'] = (df['Close'].expanding().max() - 2 * df['ATR'])
+    df['trailing_stop_long0'] = (df['Close'].expanding().max() - 2 * df['ATR'])
     df['trailing_stop_long'] = (
-                                (df['Close'] < df['trailing_stop_long']* 1) &
+                                (df['Close'] < df['trailing_stop_long0']* 1) &
                                 ((df['Open']-10) < df['Open'].shift(1)) &
                                 # (df['Close'] < df['Close'].shift(1)) &
                                 ((df['Close']-50) > df['Open'].shift(0))
+                                )
+    df['trailing_stop_long2'] = (
+                                (df['Close'] < df['trailing_stop_long0']* 1) &
+                                ((df['Open']-10) < df['Open'].shift(1)) &
+                                # (df['Close'] < df['Close'].shift(1)) &
+                                ((df['Close']-50) > df['Open'].shift(0)) & (df['OI'] < df['oi_ma'])
                                 )
     df['trailing_stop_long1'] = (
                                 (df['Close'] < df['trailing_stop_long']* 1) &
@@ -435,7 +441,7 @@ def generate_signals(df, p):
             df['Market_Regime'] == 'Volatility Breakout / Regime Shift'
         ],
         [   
-            df['exit_long']  | df['exit_long_tkcross']    | df['trailing_stop_long']  ,
+            df['exit_long']  | df['exit_long_tkcross']    | df['trailing_stop_long2']  ,
             df['exit_long'] | df['exit_long_below_cloud']   | df['trailing_stop_long1']| df['exit_long_tkcross']  ,
             df['exit_long']   | df['exit_long_below_cloud']  | df['exit_long_price_cloud']   | df['trailing_stop_long'], #| df['exit_long_kijun'] ,
              df['exit_long_price_cloud']   | df['trailing_stop_long'] | df['exit_long_kijun'] 

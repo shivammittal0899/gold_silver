@@ -224,7 +224,7 @@ def backtest_with_capital(p):
                 quantity = qty
                 kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
                 print("Buy price. ",entry_time, entry_price)
-                log("Buy price. ",entry_time, entry_price)
+                log(f"Buy price. ,{entry_time}, {entry_price}")
                 # print(position_size)
             elif cur['final_entry_short']:
                 # print(capital)
@@ -239,7 +239,7 @@ def backtest_with_capital(p):
                 quantity = qty
                 kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
                 print("Sell price. ",entry_time, entry_price)
-                log("Sell price. ",entry_time, entry_price)
+                log(f"Sell price. ,{entry_time}, {entry_price}")
         # except Exception as e:
         #     print("⚠️ Error:", e)
         wait_until_next_15min_plus30()

@@ -373,6 +373,12 @@ def generate_signals(df, p):
                                 # (df['Close'] < df['Close'].shift(1)) &
                                 ((df['Close']-50) > df['Open'].shift(0)) & (df['OI'] < (df['oi_ma']*1.1))
                                 )
+    df['trailing_stop_long3'] = (
+                                (df['Close'] < df['trailing_stop_long0']* 1) &
+                                ((df['Open']-10) < df['Open'].shift(1)) &
+                                # (df['Close'] < df['Close'].shift(1)) &
+                                ((df['Close']-50) > df['Open'].shift(0)) & (df['OI'] < (df['oi_ma']*0.9))
+                                )
     df['trailing_stop_long1'] = (
                                 (df['Close'] < df['trailing_stop_long']* 1) &
                                 ((df['Open']-10) < df['Open'].shift(1)) &
@@ -444,7 +450,7 @@ def generate_signals(df, p):
             df['exit_long']  | df['exit_long_tkcross']    | df['trailing_stop_long2']  ,
             df['exit_long'] | df['exit_long_below_cloud']   | df['trailing_stop_long1']| df['exit_long_tkcross']  ,
             df['exit_long']   | df['exit_long_below_cloud']  | df['exit_long_price_cloud']   | df['trailing_stop_long'], #| df['exit_long_kijun'] ,
-             df['exit_long_price_cloud']   | df['trailing_stop_long'] | df['exit_long_kijun'] 
+             df['exit_long_price_cloud']   | df['trailing_stop_long3'] | df['exit_long_kijun'] 
         ],
         default= df['exit_long']   | df['exit_long_price_cloud1'] | df['exit_long_tenkan']   | df['exit_long_kijun'] | df['exit_short_above_cloud1'] #| df['trailing_stop_long']
     )

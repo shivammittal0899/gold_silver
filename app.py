@@ -53,7 +53,8 @@ def login_callback():
 @app.route("/dashboard")
 def dashboard():
     token = read_access_token()
-    return render_template("dashboard.html", token=token)
+    quantity = read_quantity()
+    return render_template("dashboard.html", token=token, quantity=quantity)
 
 # # ---------------------- STRATEGY EXECUTOR ----------------------
 # def run_my_strategy(options):
@@ -72,7 +73,7 @@ def start():
     global STRATEGY_RUNNING
     access_token = read_access_token()
     quantity = int(request.form.get("quantity"))
-
+    save_quantity(quantity)    # <---- SAVE IT HERE
     params = {
         # Ichimoku
         'tenkan': 9,
@@ -159,6 +160,17 @@ def start_silver():
 def strategy_status():
     global STRATEGY_RUNNING
     return "running" if STRATEGY_RUNNING else "stopped"
+
+
+def save_quantity(qty):
+    with open("quantity.txt", "w") as f:
+        f.write(str(qty))
+
+def read_quantity():
+    try:
+        return int(open("quantity.txt").read().strip())
+    except:
+        return 10    # default value
 
 
 # ----------------------------

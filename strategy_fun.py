@@ -485,7 +485,7 @@ def generate_signals(df, p):
             df['entry_short']  | df['entry_kumo_break_short'] | df['entry_sideways_break_short']  | df['entry_short_price'],
              df['entry_sideways_break_short']  ,
             df['entry_short']   | df['entry_kumo_break_short'] | df['entry_sideways_break_short'] | df['entry_gap_short'] ,
-            df['entry_short']   | df['entry_sideways_break_short1']   | df['entry_short_price_cloud'] | df['entry_kumo_break_short1']
+            df['entry_short']   | df['entry_sideways_break_short1']   | df['entry_kumo_break_short1']
         ],
         default= df['entry_short']  | df['entry_sideways_break_short']  | df['entry_short_above_cloud'] 
         

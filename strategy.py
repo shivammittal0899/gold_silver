@@ -157,18 +157,18 @@ def backtest_with_capital(p):
     # df['exit_short'] | df['exit_short_above_cloud'] | df['exit_short_tkcross'] | df['exit_short_price_cloud'] | df['exit_short_tenkan'] | df['exit_short_kijun'] | df['trailing_stop_short']
         print(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")
 
-        print(f"{cur['entry_long']} | {cur['entry_pullback_long']} | {cur['entry_kumo_break_long']} | {cur['entry_sideways_break_long']} | {cur['entry_gap_long']} | {cur['entry_long_price']} | {cur['entry_long_price_cloud']}")
-        print(f"{cur['entry_short']} | {cur['entry_pullback_short']} | {cur['entry_kumo_break_short']} | {cur['entry_sideways_break_short']} | {cur['entry_gap_short']} | {cur['entry_short_price']} | {cur['entry_short_price_cloud']}")
-        print(f"{cur['exit_long']} | {cur['exit_long_below_cloud']} | {cur['exit_long_tkcross']} | {cur['exit_long_price_cloud']} | {cur['exit_long_tenkan']} | {cur['exit_long_kijun']} | {cur['trailing_stop_long']}")
-        print(f"{cur['exit_short']} | {cur['exit_short_above_cloud']} | {cur['exit_short_tkcross']} | {cur['exit_short_price_cloud']} | {cur['exit_short_tenkan']} | {cur['exit_short_kijun']} | {cur['trailing_stop_short']}")
+        # print(f"{cur['entry_long']} | {cur['entry_pullback_long']} | {cur['entry_kumo_break_long']} | {cur['entry_sideways_break_long']} | {cur['entry_gap_long']} | {cur['entry_long_price']} | {cur['entry_long_price_cloud']}")
+        # print(f"{cur['entry_short']} | {cur['entry_pullback_short']} | {cur['entry_kumo_break_short']} | {cur['entry_sideways_break_short']} | {cur['entry_gap_short']} | {cur['entry_short_price']} | {cur['entry_short_price_cloud']}")
+        # print(f"{cur['exit_long']} | {cur['exit_long_below_cloud']} | {cur['exit_long_tkcross']} | {cur['exit_long_price_cloud']} | {cur['exit_long_tenkan']} | {cur['exit_long_kijun']} | {cur['trailing_stop_long']}")
+        # print(f"{cur['exit_short']} | {cur['exit_short_above_cloud']} | {cur['exit_short_tkcross']} | {cur['exit_short_price_cloud']} | {cur['exit_short_tenkan']} | {cur['exit_short_kijun']} | {cur['trailing_stop_short']}")
         
         
         log(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")
 
-        log(f"{cur['entry_long']} | {cur['entry_pullback_long']} | {cur['entry_kumo_break_long']} | {cur['entry_sideways_break_long']} | {cur['entry_gap_long']} | {cur['entry_long_price']} | {cur['entry_long_price_cloud']}")
-        log(f"{cur['entry_short']} | {cur['entry_pullback_short']} | {cur['entry_kumo_break_short']} | {cur['entry_sideways_break_short']} | {cur['entry_gap_short']} | {cur['entry_short_price']} | {cur['entry_short_price_cloud']}")
-        log(f"{cur['exit_long']} | {cur['exit_long_below_cloud']} | {cur['exit_long_tkcross']} | {cur['exit_long_price_cloud']} | {cur['exit_long_tenkan']} | {cur['exit_long_kijun']} | {cur['trailing_stop_long']}")
-        log(f"{cur['exit_short']} | {cur['exit_short_above_cloud']} | {cur['exit_short_tkcross']} | {cur['exit_short_price_cloud']} | {cur['exit_short_tenkan']} | {cur['exit_short_kijun']} | {cur['trailing_stop_short']}")
+        # log(f"{cur['entry_long']} | {cur['entry_pullback_long']} | {cur['entry_kumo_break_long']} | {cur['entry_sideways_break_long']} | {cur['entry_gap_long']} | {cur['entry_long_price']} | {cur['entry_long_price_cloud']}")
+        # log(f"{cur['entry_short']} | {cur['entry_pullback_short']} | {cur['entry_kumo_break_short']} | {cur['entry_sideways_break_short']} | {cur['entry_gap_short']} | {cur['entry_short_price']} | {cur['entry_short_price_cloud']}")
+        # log(f"{cur['exit_long']} | {cur['exit_long_below_cloud']} | {cur['exit_long_tkcross']} | {cur['exit_long_price_cloud']} | {cur['exit_long_tenkan']} | {cur['exit_long_kijun']} | {cur['trailing_stop_long']}")
+        # log(f"{cur['exit_short']} | {cur['exit_short_above_cloud']} | {cur['exit_short_tkcross']} | {cur['exit_short_price_cloud']} | {cur['exit_short_tenkan']} | {cur['exit_short_kijun']} | {cur['trailing_stop_short']}")
 
         # if position == 1 and cur['exit_long_final']:
         if position == 1 and (cur['exit_long_final']):

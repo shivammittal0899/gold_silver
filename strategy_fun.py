@@ -196,6 +196,8 @@ def generate_signals(df, p):
     entry_condition = (df['Close'] > df['Open']).rolling(3).sum() >= 3
     df['rolling_min_10'] = df['Close'].rolling(window=10).min()
     df['rolling_max_10'] = df['Close'].rolling(window=10).max()
+    df['rolling_min_5'] = df['Close'].rolling(window=5).min()
+    df['rolling_max_5'] = df['Close'].rolling(window=5).max()
     # Combine all into long entry
     
     df['entry_long'] = (

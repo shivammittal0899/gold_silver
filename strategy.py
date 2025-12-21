@@ -83,7 +83,7 @@ def backtest_with_capital(p):
     qty = p['quantity']
     print()
     log(qty)
-    
+    sl_orderid = None
     while  not STOP_FLAG:
         print(STOP_FLAG)
         # try:
@@ -151,6 +151,8 @@ def backtest_with_capital(p):
             log(f"⚪ No open position in {symbol}")
             # position = 0
         log(position)
+        if position == 0:
+            sl_orderid = None
     # df['entry_long'] | df['entry_pullback_long'] | df['entry_kumo_break_long'] | df['entry_sideways_break_long'] | df['entry_gap_long'] | df['entry_long_price'] | df['entry_long_price_cloud']
     # df['entry_short'] | df['entry_pullback_short'] | df['entry_kumo_break_short'] | df['entry_sideways_break_short'] | df['entry_gap_short'] | df['entry_short_price'] | df['entry_short_price_cloud']
     # df['exit_long'] | df['exit_long_below_cloud'] | df['exit_long_tkcross'] | df['exit_long_price_cloud'] | df['exit_long_tenkan'] | df['exit_long_kijun'] | df['trailing_stop_long']
@@ -240,6 +242,72 @@ def backtest_with_capital(p):
                 kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
                 print("Sell price. ",entry_time, entry_price)
                 log(f"Sell price. ,{entry_time}, {entry_price}")
+        if position == 1:
+            stoploss_val = stopless_point(cur, position)
+            if (sl_orderid != None) and (stoploss_val != 0):
+                kite.modify_order(
+                                variety=kite.VARIETY_REGULAR,
+                                order_id=sl_orderid,
+                                trigger_price=stoploss_val                         # new SL trigger
+                            )
+            elif (sl_orderid == None) and (stoploss_val != 0):
+                quantity = qty
+                order_id = kite.place_order(
+                                variety=kite.VARIETY_REGULAR,
+                                exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+                                tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+                                transaction_type=kite.TRANSACTION_TYPE_SELL,
+                                quantity=quantity,                                # MCX lot size
+                                product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+                                order_type=kite.ORDER_TYPE_SLM,
+                                trigger_price=stoploss_val,                        # initial SL trigger
+                                validity=kite.VALIDITY_DAY
+                            )
+                sl_orderid = order_id
+                log("SL placed:", order_id)
+            elif (sl_orderid != None) and (stoploss_val == 0):
+                kite.cancel_order(
+                                variety=kite.VARIETY_REGULAR,
+                                order_id=sl_orderid
+                            )
+                sl_orderid = None
+            else:
+                sl_orderid = None
+
+
+        elif position == -1:
+            stoploss_val = stopless_point_short(cur, position)
+            if (sl_orderid != None) and (stoploss_val != 0):
+                kite.modify_order(
+                                variety=kite.VARIETY_REGULAR,
+                                order_id=sl_orderid,
+                                trigger_price=stoploss_val                         # new SL trigger
+                            )
+            elif (sl_orderid == None) and (stoploss_val != 0):
+                quantity = qty
+                order_id = kite.place_order(
+                                variety=kite.VARIETY_REGULAR,
+                                exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+                                tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+                                transaction_type=kite.TRANSACTION_TYPE_BUY,
+                                quantity=quantity,                                # MCX lot size
+                                product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+                                order_type=kite.ORDER_TYPE_SLM,
+                                trigger_price=stoploss_val,                        # initial SL trigger
+                                validity=kite.VALIDITY_DAY
+                            )
+                sl_orderid = order_id
+                log("SL placed:", order_id)
+            elif (sl_orderid != None) and (stoploss_val == 0):
+                kite.cancel_order(
+                                variety=kite.VARIETY_REGULAR,
+                                order_id=sl_orderid
+                            )
+                sl_orderid = None
+            else:
+                sl_orderid = None
+        else: 
+            sl_orderid = None
         # except Exception as e:
         #     print("⚠️ Error:", e)
         wait_until_next_15min_plus30()

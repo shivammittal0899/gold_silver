@@ -250,6 +250,8 @@ def backtest_with_capital(p):
                                 order_id=sl_orderid,
                                 trigger_price=stoploss_val                         # new SL trigger
                             )
+                
+                log(f"SL placed: {order_id} {stoploss_val}")
             elif (sl_orderid == None) and (stoploss_val != 0):
                 quantity = qty
                 order_id = kite.place_order(
@@ -283,6 +285,8 @@ def backtest_with_capital(p):
                                 order_id=sl_orderid,
                                 trigger_price=stoploss_val                         # new SL trigger
                             )
+                
+                log(f"SL placed: {order_id} {stoploss_val}")
             elif (sl_orderid == None) and (stoploss_val != 0):
                 quantity = qty
                 order_id = kite.place_order(
@@ -307,6 +311,11 @@ def backtest_with_capital(p):
             else:
                 sl_orderid = None
         else: 
+            if sl_orderid != None:
+                kite.cancel_order(
+                                variety=kite.VARIETY_REGULAR,
+                                order_id=sl_orderid
+                            )
             sl_orderid = None
         # except Exception as e:
         #     print("⚠️ Error:", e)

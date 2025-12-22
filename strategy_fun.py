@@ -509,6 +509,23 @@ def generate_signals(df, p):
                                    (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum()>=2) &
                                    (df['Close'] < (df['rolling_max_10'] - df['ATR']*0)) &
                                    ((df['Close']+100) < df['tenkan'])) 
+    price_difference = ((abs(df['senkou_a'] - df['senkou_b']) > df['ATR']*2) &
+                        # (abs(df['kijun'] - df['senkou_a']) > abs(df['senkou_a'] - df['senkou_b'])) &
+                        (abs(df['kijun'] - df['senkou_a']) > df['ATR']*3))
+    df['exit_long_price_turn2'] = np.where(price_difference,
+                                    (((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1.5).rolling(2).sum()>=1) &
+                                   (df['price_above_cloud']) &
+                                   (((df['Close']+50) < df['Open']).rolling(4).sum()>=3) &
+                                   (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum()>=2) &
+                                   (df['Close'] < (df['rolling_max_10'] - df['ATR']*0)) &
+                                   ((df['Close']+100) < df['tenkan']) &
+                                   ((df['Close']+30) < df['kijun']),
+                                   (((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1.5).rolling(2).sum()>=1) &
+                                   (df['price_above_cloud']) &
+                                   (((df['Close']+50) < df['Open']).rolling(4).sum()>=3) &
+                                   (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum()>=2) &
+                                   (df['Close'] < (df['rolling_max_10'] - df['ATR']*0)) &
+                                   ((df['Close']+100) < df['tenkan'])) 
     df['exit_long_price_turn1'] =  ((((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1).rolling(3).sum()>=2) &
                                     (df['price_above_cloud']) &
                                    (((df['Close']+20) < df['Open']).rolling(3).sum()>=2) &
@@ -796,7 +813,7 @@ def generate_signals(df, p):
             df['exit_long_tkcross'] | df['exit_long_price_reversion'] | (( df['exit_long_price_cloud'])) ,  ###df['exit_long_tkcross']  | df['trailing_stop_long1'] || df['exit_long_kijun1']
             df['exit_long_price_turn']| ((df['trailing_stop_long4'] | df['exit_long_price_cloud'] | df['exit_long_price_down'] | df['exit_long_kijun'] | df['trailing_stop_long3'] | df['exit_long_kumo_break'])& (~df['entry_short_avoid1']))    ###df['exit_long_price_drop'] |
         ],
-        default= df['entry_short_above_cloud'] | df['exit_long_price_turn'] | df['exit_long_avoid'] |  ((df['exit_long_tkcross1'] | df['exit_long_tkcross'] | df['trailing_stop_long4'] | df['trailing_stop_long3'] )& (~df['entry_long_avoid']))     ###df['exit_long_kumo_break']  |
+        default= df['entry_short_above_cloud'] | df['exit_long_price_turn2'] | df['exit_long_avoid'] |  ((df['exit_long_tkcross1'] | df['exit_long_tkcross'] | df['trailing_stop_long4'] | df['trailing_stop_long3'] )& (~df['entry_long_avoid']))     ###df['exit_long_kumo_break']  |
     )
 
     final_unique_entry_short = (df['entry_short_kumo_break'] | df['entry_gap_short'] | df['entry_pullback_short'] | 

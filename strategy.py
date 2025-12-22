@@ -264,7 +264,7 @@ def backtest_with_capital(p):
                                 validity=kite.VALIDITY_DAY
                             )
                 sl_orderid = order_id
-                log("SL placed:", order_id)
+                log(f"SL placed: {order_id} {stoploss_val}")
             elif (sl_orderid != None) and (stoploss_val == 0):
                 kite.cancel_order(
                                 variety=kite.VARIETY_REGULAR,
@@ -297,7 +297,7 @@ def backtest_with_capital(p):
                                 validity=kite.VALIDITY_DAY
                             )
                 sl_orderid = order_id
-                log("SL placed:", order_id)
+                log(f"SL placed: {order_id} {stoploss_val}")
             elif (sl_orderid != None) and (stoploss_val == 0):
                 kite.cancel_order(
                                 variety=kite.VARIETY_REGULAR,

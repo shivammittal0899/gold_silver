@@ -209,7 +209,12 @@ def backtest_with_capital(p):
             quantity = qty
             kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
             log(f"Exit short: (Entry price - {entry_price}), (Exit price - {exit_price}), (PnL diff -- {price_diff})")
-
+        if sl_orderid != None and position == 0:
+            kite.cancel_order(
+                            variety=kite.VARIETY_REGULAR,
+                            order_id=sl_orderid
+                            )
+            sl_orderid = None
             # print(capital)
         # Entry logic
         if position == 0:
@@ -242,6 +247,7 @@ def backtest_with_capital(p):
                 kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
                 print("Sell price. ",entry_time, entry_price)
                 log(f"Sell price. ,{entry_time}, {entry_price}")
+        
         if position == 1:
             stoploss_val = stopless_point(cur, position)
             if (sl_orderid != None) and (stoploss_val != 0):

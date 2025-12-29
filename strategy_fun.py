@@ -145,36 +145,59 @@ def generate_signals(df, p):
     df['vol_ma'] = df['Volume'].rolling(window=p['vol_ma_window']).mean()
     df['oi_ma']  = df['OI'].rolling(window=p['oi_ma_window']).mean()
     df['rsi_ma']  = df['RSI'].rolling(window=p['vol_ma_window']).mean()
+    
     df['price_above_cloud'] = df['Close'] > df[['senkou_a','senkou_b']].max(axis=1)
     df['price_below_cloud'] = df['Close'] < df[['senkou_a','senkou_b']].min(axis=1)
+    df['price_in_cloud'] = ((df['Close'] < df[['senkou_a','senkou_b']].max(axis=1)) & (df['Close'] > df[['senkou_a','senkou_b']].min(axis=1))) 
+
     df['tenkan_above_kijun'] = df['tenkan'] > df['kijun']
     df['tenkan_below_kijun'] = df['tenkan'] < df['kijun']
+    
     df['price_below_tenkan'] = df['Close'] < df['tenkan']
     df['price_above_tenkan'] = df['Close'] > df['tenkan']
-    df['line_gap'] = abs(df['tenkan'] - df['kijun'])
-    df['cloud_gap'] = abs(df['senkou_a'] - df['senkou_b'])
+    
+    df['price_below_kijun'] = df['Close'] < df['kijun']
+    df['price_above_kijun'] = df['Close'] > df['kijun']
 
     df['price_above_tk'] = (df['Close'] > df['tenkan']) & (df['Close'] > df['kijun'])
     df['price_below_tk'] = (df['Close'] < df['tenkan']) & (df['Close'] < df['kijun'])
 
+    df['green_cloud'] = ((df['senkou_a'] > df['senkou_b'].shift(1)).rolling(3).sum() >= 3)
+    df['red_cloud'] = ((df['senkou_a'] < df['senkou_b'].shift(1)).rolling(3).sum() >= 3)
+    
+    df['line_gap'] = abs(df['tenkan'] - df['kijun'])
+    df['cloud_gap'] = abs(df['senkou_a'] - df['senkou_b'])
+    df['candel_size'] = abs(df['Close'] - df['Open'])
+    df['price_tenkan_gap'] = abs(df['Close'] - df['tenkan'])
+    df['tenkan_kijun_gap'] = abs(df['tenkan'] - df['kijun'])
+    df['price_cloud_gap'] = abs(df['Close'] - df[['senkou_a','senkou_b']].max(axis=1))
+    df['DI_gap'] = abs(df['+DI'] - df['-DI'])
+    df['+DI_up'] = df['+DI'] >= df['-DI']
+    df['-DI_up'] = df['+DI'] < df['-DI']
+    
+    # DI Cross detection
+    df['DI_cross'] = np.where(
+        (df['+DI_up']) & (df['+DI_up'].shift(1) == False),
+        "Cross +",
+        np.where(
+            (df['-DI_up']) & (df['-DI_up'].shift(1) == False),
+            "Cross -",
+            None
+        )
+    )
+    
     df['tk_cross_up'] = df['tenkan_above_kijun'] & (~df['tenkan_above_kijun']).shift(1).fillna(False)
     df['tk_cross_down'] = df['tenkan_below_kijun'] & (~df['tenkan_below_kijun']).shift(1).fillna(False)
-    # df['Price_above_tk'] = (((df['Close'] > df['tenkan']).rolling(5).sum() >= 3) &
-    #                         ((df['Close'] > df['Close'].shift(1).rolling(5).sum() >= 3) ))
-    df['Price_above_tk'] = (((df['Close'] > df['Close'].shift(1)).rolling(5).sum() >= 3) | 
-                            ((df['Close'] > df['tenkan']) & 
-                             (df['Close'] > df['kijun']) & 
-                             (df['price_above_cloud']) &
-                             ((df['Close'] > df['Open']).rolling(5).sum() >= 3)))
-    df['Price_below_tk'] = ((df['Close'] < df['Close'].shift(1)).rolling(5).sum() >= 2)
-    df['green_cloud'] = ((df['senkou_a'] > df['senkou_b'].shift(1)).rolling(5).sum() >= 4)
-    df['red_cloud'] = ((df['senkou_a'] < df['senkou_b'].shift(1)).rolling(5).sum() >= 4)
-    df['price_in_red_cloud'] = ((~df['price_above_cloud']) & (~df['price_below_cloud']) & df['red_cloud'])
-    df['price_in_green_cloud'] = ((~df['price_above_cloud']) & (~df['price_below_cloud']) & df['green_cloud'])
-    df['price_in_cloud'] = ((~df['price_above_cloud']) & (~df['price_below_cloud']))
-    df['price_in_bt_lines'] = ((~df['Price_above_tk']) & (~df['Price_below_tk']))
-    df['Market_Regime'] = df.apply(classify_trend_ichimoku, axis=1)
-    
+
+    df['+DI_move_up'] = (df['+DI'] > df['+DI'].shift(1)).rolling(3).sum() >= 2
+    df['+DI_move_down'] = (df['+DI'] < df['+DI'].shift(1)).rolling(3).sum() >= 2
+    df['-DI_move_up'] = (df['-DI'] > df['-DI'].shift(1)).rolling(3).sum() >= 2
+    df['-DI_move_down'] = (df['-DI'] < df['-DI'].shift(1)).rolling(3).sum() >= 2
+    df['price_move_up'] = (df['Close'] > df['Close'].shift(1)).rolling(3).sum() >= 2
+    df['price_move_down'] = (df['Close'] < df['Close'].shift(1)).rolling(3).sum() >= 2
+    df['price_green_candle'] = (df['Close'] > df['Open'].shift(1)).rolling(2).sum() >= 2
+    df['price_red_candle'] = (df['Close'] < df['Open'].shift(1)).rolling(2).sum() >= 2
+
     # --- Sideways detection ---
     lookback = 10
     range_high = df['High'].rolling(lookback).max()
@@ -202,6 +225,7 @@ def generate_signals(df, p):
     
     exit_condition = (df['Close'] < df['Open']).rolling(3).sum() >= 3
     entry_condition = (df['Close'] > df['Open']).rolling(3).sum() >= 3
+
     df['rolling_min_10'] = df['Close'].rolling(window=10).min()
     df['rolling_max_10'] = df['Close'].rolling(window=10).max()
     df['rolling_min_5'] = df['Close'].rolling(window=5).min()
@@ -210,78 +234,730 @@ def generate_signals(df, p):
     df['rolling_max_120'] = df['Close'].rolling(window=120).max()
     df['rolling_min_60'] = df['Close'].rolling(window=60).min()
     df['rolling_max_60'] = df['Close'].rolling(window=60).max()
+    df['range1'] = df['rolling_max_10'] - df['rolling_min_10']
+    df['range2'] = df['rolling_max_5'] - df['rolling_min_5']
+    
+    df['Entry_long_above_all'] = (
+        df['price_above_cloud'] &
+        (df['tenkan_above_kijun']) &
+        (df['range1'] > df['ATR']) & 
+        ((df['Close'] > df['Open']).rolling(2).sum() >= 2) &
+        ((df['price_above_tk'].rolling(2).sum()>=2) &
+         ((df['price_tenkan_gap'] > df['ATR']).rolling(2).sum() >= 2) &
+         df['price_move_up'] &
+         (((df['Close'] > df['rolling_max_10'].shift(1)).rolling(2).sum() >= 2)) &
+         ((df['senkou_a'] - df['senkou_b']) > df['ATR']*2) &
+         (df['candel_size'] > 150) &
+         ((df['candel_size'] > df['candel_size'].shift(1)).rolling(3).sum()>=3) ) &
+        (df['OI'] > df['oi_ma']) 
+        
+        
+        # (df['price_move_up'] |
+        #  (((df['Close'] > df['rolling_max_10'].shift(1)).rolling(2).sum() >= 2)) ) &
+        #  df['+DI_move_up'] &
+        # # ((df['DI_gap'] > df['DI_gap'].shift(1)).rolling(3).sum() >=2) &
+        # ((df['candel_size'] > df['candel_size'].shift(1)).rolling(2).sum()>1) &
+        
+    )
+
+    df['entry_long_tenkan_cross'] = (
+        # df['price_above_tenkan'] & 
+        df['price_below_tenkan'].shift(1) &
+        ((df['Close'] + 50) > df['tenkan']) &
+        ((df['Close'] > df['Open']).rolling(3).sum() >=3) &
+        df['price_move_up'] &
+        (df['Close'] >= df['rolling_max_5']-df['ATR']*0.2) &
+        # df['+DI_move_up'] &
+        (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(1)).rolling(2).sum() >=2)) &
+        (df['RSI'] > df['rsi_ma']) 
+    )
+    df['entry_long_tk_cross'] = (
+        df['price_below_cloud'] &
+        ((df['price_above_tk'] & df['price_below_tk'].shift(2)))&
+        (((df['Close'] + 30) > df['Open']).rolling(2).sum() >=2) &
+        (df['candel_size'] > 100) &
+        (df['line_gap'] < df['ATR'] * 1.5) &
+        # df['price_move_up'] &
+        (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(1)).rolling(3).sum() >=2)) 
+    )
+    df['entry_long_bt_tk'] = (
+        df['price_below_cloud'] &
+        # ((df['Close']) < df['kijun']) &
+        # (df['Close'] > df['tenkan']) &
+        (df['Close'].shift(1) < df[['tenkan', 'kijun']].max(axis=1)) &
+        (df['Close'].shift(1) > df[['tenkan', 'kijun']].min(axis=1)) &
+        # df['price_above_tk'] &
+        (df['tenkan_kijun_gap'] > df['ATR']*1.5) &
+        df['price_move_up'] &
+        (((df['Close']-20) > df['Open']).rolling(2).sum() >=2) &
+        (df['Close'] > df['rolling_min_10'] + df['ATR']*1) &
+        (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(1)).rolling(2).sum() >=2)) &
+        (df['line_gap'] < df['line_gap'].shift(3))
+    )
+    df['entry_long_below_tk'] = (
+        df['price_above_cloud'] &
+        df['price_below_tk'].shift(2) &
+        ((df['Close'] > df['Open']).rolling(2).sum() >= 2) &
+        
+        (df['green_cloud'] &
+        #  (df['tenkan_below_kijun']) &
+         ((df['Close'] - 50) > df[['tenkan','kijun']].min(axis=1)) &
+         (df['line_gap'] > df['ATR']*1) &
+         (df['Close'] > df['rolling_max_5'].shift(1) + df['ATR']*0) &
+         (df['price_move_up']) &
+        #  (df['+DI_move_up']) &
+         (df['ADX'] > df['ADX'].shift(1)) 
+        #  (df['OI'] > df['oi_ma'])
+        ) | 
+        ((df['green_cloud']) &
+         (df['price_tenkan_gap'] < df['price_tenkan_gap'].shift(2)) &
+         ((df['tenkan'] - df['senkou_a']) > df['ATR']*1) &
+         (df['candel_size'] > 100) &
+         (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(2)) & df['+DI_move_up'])) &
+         (df['RSI'] > df['rsi_ma']*0.9) 
+        ) |
+        (((df['Close'] - 0) > df[['tenkan','kijun']].min(axis=1)) &
+        #  ((df['Low'] - 50) < df[['tenkan','kijun']].min(axis=1)) &
+         (df['tenkan_above_kijun']) &
+        #  (df['green_cloud']) &
+         (df['candel_size'] > 100) &
+         (df['price_move_up']) &
+         (df['Close'] >= df['rolling_max_5'].shift(1)) &
+         (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(2)) & df['+DI_move_up'])) 
+        #  (df['RSI'] > df['rsi_ma']*0.9) 
+        ) |
+        (
+         ((df['Close']) > df[['tenkan','kijun']].min(axis=1)) &
+          (df['Close'] > df['rolling_max_5'].shift(1)) &
+          (((df['Open'] - df['Low']) > (df['High'] - df['Open'])*4).rolling(2).sum() >= 1) &
+          (df['RSI'] > df['rsi_ma']*0.95) &
+          (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(2)) & df['+DI_move_up'])) 
+        )
+    )
+    df['entry_long_below_tk_cloud'] = (
+        df['price_below_cloud'] &
+        df['price_below_tk'].shift(2) & 
+        (((df['Close']+50) > df['Open']).rolling(2).sum() >= 2) &
+        (df['Close'] > df['rolling_min_10'] + df['ATR']) &
+        
+        (df['price_move_up'] &
+         (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(2)) & df['+DI_move_up'])) &
+         (df['price_tenkan_gap'] > df['ATR']*2)) |
+        
+        (((df['Close']) > df[['tenkan','kijun']].max(axis=1)) &
+         (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(2)) & df['+DI_move_up'])) &
+         (((df['Close']-50) > df['Open']).rolling(2).sum() >= 2) &
+         (df['range1'] > df['ATR']*2) &
+         (df['Close'] > df['rolling_min_10'] + df['ATR']) &
+         (df['rolling_max_10'].shift(1) < df[['tenkan','kijun']].min(axis=1) + df['ATR']*1) 
+
+        )
+    )
+    df['entry_long_cloud_enter'] = (
+        df['price_below_cloud'].shift(2) &
+        # (df['RSI'] > df['rsi_ma']) &
+        # (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(1)) & df['+DI_move_up'])) &
+        df['price_move_up'] &
+        df['price_above_tk'] &
+        
+        (df['green_cloud'] &
+         (df['Close'] > df['senkou_b']) &
+         ((df['Close'] - 100) > df['Open']) &
+         (df['Close'] > df['rolling_max_10'] - df['ATR']*1) &
+         (df['line_gap'] > df['line_gap'].shift(2)) &
+         (df['tenkan_above_kijun'])
+        ) |
+        
+        (df['red_cloud'] &
+         ((df['Close'] - 50) > df['senkou_a']) &
+         (df['cloud_gap'] < df['cloud_gap'].shift(1)) &
+         (((df['Close'] - 10) > df['Open']).rolling(3).sum() >= 3) &
+         (df['Close'] >= df['rolling_max_10'] - df['ATR']*0.5) &
+         (df['range1'] > df['ATR']*2) &
+         (df['line_gap'] > df['line_gap'].shift(1)) &
+         (df['ADX'] > df['ADX'].shift(2))
+        ) |
+        ((df['price_above_tk'].rolling(2).sum() == 1) &
+         (((df['Close']+20) > df['Open']).rolling(3).sum()>=3) &
+         (df['Close'] > df['rolling_max_10'] - df['ATR']*1) &
+         (df['cloud_gap'] > df['ATR']*1) &
+         (df['candel_size'] > 50) &
+        #  df['green_cloud'] &
+         (df['range1'] > df['ATR']*2) )
+    )
+    df['entry_long_in_cloud'] = (
+        (df['range1'] > df['ATR']*1.5) &
+        df['price_in_cloud'] &
+        (df['ADX'] > df['ADX'].shift(2)) &
+        (((df['DI_gap'] > df['DI_gap'].shift(1)) & df['+DI_up']) | ((df['DI_gap'] < df['DI_gap'].shift(1)) & df['-DI_up'])) &
+        (df['Close'] > df['rolling_min_10'] + df['ATR']*1) &
+        (df['price_above_tenkan']) &
+        
+        (((((df['cloud_gap'] > df['cloud_gap'].shift(1)) & df['green_cloud']) | ((df['cloud_gap'] < df['cloud_gap'].shift(1)) & df['red_cloud']))&
+        (df['price_move_up'] & 
+        (((df['Close']+20) > df['Open']).rolling(2).sum() == 2)) &
+        
+        (((df['Close'] + 0) > df['Open']).rolling(3).sum() >= 2)) )
+    )
+    df['entry_long_head_candle'] = (
+                                    df['price_below_tk'].shift(2) &
+                                    (((df['Close'] - 20) > df['Open']).rolling(2).sum() >= 2) &
+                                    ((df['Close']) > df[['tenkan','kijun']].min(axis=1)) &
+                                    (df['Close'] >= df['rolling_min_5'].shift(1) + df['ATR']*0.5) &
+                                    (df['price_move_up'] | (df['Close'] > df['Open'])) &
+                                    (((df['Open'] - df['Low']) > (df['High'] - df['Open'])*3).rolling(2).sum() >= 1) &
+                                    (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(2)) & df['+DI_move_up'])) 
+                                    
+                                    )
+   
+    
+    df['exit_long_price_tk_cross1'] = (
+        df['price_below_tk'] & df['price_above_tk'].shift(2) &
+        # (((df['Close']+20) < df['tenkan']).rolling(2).sum() == 2) &
+        (df['price_above_cloud'] &
+         (df['Close'] <= df['rolling_min_5']) &
+        (df['line_gap'] < df['ATR'] * 1.5) &
+        ((df['line_gap']-20) < df['line_gap'].shift(1)) &
+        df['+DI_move_down'] &
+        (df['candel_size'] > 100) ) 
+    )
+    df['exit_long_price_tk_cross2'] = (
+
+        df['price_below_tk'] & df['price_above_tk'].shift(1) &
+        df['+DI_move_down'] &
+        # df['price_move_down'] &
+        (((df['Close']-20) < df['Close'].shift(1)).rolling(3).sum() >= 2) &
+        (((df['Close']-20) < df['Open']).rolling(3).sum() >= 2) &
+        df['price_red_candle'] &
+        (df['candel_size'] > 100) &
+        # (df['RSI'] < df['rsi_ma']) &
+        
+        (df['price_above_cloud'] &
+         (df['range1'] > df['ATR']*1) &
+        (df['line_gap'] < df['ATR'] * 1) &
+        (df['candel_size'] > 100) ) |
+        
+        ((df['green_cloud']) &
+         (((df['Close']-50) < df[['senkou_a','senkou_b']].max(axis=1))) &
+         ((df['candel_size'] > 50).rolling(2).sum() >= 2) &
+         (df['RSI'] < df['rsi_ma']) &
+         (df['RSI'] < 40) &
+         (df['tenkan_below_kijun'].rolling(3).sum() >= 3) &
+         (df['line_gap'] > (df['line_gap'].shift(1))*1.02) &
+         (df['OI'] < df['oi_ma']*0.9)) 
+    )
+    
+
+    df['exit_long_price_tk_cross3'] = (
+        (df['ADX'] < 30) &
+        df['price_below_tk'] &
+        (df['+DI_move_down']) &
+        (df['Close'] < (df['rolling_min_10']+df['ATR']*0.5)) &
+        (df['range1'] > df['ATR']*1.5) &
+        (((df['Close'].shift(1)-20) > df[['kijun','tenkan']].min(axis=1)).rolling(2).sum() >= 1) &
+        df['tenkan_below_kijun'] &
+        ((df['Close'] + 50) < df['tenkan']) &
+        ((df['RSI'] < df['rsi_ma']).rolling(4).sum() >= 2) &
+        df['price_move_down'] & 
+        df['price_red_candle'] &
+        (((df['Close'] - 20) < df['Open']).rolling(2).sum()==2)
+    )
+    ## used in entry short
+    df['exit_long_price_tenkan'] = (
+        df['price_move_down'] &
+        (((df['Close'] + 20) < df['tenkan']).rolling(2).sum() >= 1) &
+        ((df['RSI'] < df['rsi_ma']).rolling(2).sum() >= 2) &
+        (((df['Close'] + 20) < df['Open']).rolling(2).sum() >= 2) &
+        (df['Close'] < df['rolling_max_5'] - df['ATR']*1) &
+        (df['-DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(1)) & df['+DI_move_down'])) &
+        
+        ((df['tenkan_kijun_gap'] > df['ATR']*2) &
+         (df['price_above_cloud']) &
+         (df['Close'] < df['rolling_max_5'] - df['ATR']*2) &
+         (df['price_above_tk'].shift(3)) &
+         (df['price_cloud_gap'] > df['ATR']*3)) |
+        
+        ((((df['Close'] - 50) < df['tenkan']).rolling(2).sum() == 2) &
+         (df['price_above_cloud']) &
+         (df['price_above_tk'].shift(3)) &
+         (df['line_gap'] < df['line_gap'].shift(1)) &
+         (df['ADX'] < 30) &
+         (df['range1'] > df['ATR']*1.5) &
+         (df['price_cloud_gap'] > df['ATR']*2) &
+         ((df['ADX'] < df['ADX'].shift(1)).rolling(2).sum() == 2))
+        # ((df['price_below_tenkan'].rolling(2).sum()==2) &
+        #  (df['Close'] < df['rolling_max_5'] - df['ATR']*1) &)
+        
+        # ((df['price_above_cloud']) &
+        #  (df['Close'] < df['rolling_max_10'] - df['ATR']*1.5) &
+        # #  (df['Close'] <= df['rolling_min_5'] + df['ATR']*0.5) &
+        #  (df['range1'] > df['ATR']*2.5) &
+        #  (df['tenkan_above_kijun']) &
+        #  (df['price_cloud_gap'] > df['ATR']*4) &
+        #  (((df['Close']+50) < df['Close'].shift(1)).rolling(2).sum() >= 2)&
+        #  (df['ADX'] < df['ADX'].shift(1)) &
+        #  (df['Volume'] < (df['vol_ma']*1.1)) &
+        #  (df['ADX'] < 30)
+
+        # ) |
+        # (((df['Close'] < df[['senkou_a','senkou_b']].max(axis=1)) & (df['Close'] > df[['senkou_a','senkou_b']].min(axis=1))) &
+        #   (((df['Close'] + 20) < df['Open']).rolling(3).sum() >= 3) &
+        #  (df['range1'].shift(1) > df['ATR']*1.5) &
+        #  (df['Close'] <= df['rolling_min_10'] + df['ATR']*0) &
+        #  (df['line_gap'] < df['line_gap'].shift(1))&
+        #  (df['ADX'] < 30))
+    )
+    df['exit_long_price_tenkan1'] = (
+        df['price_move_down'] &
+        (((df['Close'] + 50) < df['tenkan']).rolling(2).sum() >= 1) &
+        # ((df['RSI'] < df['rsi_ma']).rolling(2).sum() >= 2) &
+        (((df['Close'] + 50) < df['Open']).rolling(2).sum() >= 2) &
+        (df['Close'] < df['rolling_max_5'] - df['ATR']*1) &
+        (df['-DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(1)) & df['+DI_move_down'])) &
+        
+        
+        ((((df['Close'] - 50) < df['tenkan']).rolling(2).sum() == 2) &
+         (df['price_above_cloud']) &
+         (df['price_above_tk'].shift(3)) &
+         (df['line_gap'] < df['line_gap'].shift(1)) &
+         (df['ADX'] < 30) &
+         (df['range1'] > df['ATR']*1.5) &
+         (df['price_cloud_gap'] > df['ATR']*2) &
+         ((df['ADX'] < df['ADX'].shift(1)).rolling(2).sum() == 2)) |
+        
+        (df['price_below_cloud'] &
+         df['price_above_tenkan'].shift(2) &
+         ((df['Close'] -50) < df['Open']) &
+         (df['-DI_up'] | df['-DI_move_up']) &
+         df['tenkan_below_kijun'] &
+         (df['Close'] <= df['rolling_min_5'].shift(1) + df['ATR']*0.2) &
+         (df['ADX'] < df['ADX'].shift(1)) &
+         (df['RSI'] < 50) &
+         (df['candel_size'] > 100) &
+         (df['red_cloud'] | (df['green_cloud'] & (df['cloud_gap'] < df['cloud_gap'].shift(1)))))
+    )
+    df['exit_long_price_kijun'] = (
+        
+        ((df['Close'] < df['kijun']).rolling(2).sum() >= 2) &
+        (df['price_move_down']) &
+        (((df['Close']+50) < df['Open']).rolling(2).sum() >= 2) &
+        (df['RSI'] < df['rsi_ma']) &
+        (df['+DI_move_down']) &
+        (df['Close'] < df['rolling_max_10'] - df['ATR']*1.5) &
+        
+        (df['tenkan_above_kijun'] &
+         (df['line_gap'] < df['line_gap'].shift(1) ) &
+         (df['range1'] > df['ATR']*1.5) ) |
+        
+        (df['tenkan_below_kijun'] &
+         df['price_above_cloud'] &
+         (df['price_above_tk'].shift(3)) &
+         ((df['line_gap'] < df['line_gap'].shift(1)) | (df['line_gap'] < df['ATR'])) &
+         (df['Close'] <= df['rolling_min_10'] + df['ATR']*0.2) &
+         (df['ADX'] < df['ADX'].shift(1)) &
+         (df['range1'].shift(1) < df['ATR']) &
+         (df['Close'] < df['kijun'])
+        ) 
+    )
+    df['exit_long_cloud_entry'] = (
+        (df['Close'] < df[['senkou_a','senkou_b']].max(axis=1) - df['ATR']*0.5) &
+        (df['RSI'] < df['rsi_ma']) &
+        (df['price_move_down']) &
+        (df['-DI_up'] | ((df['DI_gap'] > df['DI_gap'].shift(1)) & df['+DI_move_down'])) &
+        (df['price_above_cloud'].shift(2) &
+         (df['price_below_tk'] | (df['Low'] < df[['tenkan','kijun']].max(axis=1))) &
+        #  df['red_cloud'] &
+         df['range1'] > df['ATR']) |
+
+        ((df['Close'] > df[['senkou_a','senkou_b']].min(axis=1)) &
+         (df['price_below_tk']) &
+         (df['range1'] > df['ATR']*2) &
+         (df['tenkan_below_kijun']) &
+         (df['line_gap'] > df['line_gap'].shift(1)) &
+         (((df['Close']+50) < df['Open']).rolling(2).sum() >= 2) &
+         (df['Close'] <= df['rolling_min_10'].shift(1)) &
+         (df['cloud_gap'] > df['ATR']*2)
+        )
+    )
+    df['exit_short_cloud_enter'] = (
+        ((df['Close'].shift(1) < df[['senkou_a','senkou_b']].min(axis=1)).rolling(2).sum() >=1) &
+        (df['Close'] > df[['senkou_a','senkou_b']].min(axis=1)) &
+        
+        (df['green_cloud'] &
+        ((df['Close'] - 50) > df['senkou_b']) &
+        (df['price_move_up']) &
+        (df['candel_size'] > 150)) |
+        
+        (df['green_cloud'] &
+         (df['price_green_candle']) &
+         (df['price_move_up']) &
+         (df['candel_size'] > 100) &
+         (df['RSI'] > df['rsi_ma']) &
+         (df['Volume'] > df['vol_ma']) &
+         (df['cloud_gap'] > df['ATR']) &
+         ((df['Close'] - 50) > df['senkou_b']) &
+         ((df['Close'] - 50) > df['tenkan'])) |
+         
+         (df['red_cloud'] &
+         ((df['Close'] - 100) > df['senkou_a']) &
+         (df['cloud_gap'] > df['ATR']) &
+         (df['range1'] > df['ATR']*1.5) &
+         (df['candel_size'] > 100) &
+         (df['RSI'] > df['rsi_ma']) &
+         (df['Close'] > df['rolling_max_10'].shift(1) - df['ATR']*0.2) &
+         (df['price_move_up']) &
+         entry_condition
+        ) |
+        ((df['cloud_gap'] < df['ATR']*2) &
+         (df['candel_size'] > 150) &
+         (df['price_move_up']) &
+         ((df['Close']) > df['tenkan']) &
+         (df['RSI'] > df['rsi_ma']) &
+         (df['+DI_move_up']) &
+         (df['Volume'] > df['vol_ma']*0.9) &
+         (df['Close'] >= (df['rolling_max_5'].shift(1) + df['ATR']*0.)) 
+        ) 
+    )
+    # df['exit_short_cloud_exit'] = (
+    #     df['']
+    # )
+    # df['exit_short_tenkan_cross']
+    df['exit_short_price_tk_cross1'] = (
+        df['price_above_tk'] & df['price_below_tk'].shift(1) &
+        df['-DI_move_down'] &
+        (df['price_below_cloud'] &
+        (df['line_gap'] < df['ATR'] * 1) &
+        (df['candel_size'] > 150) ) 
+    )
+    df['exit_short_price_tk_cross2'] = (
+
+        df['price_above_tk'] & df['price_below_tk'].shift(1) &
+        df['-DI_move_down'] &
+        df['price_move_up'] &
+        df['price_green_candle'] &
+        (df['candel_size'] > 150) &
+        (df['RSI'] > df['rsi_ma']) &
+        
+        ((df['price_below_cloud'] &
+         (df['range1'] > df['ATR']*2) &
+        (df['line_gap'] < df['ATR'] * 2) &
+        (df['candel_size'] > 100) ) |
+        
+        (
+            # (df['red_cloud']) &
+         ((df['Close'] > df[['senkou_a','senkou_b']].min(axis=1))) &
+         ((df['candel_size'] > 100).rolling(2).sum() >= 2) &
+         (df['RSI'] > df['rsi_ma']) &
+         (df['RSI'] > 70) &
+         (df['tenkan_above_kijun'].rolling(3).sum() >= 3) &
+         (df['line_gap'] > (df['line_gap'].shift(1))*1.02) &
+         (df['OI'] < df['oi_ma']*0.9)) )
+    )
+    df['exit_short_tenkan_cross'] = (
+        df['price_move_up'] &
+        df['price_above_tenkan'] &
+        (((df['Close'] + 20) > df['Open']).rolling(2).sum() >= 2) &
+        (df['Close'] > df['rolling_min_5'] + df['ATR']*0.5) &
+        df['-DI_move_down'] &
+        
+        ((((df['Close'] - 20) > df['tenkan']).rolling(2).sum() >= 2) &
+         (df['price_below_cloud']) &
+         df['price_below_tk'].shift(2)) |
+        
+        (df['tenkan_below_kijun'] &
+         (df['tenkan_kijun_gap'] > df['ATR']*2) &
+         ((df['Close'] - 50) > df['tenkan']) &
+         (df['candel_size'] > 100) &
+        #  df['price_below_cloud'] &
+         (df['Close'] > df['rolling_min_5'] + df['ATR']*1) &
+         df['price_below_tk'].shift(1)) |
+        
+        (df['tenkan_above_kijun'] &
+         (df['+DI_up']) &
+         (df['price_below_tenkan'].shift(2)) &
+         ((df['Close'] - 50) > df['tenkan']) &
+         ((df['candel_size'] > 100).rolling(2).sum() >= 2)&
+        #  (((df['Close'] - 50) > df['Open']).rolling(2).sum() >= 2) &
+        #  (df['ADX'] < 25) &
+         ((df['RSI'] > df['RSI'].shift(1)).rolling(2).sum()>= 1)) 
+        
+    )
+    df['exit_short_price_kijun'] = (
+        
+        (((df['Close'] + 20)> df['kijun']).rolling(2).sum() >= 2) &
+        (df['price_move_up']) &
+        (((df['Close']-50) > df['Open']).rolling(2).sum() >= 2) &
+        # (df['RSI'] > df['rsi_ma']) &
+        # (df['-DI_move_down']) &
+        (df['Close'] > df['rolling_min_10'] + df['ATR']*0.5) &
+        
+        (df['tenkan_below_kijun'] &
+         (df['price_below_kijun'].shift(3)) &
+         (df['range1'] > df['ATR']*1) ) 
+        
+        # (df['tenkan_above_kijun'] &
+        #  df['price_below_cloud'] &
+        #  (df['price_below_tk'].shift(3)) &
+        #  (df['candel_size'] > 150) &
+        #  (df['+DI_up']) &
+        # #  (df[''])
+        # #  (df['line_gap'] < df['ATR']*.5) &
+        # #  ((df['line_gap'] < df['line_gap'].shift(1)) | (df['line_gap'] < df['ATR'])) &
+        #  (df['Close'] >= df['rolling_max_5'] - df['ATR']*1) &
+        #  (df['ADX'] > df['ADX'].shift(1)) &
+        # #  (df['range1'].shift(1) < df['ATR']*2) &
+        #  ((df['Close'] - 20)> df['kijun'])
+        # ) 
+    )
+    df['entry_short_price_top'] = (
+        df['price_above_tk'] &
+        df['tenkan_above_kijun'] &
+        (df['price_cloud_gap'] > df['ATR']*3) &
+        ((df['ADX'] < df['ADX'].shift(1)).rolling(2).sum() >= 2) &
+        ((df['Close'] - 50) < df['tenkan']) &
+        ((df['Close'] + 200) < df['Open']) 
+    )
+    df['exit_short_avoid_range'] = (
+        (df['range1']< (df['ATR']*1.5)) &
+        (df['Close'] < df['rolling_max_10'] + df['ATR']*0.1) &
+        (df['Close'] > df['rolling_min_10'] - df['ATR']*0.1) &
+        (
+            # df['price_below_cloud'] &
+         (df['Close'] > df[['senkou_a','senkou_b']].min(axis=1)) &
+         (df['Close'] < df[['senkou_a','senkou_b']].max(axis=1)) &
+         (df['price_above_tenkan'].rolling(2).sum() >=2) &
+         (df['cloud_gap'] < df['ATR']*1.5) &
+         (df['ADX'] < 30) &
+         (df['ADX'] < df['ADX'].shift(1)) &
+         (df['RSI'] > 40) &
+         (df['line_gap'] < df['line_gap'].shift(1)) &
+         (df['-DI_move_down']) &
+
+        #  df['tenkan_above_kijun'] &
+         
+        
+        #  (df['line_gap'] < df['ATR']*1) &
+        #  df['red_cloud'] &
+        #  cloud_near &
+         (df['Volume'] < df['vol_ma'])) 
+        # (df['Close'] < df[['senkou_a','senkou_b']].max(axis=1)) &
+        # (df['+DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(1)) & df['-DI_move_down'])) &
+        # (df['line_gap'] < df['ATR']*1)
+        )
+    df['exit_short_at_top'] = (
+        df['price_above_cloud'] &
+        (df['tenkan_below_kijun']) &
+        df['price_above_tenkan'] &
+        df['price_below_tenkan'].shift(2) &
+        (df['range1'].shift(1) < df['ATR']*2) &
+        (df['Close'] >= df['rolling_max_10'] - df['ATR']*0.5) &
+        # ((df['red_cloud'] & (df['cloud_gap'] < df['cloud_gap'].shift(1))) | (df['green_cloud'] & (df['cloud_gap'] > df['cloud_gap'].shift(1)))) &
+        (((df['Close'] + 50) > df['tenkan']) & (df['candel_size'] > 100) & 
+         df['price_move_up'] & 
+         df['price_green_candle']) 
+        # (df['cloud_gap'] < df['ATR']*3)
+        # (df['line_gap'] > df['line_gap'].shift(1)) &
+        # ((df['ADX'] > df['ADX'].shift(1)).rolling(2).sum() == 1) &
+        # (((abs(df['+DI'] - df['-DI']) > 5) & (df['+DI_move_up']))| df['+DI_up']) &
+        # (df['RSI'] > 50) &
+        # (df['Close'] > df['Open']) &
+        # (
+        # #  (df['range1'] > df['ATR']*2) &
+        #  (df['Close'] < df['rolling_max_10'] - df['ATR']*1) &
+        #  (df['Close'] > df['Open']) &
+        # #  (df['-DI_move_down']) &
+        #  (df['candel_size'] > 200) &
+        #  ((df['Close'] + 50) < df['tenkan'])) )
+
+    )
+    df['exit_short_price_move_up'] = (
+        (((df['Close'] - 10) > df['Open']).rolling(3).sum() == 3) &
+        (((df['High'] - 100) > df['Low']).rolling(3).sum() == 2) &
+        # ((df['Close']-20) > df['Close'].shift(3)) &
+        (df['green_cloud']) &
+        # (df['cloud_gap'] > df['cloud_gap'].shift(1)) &
+        (((df['tenkan'] + 10)> df['kijun']).rolling(2).sum() == 2) &
+        # df['tenkan_above_kijun'] &
+        (df['price_cloud_gap'] > df['ATR']*3)
+    )
+
+    df['entry_short_above_tk'] = (
+        df['price_above_tk'].shift(2) &
+        (((df['Close'] + 10) < df['Open']).rolling(2).sum() >= 2) &
+        
+        (df['red_cloud'] &
+         df['price_below_cloud'] &
+         (df['cloud_gap'] > df['cloud_gap'].shift(1)) &
+         ((df['Close'] - 50) < df[['tenkan','kijun']].min(axis=1)) &
+         (df['Close'] < df['rolling_min_5'].shift(1) - df['ATR']*0) &
+         (df['price_move_down']) &
+         (df['-DI_move_up']) 
+        ) |
+        (df['red_cloud'] &
+         (df['cloud_gap'] > df['cloud_gap'].shift(1)) &
+         df['price_below_cloud'] &
+         (df['tenkan_below_kijun']) &
+         ((df['Close'] + 50) < df[['tenkan','kijun']].max(axis=1)) &
+         (df['Close'] < df['rolling_min_5'].shift(1) - df['ATR']*0.2) &
+         (df['candel_size'] > 100) &
+         (df['price_move_down']) ) |
+        
+        ((df['green_cloud']) &
+         df['price_below_cloud'] &
+         (df['candel_size'] > 100) &
+         (df['price_tenkan_gap'] < df['price_tenkan_gap'].shift(1)) &
+         ((((df['Close'] + 50) < df[['tenkan','kijun']].max(axis=1)) & (df['RSI'] > df['rsi_ma']) ) ) 
+         
+        ) |
+        (
+         ((df['Close'] + 20) < df[['tenkan','kijun']].min(axis=1)) &
+         ((df['High'] - 0) > df[['tenkan','kijun']].min(axis=1)) &
+         ((df['Open'] - 20) > df[['tenkan','kijun']].min(axis=1)) &
+         (df['tenkan_below_kijun']) &
+         (df['red_cloud']) &
+         (df['candel_size'] > 100) &
+         (df['price_move_down']) &
+         (df['RSI'] < df['rsi_ma']) &
+         (df['Close'] <= df['rolling_min_5'].shift(1) - df['ATR']*0.2) &
+         (df['-DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(1)) & df['-DI_move_up'])) 
+        ) |
+        (
+            # df['red_cloud'] &
+         ((df['Close']) < df[['tenkan','kijun']].min(axis=1)) &
+          (df['Close'] < df['rolling_min_5'].shift(1) -df['ATR']*0.2) &
+          (df['price_move_down'] | (df['Close']<df['Open'])) &
+          (((df['High'] - df['Open']) >(df['Open'] - df['Low'])*4).rolling(2).sum() >= 1) &
+          (df['RSI'] < df['rsi_ma']) &
+          (df['-DI_up'] | ((df['DI_gap'] < df['DI_gap'].shift(1)) & df['-DI_move_up'])) 
+        )
+    )
+    df['entry_short_cloud_enter'] = (
+        df['price_above_cloud'].shift(2) &
+        df['price_move_down'] &
+        df['price_below_tk'] &
+        
+        (df['green_cloud'] &
+         (df['Close'] < df['senkou_a']) &
+         ((df['Close'] + 50) < df['Open']) &
+         (df['Close'] <= df['rolling_min_10'] + df['ATR']*0.5) &
+         (df['RSI'] < 50) &
+         (df['ADX'] > df['ADX'].shift(1)) &
+         (df['-DI_up']) &
+         (df['tenkan_below_kijun'])
+        ) 
+    )
+    df['entry_short_cloud_exit'] = (
+        (((df['Close']) > df[['senkou_a','senkou_b']].min(axis=1)).shift(2)) &
+        df['price_move_down'] &
+        df['price_below_tk'] &
+        
+        (
+         df['price_below_cloud'] &
+         (((df['Close'] + 50) < df['Open']).rolling(2).sum() == 2) &
+         (df['Close'] <= df['rolling_min_10'] + df['ATR']*0.5) &
+         (df['ADX'] > df['ADX'].shift(1)) &
+         (df['-DI_up']) &
+         (df['tenkan_below_kijun'])
+        ) 
+    )
+    ####################################################################################
+    ####################################################################################
+    ####################################################################################
+
+    
+    df['Price_above_tk'] = (((df['Close'] > df['Close'].shift(1)).rolling(5).sum() >= 3) | 
+                            ((df['Close'] > df['tenkan']) & 
+                             (df['Close'] > df['kijun']) & 
+                             (df['price_above_cloud']) &
+                             ((df['Close'] > df['Open']).rolling(5).sum() >= 3)))
+    df['Price_below_tk'] = ((df['Close'] < df['Close'].shift(1)).rolling(5).sum() >= 2)
+    df['green_cloud'] = ((df['senkou_a'] > df['senkou_b'].shift(1)).rolling(5).sum() >= 4)
+    df['red_cloud'] = ((df['senkou_a'] < df['senkou_b'].shift(1)).rolling(5).sum() >= 4)
+    df['price_in_red_cloud'] = ((~df['price_above_cloud']) & (~df['price_below_cloud']) & df['red_cloud'])
+    df['price_in_green_cloud'] = ((~df['price_above_cloud']) & (~df['price_below_cloud']) & df['green_cloud'])
+    # df['price_in_cloud'] = ((~df['price_above_cloud']) & (~df['price_below_cloud']))
+    df['price_in_bt_lines'] = ((~df['Price_above_tk']) & (~df['Price_below_tk']))
+    df['Market_Regime'] = df.apply(classify_trend_ichimoku, axis=1)
+    
+    
     # Combine all into long entry
     
 
-    ####################################################################################
-    ####################################################################################
-    ####################################################################################
+    
     df = df.copy()
-    df['entry_long'] = (
-        df['tk_cross_up'] &
-        df['price_above_cloud'] &
-        (df['Close'] > df['Close'].shift(1)) &     # bullish momentum
-        # (df['RSI'] > 50) &                         # bullish RSI
-        (df['ADX'] > 20) &                         # strong trend
-        (df['Volume'] > df['vol_ma'])              # volume confirmation
-    )
     df['entry_long_below_cloud'] = (df['price_below_cloud'] &
                                     (df['Close'] > (df['rolling_min_10'].shift(1)+df['ATR']*0)) &
                                     ((df['Close']+150) > df['tenkan']) & 
                                     (df['Close'] > df['Close'].shift(1)) & 
                                     # (df['Close'].shift(1) > df['Open'].shift(1)) & 
                                     ((df['Close']-250) > df['Open']))
+    df['entry_long_below_cloud'] = (df['price_below_cloud'] &
+                                    (df['Close'] > (df['rolling_min_10'].shift(1)+df['ATR']*0.5)) &
+                                    ((df['Close']+250) > df['tenkan']) & 
+                                    (df['Close'] > df['Close'].shift(1)) & 
+                                    ((df['Close']-250) > df['Open']))
+    
     df['entry_long_below_cloud1'] = (df['price_below_cloud'] &
-                                    (df['Close'] > (df['rolling_min_10'].shift(1)+df['ATR']*0)) &
-                                    ((df['Close']+150) > df['tenkan']) & 
+                                    (df['Close'] > (df['rolling_min_10'].shift(1)+df['ATR']*0.5)) &
+                                    ((df['Close']+250) > df['tenkan']) & 
                                     (df['Close'] > df['Close'].shift(1)) & 
                                     # (df['Close'].shift(1) > df['Open'].shift(1)) & 
-                                    (((df['Close']-250) > df['Open'])) &
-                                    (((df['Close']+df['ATR']*0.3) > df['Open']).rolling(3).sum() > 1))
+                                    (((df['Close']-50) > df['Open'])) &
+                                    (((df['Close']+df['ATR']*0.4) > df['Open']).rolling(3).sum() > 1))
     df['entry_long_price']=(
-                                (((df['Close'] > df['Open']).rolling(3).sum() >= 3) | (df['Close'] > df['rolling_max_10'].shift(1))) &
+                                (((df['Close'] > df['Open']).rolling(3).sum() >= 3) | (df['Close'] > df['rolling_max_10'].shift(1))+df['ATR']*0) &
                                 (df['Close'] > cloud_top) &
                                 ((df['Close'] < df['tenkan']).rolling(3).sum() >= 1)  &
                                 price_above_tk
                             )
     df['entry_long_price_cloud'] = (
                                         entry_condition & 
-                                        (df['High'] <= cloud_top) &
+                                        df['green_cloud'] &
+                                        (df['Close'] > cloud_bottom) &
                                         ((df['Close']-50) > df['Close'].shift(1)) &
-                                        (df['Close'] > (df['rolling_min_10'] + df['ATR']*0.5))
+                                        (df['Close'] >= (df['rolling_min_10'] + df['ATR']*0.5))
                                     )
     df['entry_long_oi_vol'] = (
                                     df['tenkan_above_kijun'] &
-                                    ((df['Close'] > df['Open']).rolling(3).sum() >= 2))
+                                    ((df['Close'] > df['Open']).rolling(3).sum() >= 2) &
+                                    # (df['Close'] >= (df['rolling_min_10'] + df['ATR']*0.)) &
+                                    ((df['Close'] >= (df['rolling_max_10'] - df['ATR']*1.5)) | 
+                                     ((df['Close'] + 100) > df['Open']) |
+                                     (df['price_above_tk'])
+                                      )&
+                                    (df['price_move_up']) )
     df['entry_long_oi_vol1'] = (
                                     df['tenkan_above_kijun'] &
                                     ((df['Close'] > df['Open']).rolling(3).sum() >= 2)& 
+                                    (df['OI'] > (df['oi_ma']*0.95)) &
                                     (df['OI'] < (df['oi_ma']*1.1)))
-    df['entry_kumo_break_long'] = (
-                                    (df['Close'] > df[['senkou_a','senkou_b']].max(axis=1)) &  # price breaks cloud top
-                                    (df['Close'].shift(1) <= df[['senkou_a','senkou_b']].max(axis=1).shift(1)) &  # previous bar was below
-                                    (df['Volume'] > df['vol_ma']) &
-                                    (df['Close'] > df['Close'].shift(1)) 
-                                )
-    df['entry_long_price_enter_cloud'] = ((((df['Close']+10) > df['Open']).rolling(3).sum()>=3) &
-                                          (((df['Close']+10) > df['tenkan']).rolling(2).sum()>=2) &
+    
+    df['entry_long_price_enter_cloud'] = ((((df['Close']) > df['Open']).rolling(3).sum()>=3) &
+                                          (((df['Close']-20) > df['tenkan']).rolling(2).sum()>=2) &
                                           (((df['Close']+10) > df['kijun']).rolling(2).sum()>=2) )
-    df['entry_long_high'] = (
-                              df['tenkan_above_kijun'] &
+    df['entry_long_high'] = ( df['tenkan_above_kijun'] &
                               ((df['Close'] > df['Open']).rolling(3).sum() >= 2) &
-                              ((df['Close']) >= df['rolling_max_10']) &
-                              (df['ADX'] > df['ADX'].shift(2))&
-                              (df['OI'] > (df['oi_ma'])))    
-    df['exit_long_price_drop1'] = (((df['line_gap'] < df['line_gap'].shift(1)).rolling(3).sum() >= 2) &
-                                  ((df['Close'] < df['Close'].shift(1)).rolling(3).sum() >= 3) &
+                              ((df['Close']) >= df['rolling_max_10']-df['ATR']) &
+                              (df['ADX'] > df['ADX'].shift(2)))    
+    df['exit_long_price_drop1'] = (((df['line_gap'] > df['line_gap'].shift(1)).rolling(3).sum() >= 2) &
+                                #    df['tenkan_below_kijun'] &
+                                  ((df['Close'] > df['Close'].shift(1)).rolling(3).sum() >= 3) &
                                 #   ((df['Close'] < df['kijun'].shift(1)).rolling(3).sum() >= 3) &
-                                  ((df['Close'] < df['Open'].shift(1)).rolling(3).sum() >= 3))
+                                  ((df['Close'] > df['Open'].shift(1)).rolling(3).sum() >= 3))
+    
     df['entry_gap_long'] = (
                                 # (df['Close'] > df['Open']) & 
                                 (((df['Close']+0) > df['Close'].shift(1)).rolling(3).sum() >= 2)&
                                 (((df['Close']+100) > df['Open'].shift(1)).rolling(2).sum() >= 2)&
-                                (((df['Close']+100) > df['tenkan'].shift(0)).rolling(2).sum() >= 1)&
-                                df['price_above_cloud']
+                                (((df['Close']+150) > df['tenkan'].shift(0)).rolling(2).sum() >= 1)&
+                                df['price_above_cloud'] &
+                                ((df['tenkan_above_kijun']) | 
+                                 ((df['line_gap'] < df['line_gap'].shift(1)) &
+                                  df['tenkan_below_kijun']) | 
+                                 ((df['ADX'] > df['ADX'].shift(1)) &
+                                  ((df['Close']-0) > df['Open']) &
+                                  (((df['High'] - df['Low']) > 100).rolling(2).sum()==2)
+                                  ))
                             )
     df['entry_pullback_long'] = (
                                     break_above_range &
@@ -290,6 +966,17 @@ def generate_signals(df, p):
                                     ((df['Low'].shift(1) < df['kijun'].shift(1)) | 
                                     (df['Low'].shift(2) < df['tenkan'].shift(2))) &              # yesterday dipped below kijun
                                     (df['Volume'] > df['vol_ma']*0.8)
+                                )
+    
+    
+    df['trailing_entry_long0'] = (
+                                (df['Close'] > (df['rolling_min_10'].shift(1)+df['ATR']*0.5)) &
+                                (df['Close'] > df['rolling_max_10'].shift(1)+df['ATR']*1) &
+                                # (df['Close'] > df['trailing_entry_long']* 0.96) &
+                                ((df['Open']+300) > df['Open'].shift(1)) &
+                                # (((df['Open']+100) > df['Open'].shift(1)).rolling(2).sum() >= 2) &
+                                # (df['Close'] < df['Close'].shift(1)) &
+                                ((df['Close']-50) > df['Open'])& (df['OI'] > (df['oi_ma']*1.1))
                                 )
     df['trailing_entry_long1'] = (
                                 ((df['rolling_max_10'] - df['rolling_min_10']) < (df['ATR']*2)) &
@@ -300,93 +987,60 @@ def generate_signals(df, p):
                                 # (df['Close'] < df['Close'].shift(1)) &
                                 ((df['Close']+100) > df['Open'].shift(0))& (df['OI'] > (df['oi_ma']*1.0))
                                 )
-    df['trailing_entry_long'] = (df['Close'].expanding().max() + 1 * df['ATR'])
-    df['trailing_entry_long0'] = (
-                                (df['Close'] > (df['rolling_min_10'].shift(1))) &
-                                (df['Close'] > df['trailing_entry_long']* 0.96) &
-                                ((df['Open']+300) > df['Open'].shift(1)) &
-                                # (df['Close'] < df['Close'].shift(1)) &
-                                ((df['Close']-50) > df['Open'].shift(0))& (df['OI'] < (df['oi_ma']*1.1))
-                                )
+    
     df['trailing_entry_long3'] = (
                                     ((df['Close'] > (df['rolling_max_10'] - df['ATR']*0)) |
                                     (df['Close'] > (df['rolling_min_10'] + df['ATR']*0.5))) &
                                     ((df['Close']+100) > df['Open'].shift(0))
                                 )
-    df['trailing_entry_long2'] = (
-                                (df['Close'] > df['trailing_entry_long']* 0.97) &
-                                ((df['Close'] > (df['rolling_max_10'] -df['ATR'])) |
-                                (df['Close'] > (df['rolling_min_10'] + df['ATR']*1)) )&
-                                (df['OI'] > df['oi_ma']) &
-                                ((df['Open']-50) < df['Open'].shift(1)) &
-                                # (df['Close'] < df['Close'].shift(1)) &
-                                ((df['Close']-50) > df['Open'].shift(0))
-                                )
-    df['trailing_entry_long01'] = (
-                                (df['Close'] > (df['rolling_min_10'].shift(1)+df['ATR']*0.5)) &
-                                (df['Close'] > df['rolling_max_10'].shift(1)+df['ATR']*1) &
-                                # (df['Close'] > df['trailing_entry_long']* 0.96) &
-                                ((df['Open']+300) > df['Open'].shift(1)) &
-                                # (((df['Open']+100) > df['Open'].shift(1)).rolling(2).sum() >= 2) &
-                                # (df['Close'] < df['Close'].shift(1)) &
-                                ((df['Close']-50) > df['Open'])& (df['OI'] > (df['oi_ma']*1.1))
-                                )
-    df['trailing_entry_long21'] = (
-                                (df['Close'] > df['rolling_max_10'].shift(2) + df['ATR']*0.5) &
-
-                                ((df['Close'] > (df['rolling_max_10'] -df['ATR'])) |
-                                (df['Close'] > (df['rolling_min_10'] + df['ATR']*1)) )&
-                                (df['OI'] > df['oi_ma']) &
-                                ((df['Open']-50) < df['Open'].shift(1)) &
-                                # (df['Close'] < df['Close'].shift(1)) &
-                                ((df['Close']-50) > df['Open'].shift(0))
-                                )
+    
     df = df.copy()
 
-    df['entry_short_kumo_break'] = (((df['Close']+100) < df['rolling_max_10'].shift(1)) &
-                                  (df['Close'].shift(1) > df[['senkou_a','senkou_b']].min(axis=1)) &
-                                  (df['Close'] < df[['senkou_a','senkou_b']].min(axis=1)) &
-                                  (df['Close'] < df['tenkan']) &
-                                  ((df['Close'] < df['Close'].shift(1)).rolling(2).sum() >= 2) &
-                                  (df['Volume'] > (df['vol_ma']*1)))
+    # df['entry_short_kumo_break'] = (((df['Close']+100) < df['rolling_max_10'].shift(1)) &
+    #                               (df['Close'].shift(1) > df[['senkou_a','senkou_b']].min(axis=1)) &
+    #                               (df['Close'] < df[['senkou_a','senkou_b']].min(axis=1)) &
+    #                               (df['Close'] < df['tenkan']) &
+    #                               ((df['Close'] < df['Close'].shift(1)).rolling(2).sum() >= 2) &
+    #                               (df['Volume'] > (df['vol_ma']*1)))
     df['entry_gap_short'] = (
                                 ((df['Close'] < df['Open']).rolling(3).sum() >= 2) & 
-                                (((df['Close']+0) < df['Close'].shift(1)).rolling(3).sum() >= 2)&
-                                (df['Close'].shift(1) < df['Open'].shift(1)) & 
-                                (df['Open'] < df['Open'].shift(1)) &
+                                (((df['Close']+50) < df['Close'].shift(1)).rolling(3).sum() >= 2)&
+                                # (df['Close'].shift(1) < df['Open'].shift(1)) & 
+                                ((df['Open']+50) < df['Open'].shift(1)) &
                                 df['price_below_cloud']
                             )
     df['entry_short_above_cloud'] = np.where(df['price_above_cloud'], (
+                                    ((df['Close']+150) < df['tenkan']) & 
+                                    ((df['tenkan'] < df['tenkan'].shift(1)).rolling(2).sum() >= 2) &
+                                    ((df['Close']) < df['Close'].shift(1)) &
+                                    (df['price_red_candle']) &
+                                    (df['Close'] < (df['rolling_max_10'].shift(0) - df['ATR']*1.5)) &
+                                    (df['RSI'] < df['rsi_ma']) &
+                                    
+                                    ((df['Close'].shift(1) + 100) < df['Open'].shift(1)) 
+                                    # (((df['Close'] + 100) < df['Open']).rolling(2).sum()>=2)
+                                    ),False)
+    df['entry_short_above_cloud2'] = np.where(df['price_above_cloud'], (
                                     ((df['Close']+250) < df['tenkan']) & 
                                     ((df['tenkan'] < df['tenkan'].shift(1)).rolling(2).sum() >= 2) &
                                     ((df['Close']) < df['Close'].shift(1)) &
-                                    (df['Close'].shift(1) < df['Open'].shift(1)) 
+                                    (df['Close'] < (df['rolling_max_10'].shift(0) - df['ATR']*1.5)) &
+                                    ((df['Close'].shift(1)) < df['Open'].shift(1)) 
                                     ),False)
     df['entry_short_above_cloud1'] = ((df['Close'] <= df[['senkou_a','senkou_b']].min(axis=1)) &
-                                   ((df['Close']-0) < df['Close'].shift(1)) &
+                                   ((df['Close']) < df['Close'].shift(1)) &
                                    (df['Close'] < (df['rolling_min_10']+df['ATR'])) &
-                                   ((df['Close']-100) < df['tenkan']))
+                                   ((df['Close']-50) < df['tenkan']))
 
     df['entry_short_oi_vol'] = (
-                                # df['price_below_cloud'] &
-                                # (df['Close'] <= df[['senkou_a','senkou_b']].max(axis=1)) &
                                 (df['OI'] > df['oi_ma']) &
                                 (df['Volume'] > df['vol_ma']) &
                                 df['tenkan_below_kijun'] &
                                 (df['Close'] < df['tenkan'] )&
-                                # (df['Low'] < df['senkou_b'] )&
-                                (((df['Close']+20) < df['Open']).rolling(3).sum() >= 2))
-    df['entry_short_oi_vol1'] = (
-                                (df['OI'] > (df['oi_ma']*1.2)) &
-                                # (df['Volume'] > df['vol_ma']) &
-                                df['tenkan_below_kijun'] &
-                                # (df['Close'] < df['tenkan'] )&
-                                # (df['Low'] < df['senkou_b'] )&
-                                ((df['Close'] < df['Open']).rolling(3).sum() >= 2))
-    ### look for improvement
+                                df['price_move_down'] &
+                                (((df['Close']+50) < df['Open']).rolling(3).sum() >= 2))
     
     df['entry_pullback_short'] = (
-                                    # break_below_range &
                                     ((df['Close']+100) < df[['senkou_a','senkou_b']].min(axis=1)) &  # trend down
                                     ((df['Close']-df['ATR']*0.8) < df['kijun']) &
                                     ((df['High'].shift(1) > df['kijun'].shift(1)) | 
@@ -395,43 +1049,20 @@ def generate_signals(df, p):
                                     (((df['Close']) < df['rolling_max_10']-df['ATR']*0.1).rolling(1).sum()>=1) &
                                     (df['Volume'] > df['vol_ma']*0.8) 
                                 )
-    # df['entry_pullback_short'] = (
-    #                                 # break_below_range &
-    #                                 ((df['Close']+100) < df[['senkou_a','senkou_b']].min(axis=1)) &  # trend down
-    #                                 ((df['Close']-df['ATR']*0.8) < df['kijun']) &
-    #                                 ((df['Open'].shift(1) > df['tenkan'].shift(1)).rolling(2).sum()>=1) &
-    #                                 # ((df['High'].shift(1) > df['kijun'].shift(1)) | 
-    #                                 # (df['Open'].shift(2) > df['tenkan'].shift(2))) &
-    #                                 # (((df['Close']-100) < df['Close'].shift(1)).rolling(2).sum()>=1) &
-    #                                 (((df['Close']) < df['rolling_max_10']-df['ATR']*0.1).rolling(1).sum()>=1) &
-    #                                 (df['Volume'] > df['vol_ma']*0.8) 
-    #                             )
 
     df['entry_short_price_drop'] = (((df['line_gap'] <= df['line_gap'].shift(1)).rolling(3).sum() >= 2) &
-                                  (((df['Close']-20) < df['Close'].shift(1)).rolling(3).sum() >= 2) &
-                                  (((df['Close']+50) < df['tenkan'].shift(0)).rolling(3).sum() >= 2) &
-                                  (((df['Close']+5) < df['Open'].shift(0)).rolling(3).sum() >= 3) &
-                                  (df['Close'] < (df['rolling_max_10'].shift(1) - df['ATR']*1)) &
+                                  (((df['Close']+50) < df['Close'].shift(1)).rolling(3).sum() >= 2) &
+                                  (((df['Close']-0) < df['tenkan'].shift(0)).rolling(3).sum() >= 2) &
+                                  (((df['Close']+0) < df['Open'].shift(0)).rolling(3).sum() >= 3) &
+                                  (df['Close'] < (df['rolling_max_10'].shift(1) - df['ATR']*1.5)) &
                                   (df['price_above_cloud']))
     
-    df['trailing_entry_short'] = (df['Close'].expanding().max() - 2 * df['ATR'])
 
-    df['trailing_entry_short0'] = np.where(df['price_above_cloud'],
-                                (
-                                    (df['Close'] < df['trailing_entry_short']* 0.95) &
-                                    (df['Close'] < (df['rolling_max_10']-100)) &
-                                    ((df['Open']-100) < df['Open'].shift(1)) &
-                                    ((df['Close']-50) > df['Open'].shift(0))& (df['OI'] < (df['oi_ma']*1.1)) ),
-
-                                    ((df['Close'] < df['trailing_entry_short']* 0.96) &
-                                    ((df['Open']+300) > df['Open'].shift(1)) &
-                                    (((df['Close']-50) > df['Open'].shift(0))) &
-                                    (df['OI'] < (df['oi_ma']*1.1)) )
-                                )
+    
     df['trailing_entry_short01'] = np.where(df['price_above_cloud'],
                                 (
                                     # (df['Close'] < df['rolling_max_60']* 0.99) &
-                                    (df['Close'] > df['rolling_min_60']* 1.01+df['ATR']) &
+                                    (df['Close'] > df['rolling_min_60']* 1.0+df['ATR']) &
                                     (df['Close'] < (df['rolling_max_10']-100)) &
                                     ((df['Open']-100) < df['Open'].shift(1)) &
                                     ((df['Close']-50) > df['Open'].shift(0))& (df['OI'] < (df['oi_ma']*1.1)) ),
@@ -442,6 +1073,38 @@ def generate_signals(df, p):
                                     (((df['Close']-50) > df['Open'].shift(0))) &
                                     (((df['Close']-250) < df['Open'].shift(0))) &
                                     (df['OI'] > (df['oi_ma']*1.)) )
+                                )
+    df['trailing_entry_short0'] = np.where(df['price_above_cloud'],
+                                (
+                                    (df['Close'] > df['rolling_min_60']* 1.0+df['ATR']) &
+                                    (df['Close'] < (df['rolling_max_10']-100)) &
+                                    ((df['Open']-50) < df['Open'].shift(1)) &
+                                    ((df['Close']-50) > df['Open']) &
+                                    (df['ADX'] < 50)),
+
+                                    # ((df['Close'] < df['trailing_entry_short']* 0.96) &
+                                    ((df['Close'] > df['rolling_min_60']* 1.0 + df['ATR']) &
+                                    ((df['Open']+100) > df['Open'].shift(1)) &
+                                    (((df['Close']-50) > df['Open'].shift(0))) &
+                                    (((df['Close']-200) < df['Open'].shift(0))) &
+                                    (df['OI'] > (df['oi_ma'])) )
+                                )
+    df['trailing_entry_short02'] = np.where(df['price_above_cloud'],
+                                (
+                                    (df['Close'] > df['rolling_min_60']* 1.0+df['ATR']) &
+                                    (df['Close'] < (df['rolling_max_10']-100)) &
+                                    ((df['Open']-50) < df['Open'].shift(1)) &
+                                    ((df['Close']-50) > df['Open']) &
+                                    (df['ADX'] < 50)),
+
+                                    # ((df['Close'] < df['trailing_entry_short']* 0.96) &
+                                    ((df['Close'] > df['rolling_min_60']* 1.0 + df['ATR']) &
+                                    (df['Close'] < (df['rolling_max_10']-df['ATR'])) &
+                                    #  (df['ADX'] > df['ADX'].shift(1)) &
+                                    ((df['Open']+100) > df['Open'].shift(1)) &
+                                    (((df['Close']-50) > df['Open'].shift(0))) &
+                                    (((df['Close']-200) < df['Open'].shift(0))) &
+                                    (df['OI'] > (df['oi_ma'])) )
                                 )
     
     df['trailing_entry_short1'] = np.where(df['price_above_cloud'],
@@ -459,35 +1122,7 @@ def generate_signals(df, p):
                                     ((df['Close']+0) < df['Open'])& (df['OI'] > (df['oi_ma']*0.98)) &
                                     (df['OI'] < (df['oi_ma']*1.1))
                                 ))
-    df['trailing_entry_short2'] = np.where(df['price_above_cloud'],
-                                    (
-                                        ((df['Close'] - 250)> df['Open']) & 
-                                        (df['Close'] < df['trailing_entry_short']* 1) &
-                                        (df['OI'] > (df['oi_ma']*1.015)) &
-                                        df['price_above_cloud'].shift(1) 
-                                    ),
-                                    (
-                                        ((df['Close'] + 200) < df['Open']) & 
-                                        (df['Close'] < (df['rolling_min_10']+df['ATR']*1)) &
-                                        (df['Volume'] > (df['vol_ma']*0.9)) &
-                                        (df['OI'] > (df['oi_ma']*1.1)) 
-                                    ))
-    df['trailing_entry_short3'] = np.where(df['price_above_tenkan'],
-                                ((df['Close'] < df['trailing_entry_long']* 0.96) &
-                                ((df['Open']-0) < df['Open'].shift(1)) &
-                                (((df['Close']-300) < df['Open']) & (df['Close']+300) > df['Open'])& 
-                                (df['OI'] < (df['oi_ma']*1.1))),
-                                (df['Close'] < df['trailing_entry_long']* 0.96) &
-                                ((df['Open']-0) < df['Open'].shift(1)) &
-                                ((df['Close']-100) > df['Open'].shift(0))& 
-                                (df['OI'] < (df['oi_ma']*1.1)) ) 
-    df['trailing_stop_long0'] = (df['Close'].expanding().max() - 2 * df['ATR'])
-    df['trailing_stop_long5'] = np.where(df['price_above_cloud'],
-                                        (((df['Close'] - 250)> df['Open']) & 
-                                        (df['Close'] < df['trailing_stop_long0']* 1) &
-                                        (df['OI'] > (df['oi_ma']*1.015))
-                                        ),
-                                        False)
+    
     
     
     df['entry_long_avoid'] = (
@@ -503,94 +1138,102 @@ def generate_signals(df, p):
     
     # Exit Long
     df = df.copy()
-    df['exit_long_price_turn'] = ((((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1.5).rolling(2).sum()>=1) &
-                                   (df['price_above_cloud']) &
-                                   (((df['Close']+50) < df['Open']).rolling(4).sum()>=3) &
-                                   (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum()>=2) &
-                                   (df['Close'] < (df['rolling_max_10'] - df['ATR']*0)) &
-                                   ((df['Close']+100) < df['tenkan'])) 
-    price_difference = ((abs(df['senkou_a'] - df['senkou_b']) > df['ATR']*2) &
-                        # (abs(df['kijun'] - df['senkou_a']) > abs(df['senkou_a'] - df['senkou_b'])) &
-                        (abs(df['kijun'] - df['senkou_a']) > df['ATR']*3))
-    df['exit_long_price_turn2'] = np.where(price_difference,
-                                    (((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1.5).rolling(2).sum()>=1) &
-                                   (df['price_above_cloud']) &
-                                   (((df['Close']+50) < df['Open']).rolling(4).sum()>=3) &
-                                   (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum()>=2) &
-                                   (df['Close'] < (df['rolling_max_10'] - df['ATR']*0)) &
-                                   ((df['Close']+100) < df['tenkan']) &
-                                   ((df['Close']+30) < df['kijun']),
-                                   (((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1.5).rolling(2).sum()>=1) &
-                                   (df['price_above_cloud']) &
-                                   (((df['Close']+50) < df['Open']).rolling(4).sum()>=3) &
-                                   (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum()>=2) &
-                                   (df['Close'] < (df['rolling_max_10'] - df['ATR']*0)) &
-                                   ((df['Close']+100) < df['tenkan'])) 
-    df['exit_long_price_turn1'] =  ((((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1).rolling(3).sum()>=2) &
-                                    (df['price_above_cloud']) &
-                                   (((df['Close']+20) < df['Open']).rolling(3).sum()>=2) &
-                                   (df['Close'] < (df['rolling_max_10'] - df['ATR']*1)) &
-                                   (((df['Close']) < df['kijun']).rolling(2).sum()>=2) &
-                                   ((df['RSI'] < df['rsi_ma']).rolling(3).sum() >= 3)
-                                   )
+    # df['exit_long_price_turn'] = ((((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1.5).rolling(2).sum()>=1) &
+    #                                (df['price_above_cloud']) &
+    #                                (((df['Close']+50) < df['Open']).rolling(4).sum()>=3) &
+    #                                (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum()>=2) &
+    #                                (df['Close'] < (df['rolling_max_10'] - df['ATR']*0)) &
+    #                                ((df['Close']+100) < df['tenkan'])) 
+    # price_difference = ((abs(df['kijun'] - df['senkou_a']) > abs(df['senkou_a'] - df['senkou_b'])) &
+    #                     (abs(df['kijun'] - df['senkou_a']) > df['ATR']*2))
+    
+    # price_difference = ((abs(df['senkou_a'] - df['senkou_b']) > df['ATR']*2) &
+    #                     # (abs(df['kijun'] - df['senkou_a']) > abs(df['senkou_a'] - df['senkou_b'])) &
+    #                     (abs(df['kijun'] - df['senkou_a']) > df['ATR']*3))
+
+    # df['exit_long_price_turn2'] = np.where(price_difference,
+    #                                 (((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1.5).rolling(2).sum()>=1) &
+    #                                (df['price_above_cloud']) &
+    #                                (((df['Close']+50) < df['Open']).rolling(4).sum()>=3) &
+    #                                (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum()>=2) &
+    #                                (df['Close'] < (df['rolling_max_10'] - df['ATR']*0)) &
+    #                                ((df['Close']+100) < df['tenkan']) &
+    #                                ((df['Close']+30) < df['kijun']),
+    #                                (((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1.5).rolling(2).sum()>=1) &
+    #                                (df['price_above_cloud']) &
+    #                                (((df['Close']+50) < df['Open']).rolling(4).sum()>=3) &
+    #                                (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum()>=2) &
+    #                                (df['Close'] < (df['rolling_max_10'] - df['ATR']*0)) &
+    #                                ((df['Close']+100) < df['tenkan'])) 
+    
+    # df['exit_long_price_turn1'] =  ((((df['High'] - df['Open']) > (df['Open'] - df['Low'])*1).rolling(3).sum()>=2) &
+    #                                 (df['price_above_cloud']) &
+    #                                (((df['Close']+20) < df['Open']).rolling(3).sum()>=2) &
+    #                                (df['Close'] < (df['rolling_max_10'] - df['ATR']*1)) &
+    #                                (((df['Close']) < df['kijun']).rolling(2).sum()>=2) &
+    #                                ((df['RSI'] < df['rsi_ma']).rolling(3).sum() >= 3)
+    #                                )
     
     df['exit_long_avoid'] = (((df['rolling_max_10'] - df['rolling_min_10']) < (df['ATR']*0.8)))
     
-    df['exit_long_price_drop'] = (((df['line_gap'] <= df['line_gap'].shift(1)).rolling(3).sum() >= 2) &
-                                  ((df['Close'] < df['Close'].shift(1)).rolling(3).sum() >= 2) &
-                                  ((df['Close'] < df['tenkan'].shift(0)).rolling(3).sum() >= 3) &
-                                  ((df['Close'] < df['Open'].shift(0)).rolling(3).sum() >= 3) &
-                                  (df['Close'] < (df['rolling_max_10'].shift(1) - df['ATR']*1)) &
-                                  (df['price_above_cloud']))
+    # df['exit_long_price_drop'] = (((df['line_gap'] <= df['line_gap'].shift(1)).rolling(3).sum() >= 2) &
+    #                               ((df['Close'] < df['Close'].shift(1)).rolling(3).sum() >= 2) &
+    #                               ((df['Close'] < df['tenkan'].shift(0)).rolling(3).sum() >= 3) &
+    #                               ((df['Close'] < df['Open'].shift(0)).rolling(3).sum() >= 3) &
+    #                               (df['Close'] < (df['rolling_max_10'].shift(1) - df['ATR']*1)) &
+    #                               (df['price_above_cloud']))
     
     df['exit_long_price_down'] = (df['price_above_cloud'] &
-                                  ((df['Close'] < df['Close'].shift(1)).rolling(2).sum() >= 2)&
-                                  ((df['Close'] < df['tenkan'].shift(1)).rolling(2).sum() >= 1)&
-                                #   ((df['tenkan'] < df['tenkan'].shift(1)).rolling(3).sum() >= 2)&
+                                  (((df['Close']+20) < df['Close'].shift(1)).rolling(2).sum() >= 2)&
+                                  (((df['Close']-50) < df['tenkan'].shift(1)).rolling(2).sum() >= 1)&
                                   (df['Close'] < (df['rolling_max_10']-(df['ATR']*2))) &
-                                  (df['ADX']< df['ADX'].shift(1)) &
+                                  (df['range1'] > df['ATR']*2) &
+                                  (df['ADX'] < df['ADX'].shift(1)) &
+                                  ((df['-DI_up'] & (df['RSI'] < 70)) | ((df['DI_gap'] < df['DI_gap'].shift(2)) & df['+DI_move_down'] & (df['RSI'] < 60)) | 
+                                   ((df['OI'] < df['oi_ma'])) ) &
                                   (df['Volume'] < (df['vol_ma']*1.1))
                                   )
     df['exit_long_kijun'] = (((df['Close'] < df['kijun']).rolling(3).sum() >= 3) &
                              (((df['Close']-100) < df['Open'].shift(0)).rolling(2).sum()>=1) &
-                             (((df['tenkan']) < df['kijun']).rolling(2).sum()>=2) &
+                             (((df['tenkan']+50) < df['kijun']).rolling(2).sum()>=2) &
+                             (df['RSI'] < 50) &
                              ((df['OI'] < df['oi_ma']*1.07).rolling(2).sum()>=2)
                              )
-    df['exit_long_kijun1'] = (((df['Close'] < df['kijun']).rolling(3).sum() >= 3) &
-                             ((df['Close'] < df['tenkan']).rolling(3).sum() >= 1))
-    df['exit_long_kumo_break'] = (((df['Close']+100) < df['rolling_max_10'].shift(1)) &
-                                  (df['Close'].shift(1) > df[['senkou_a','senkou_b']].min(axis=1)) &
-                                  (df['Close'] < df[['senkou_a','senkou_b']].min(axis=1)) &
-                                  (df['Close'] < df['tenkan']) &
-                                  ((df['Close'] < df['Close'].shift(1)).rolling(3).sum() >= 2) &
+    df['exit_long_kumo_break'] = (((df['Close']) < df['rolling_max_10'].shift(1) - df['ATR']*0.5) &
+                                  (df['Close'].shift(1) > df[['senkou_a','senkou_b']].min(axis=1) ) &
+                                  ((df['Close']) < df[['senkou_a','senkou_b']].min(axis=1)) &
+                                  ((df['Close']+50) < df['tenkan']) &
+                                  (((df['Close']) < df['Close'].shift(1)).rolling(3).sum() >= 2) &
                                   (df['Volume'] > (df['vol_ma']*1)))
     
 
     df['exit_long_tkcross'] = ((df['tk_cross_down'].rolling(3).sum() >= 2) | 
+                                
                                 (((df['Close'].shift(1) > df['tenkan']) | (df['Open'].shift(1) > df['kijun'])) &
                                 (df['Open'] > (df['Close']+200)) &
-                                ((df['Close']+100) < df['tenkan']) &
+                                ((df['Close']+50) < df['tenkan']) &
                                 (df['Close'] < df['kijun']) &
-                                (df['Close'] < (df['rolling_min_10']+df['ATR']*0.4)) &
-                                (df['Volume'] < df['vol_ma']*1) ) | (
+                                (df['Close'] <= (df['rolling_min_10']+df['ATR']*0.5)) &
+                                (df['Volume'] < df['vol_ma']*1.1) ) | (
+                                
                                 df['price_above_cloud'] &
-                                (df['Close'] < (df['rolling_min_10']+df['ATR']*0.4)) &
-                                (df['line_gap'] < df['line_gap'].shift(1)) &
-                                (df['line_gap'].shift(1) <= df['line_gap'].shift(2)) &
-                                ((df['Close']+100) < df['tenkan']) &
+                                (df['Close'] <= (df['rolling_min_10']+df['ATR']*0.1)) &
+                                ((df['line_gap'] <= df['line_gap'].shift(1)).rolling(2).sum() == 2) &
+                                ((df['Close']+50) < df['tenkan']) &
                                 (df['Close'] < df['kijun']) &
                                 (df['Open'] > (df['Close']+200)) &
                                 (((df['Close'].shift(1)+50) > df['tenkan']) | ((df['Open'].shift(1)+50) > df['kijun'].shift(1))) 
                                 ))
-    df['exit_long_tkcross1'] = (((df['Close'] <= df['kijun']).rolling(3).sum() >= 3) &
-                                (df['OI'] < df['oi_ma']*1.05) &
-                                (((df['tenkan']-df['ATR']) <= df['kijun']).rolling(3).sum() >= 2) &
-                                ((df['Close'] <= df['Close'].shift(1)).rolling(3).sum() >= 2) &
-                                (df['Close'] < (df['rolling_max_10']-df['ATR'])) )
-    df['exit_long_price_reversion'] = ((((df['Close']+0) < df['Open'].shift(0)).rolling(3).sum() >= 3) &
-                                       (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum() >= 2) &
-                                       (((df['Close']+50) < df['tenkan']).rolling(2).sum() >= 2) &
-                                       ((df['RSI'] < df['RSI'].shift(1)).rolling(3).sum()>=3))
+    
+    # df['exit_long_tkcross1'] = (((df['Close'] <= df['kijun']).rolling(3).sum() >= 3) &
+    #                             (df['OI'] < df['oi_ma']*1.05) &
+    #                             (((df['tenkan']-df['ATR']) <= df['kijun']).rolling(3).sum() >= 2) &
+    #                             ((df['Close'] <= df['Close'].shift(1)).rolling(3).sum() >= 2) &
+    #                             (df['Close'] < (df['rolling_max_10']-df['ATR'])) )
+    # df['exit_long_price_reversion'] = ((((df['Close']+0) < df['Open'].shift(0)).rolling(3).sum() >= 3) &
+    #                                    (((df['Close']+10) < df['Close'].shift(1)).rolling(2).sum() >= 2) &
+    #                                    (((df['Close']+50) < df['tenkan']).rolling(2).sum() >= 2) &
+    #                                    ((df['RSI'] < df['RSI'].shift(1)).rolling(3).sum()>=3))
     extra_condition = ((df['Open'] - df['Close']) >= 50).rolling(2).sum() >= 2
 
     df['exit_long_price_cloud'] = np.where(
@@ -610,49 +1253,38 @@ def generate_signals(df, p):
     # df['trailing_stop_long0'] = (df['Close'].rolling(window=100).max() - 2 * df['ATR'])
     
     
-    df['trailing_stop_long'] = (
-                                # (df['Close'] < df['trailing_stop_long0']* 1) &
-                                (df['Close'] < (df['rolling_max_10']-df['ATR'])) &
-                                ((df['Open']-10) < df['Open'].shift(1)) &
-                                # (df['Close'] < df['Close'].shift(1)) &
-                                ((df['Close']-50) > df['Open'].shift(0))& (df['OI'] < (df['oi_ma']*1.1))
-                                )
-    df['trailing_stop_long11'] = (
-                                # (df['Close'] < df['trailing_stop_long0']* 1) &
-                                (df['Close'] < (df['rolling_min_10']+df['ATR'])) &
-                                ((df['Open']+50) < df['Open'].shift(1)) &
-                                # (df['Close'] < df['Close'].shift(1)) &
-                                (((df['Close']+100) < df['Open']).rolling(2).sum() >= 2)& 
-                                (df['OI'] < (df['oi_ma']*1.1))
-                                )
-    df['trailing_stop_long1'] = (
-                                (df['Close'] < df['trailing_stop_long']* 1) &
-                                ((df['Open']-10) < df['Open'].shift(1)) &
-                                # (df['Close'] < df['Close'].shift(1)) &
-                                ((df['Close']-40) > df['Open'].shift(0))
-                                )
-    df['trailing_stop_long10'] = (
-                                (df['Close'] < df['rolling_max_60'] - df['ATR']*2) &
-                                (((df['Open']+50) < df['Open'].shift(1)).rolling(2).sum() >=2) &
-                                # (df['Close'] < df['Close'].shift(1)) &
-                                (((df['Close']-100) < df['Open']).rolling(3).sum() >=2)
-                                )
     
-    
-    df['trailing_stop_long2'] = (
-                                (df['Close'] < df['trailing_stop_long0']* 0.95) &
-                                # (df['Close'] < (df['rolling_max_10']-(df['ATR']*3))) &
-                                ((df['Open']-10) < df['Open'].shift(1)) &
-                                # (df['Close'] < df['Close'].shift(1)) &
-                                ((df['Close']-50) > df['Open'].shift(0)) & (df['OI'] < (df['oi_ma']*1.1))
-                                )
+    # df['trailing_stop_long21'] = ((
+    #                             df['price_above_cloud'] &
+    #                             (df['Close'] < df['trailing_stop_long0']* 0.955) &
+    #                             ((df['Open']-20) < df['Open'].shift(1)) &
+    #                             ((df['Close']+300) > df['Open'].shift(0)) & 
+    #                             ((df['Close']-200) < df['Open'].shift(0)) & 
+    #                             (df['OI'] < (df['oi_ma']*1.2))
+    #                             ) | (
+    #                             # df['price_below_cloud'] &
+    #                             (df['Close'] <= (df['rolling_max_10']-(df['ATR']*1.5))) &
+    #                             (((df['Open']-30) < df['Open'].shift(1)).rolling(2).sum() >= 2) &
+    #                             ((df['Close']-150) > df['Open'].shift(0)) & 
+    #                             (((df['Close']-100) < df['Open']).rolling(3).sum() > 1) &
+    #                             (df['OI'] < (df['oi_ma']*1.3))
+    #                             ))
     df['trailing_stop_long21'] = ((
                                 df['price_above_cloud'] &
-                                (df['Close'] < df['trailing_stop_long0']* 0.955) &
-                                ((df['Open']-20) < df['Open'].shift(1)) &
-                                ((df['Close']+300) > df['Open'].shift(0)) & 
-                                ((df['Close']-200) < df['Open'].shift(0)) & 
-                                (df['OI'] < (df['oi_ma']*1.2))
+                                df['green_cloud'] &
+                                (((df['Close'] - 100) < df['tenkan'].shift(1)).rolling(2).sum() == 2) &
+                                (df['RSI'] < df['rsi_ma']) &
+                                (df['Close'] <= (df['rolling_min_10']+(df['ATR']*0.5))) &
+                                ((df['Close']+50) < df['Open'].shift(0)) 
+                                ) |
+                                
+                                (df['price_above_cloud'] &
+                                 ((df['Close'] < df['Open']).rolling(2).sum() == 2) &
+                                 (df['candel_size'] > 100) &
+                                 (df['Close'] < (df['rolling_min_5'].shift(1))) &
+                                 (df['RSI'] < df['rsi_ma']) &
+                                 df['RSI']
+                                
                                 ) | (
                                 # df['price_below_cloud'] &
                                 (df['Close'] <= (df['rolling_max_10']-(df['ATR']*1.5))) &
@@ -660,35 +1292,30 @@ def generate_signals(df, p):
                                 ((df['Close']-150) > df['Open'].shift(0)) & 
                                 (((df['Close']-100) < df['Open']).rolling(3).sum() > 1) &
                                 (df['OI'] < (df['oi_ma']*1.3))
-                                ))
-    df['trailing_stop_long22'] = ((
-                                df['price_below_cloud'] &
-                                # (df['Close'] < df['rolling_max_60']* 0.95  df['ATR']) &
-                                # (df['Close'] < (df['rolling_min_60']+(df['ATR']*2))) &
-                                ((df['Close'] < (df['tenkan']+(df['ATR']*0))).rolling(2).sum()>=2) &
-                                (((df['Open']+20) < df['Open'].shift(1)).rolling(2).sum()>=2) &
-                                # (df['Close'] < df['Close'].shift(1)) &
-                                (((df['Close']+50) < df['Open']).rolling(3).sum()>=3) & 
-                                (df['OI'] > (df['oi_ma']*0.95))
-                                ) | (
-                                False
-                                # # df['price_below_cloud'] &
-                                # # (df['Close'] < df['rolling_max_60']* 0.95  df['ATR']) &
-                                # (df['Close'] < (df['rolling_min_60']*1.0+(df['ATR']*1))) &
-                                # ((df['Close'] < (df['tenkan']+(df['ATR']*0))).rolling(3).sum()>=2) &
-                                # (((df['Open']-50) < df['Open'].shift(1)).rolling(2).sum()>=2) &
-                                # # (df['Close'] < df['Close'].shift(1)) &
-                                # # ((df['Close']+10) > df['Open']) &
-                                # (((df['Close']+10) < df['Open']).rolling(3).sum()>=2) & 
-                                # (df['OI'] > (df['oi_ma']*1.0))
-                                ))
+                                )
+                                )
+    df['trailing_stop_long'] = (
+                                (df['Close'] < (df['rolling_max_10']-df['ATR'])) &
+                                ((df['Open']-10) < df['Open'].shift(1)) &
+                                ((df['Close']-50) > df['Open'].shift(0))& (df['OI'] < (df['oi_ma']*1.1))
+                                )
+    df['trailing_stop_long11'] = (
+                                (df['Close'] < (df['rolling_min_10']+df['ATR'])) &
+                                ((df['Open']+50) < df['Open'].shift(1)) &
+                                (((df['Close']+100) < df['Open']).rolling(2).sum() >= 2)& 
+                                (df['OI'] < (df['oi_ma']*1.1))
+                                )
     df['trailing_stop_long3'] = np.where(df['price_above_cloud'],
                                 (((df['Close'] - 150)< df['Open']) & df['trailing_stop_long'] &  (df['OI'] < (df['oi_ma']*0.9))),
                                 df['trailing_stop_long11'])
+    
     df['trailing_stop_long4'] = np.where(df['price_above_cloud'],
                                          (((df['Close'] - 150) > df['Open']) & 
-                                          (df['Close'] < df['trailing_stop_long0']* 0.99) &
-                                          (df['Close'] < (df['rolling_max_10'].shift(0)-df['ATR']*0)) &                                          (df['OI'] < (df['oi_ma']*1.1))
+                                          (df['Close'] < df['rolling_min_5'] + df['ATR']*1) &
+                                          (((df['Close'] - 50) < df['Close'].shift(1)).rolling(3).sum() == 2) &
+                                          (df['price_below_tenkan']) & 
+                                          (df['ADX'] < df['ADX'].shift(1)) &
+                                          (df['range1'].shift(1) < df['ATR']*2.5)
                                           ),
                                          False)
     
@@ -699,61 +1326,82 @@ def generate_signals(df, p):
     # Exit Short
     # Exit Short
     df = df.copy()
-    extra_condition1 = ((df['Close'] - df['Open']) >= 10).rolling(2).sum() >= 2
+    extra_condition1 = ((df['Close'] - df['Open']) >= 20).rolling(2).sum() >= 2
     df['exit_short_price_cloud1'] = np.where(
                                             extra_condition1,
                                             (df['Close'] <= cloud_bottom) & (df['High'] <= cloud_top),   # WHEN ABOVE CLOUD + TENKAN
                                             entry_condition & (df['High'] <= cloud_top)                   # OTHERWISE
                                         ) 
-    df['exit_short_high'] = (((df['Close']-100) > df['rolling_min_10'].shift(0)) &
-                            ((df['Close'] > df['Open']).rolling(3).sum() >= 2) &
-                            ((df['Close'] > df['Close'].shift(1)).rolling(3).sum() >= 2) &
-                            ((df['High'] > df['tenkan'].shift(1)).rolling(3).sum() >= 1) &
-                            (df['Volume'] > (df['vol_ma']*1))
-                            )
-    df['exit_short_cloud_tenkan'] = (df['price_below_cloud'] &
-                                     df['price_above_tenkan'] &
-                                     df['tenkan_above_kijun'] &
-                                     ((df['Close'] > df['Open']).rolling(3).sum() >= 2) )
+    # df['exit_short_high'] = (((df['Close']-100) > df['rolling_min_10'].shift(0)) &
+    #                         ((df['Close'] > df['Open']).rolling(3).sum() >= 2) &
+    #                         ((df['Close'] > df['Close'].shift(1)).rolling(3).sum() >= 2) &
+    #                         ((df['High'] > df['tenkan'].shift(1)).rolling(3).sum() >= 1) &
+    #                         (df['Volume'] > (df['vol_ma']*1))
+    #                         )
+    # df['exit_short_cloud_tenkan'] = (df['price_below_cloud'] &
+    #                                  df['price_above_tenkan'] &
+    #                                  df['tenkan_above_kijun'] &
+    #                                  ((df['Close'] > df['Open']).rolling(3).sum() >= 2) )
     
 
     
     df['exit_short_avoid'] = (
                               (df['Close'] > df[['senkou_a','senkou_b']].min(axis=1)) &
-                              ((df['rolling_max_10'].shift(0) - df['rolling_min_10'].shift(0)) < (df['ATR']*1)))
+                              ((df['rolling_max_10'] - df['rolling_min_10']) < (df['ATR']*1)))
     
-    df['exit_short_price_cloud'] = entry_condition & (df['High'] <= cloud_top)
+    df['exit_short_price_cloud'] = (((df['Close'] < df['Open']).rolling(3).sum() == 3) & 
+                                    (df['RSI'] < df['rsi_ma']) &
+                                    (df['RSI'] < 50) &
+                                    (df['High'] <= cloud_top))
+    df['exit_short_price_cloud2'] = (
+                                    (((df['Close']-50) < df['Open']).rolling(3).sum() == 3) & 
+                                    (df['RSI'] < df['rsi_ma']) &
+                                    (df['RSI'] > 20) &
+                                    (df['High'] <= cloud_top))
+    
     df['exit_short_tenkan'] = (((df['Close'] > df['Open']).rolling(3).sum() >= 3) &
-                               ((df['Close'] > (df['tenkan'])).rolling(3).sum() >= 2))
+                               (((df['Close']-50) > (df['tenkan'])).rolling(3).sum() >= 2))
+    
     df['exit_short_above_cloud'] = ((df['Close'] >= df[['senkou_a','senkou_b']].max(axis=1)) &
                                     ((df['Close']-100) > df['Close'].shift(1)) &
                                     ((df['Close']) > df['tenkan']) 
                                     ) 
-    df['exit_short_kijun'] = ((df['Close'] > df['kijun']).rolling(3).sum() >= 3)
-    df['exit_short_price_turn'] = ((((df['Open'] - df['Low']) > (df['High'] - df['Close'])*7).rolling(2).sum()>=1) &
-                                #    (df['price_below_cloud']) &
-                                   (((df['Close']-50) > df['Open']).rolling(2).sum()>=2) &
-                                   (((df['Close']-10) > df['Close'].shift(1)).rolling(2).sum()>=2) &
-                                   (df['Close'] > (df['rolling_min_10'] + df['ATR']*1)) &
-                                   ((df['Close']-100) > df['tenkan']))
-    df['exit_short_tkcross'] = ((df['tk_cross_up'].rolling(3).sum() >= 2) | (
-                                df['price_below_cloud'] &
-                                (df['Close'] > (df['rolling_max_10']-df['ATR']*1)) &
-                                (df['line_gap'] < df['line_gap'].shift(1)) &
-                                (df['line_gap'].shift(1) <= df['line_gap'].shift(2)) &
-                                ((df['Close']+100) > df['tenkan']) &
-                                (df['Close'] > df['kijun']) &
-                                (df['Open'] < (df['Close']+200)) &
-                                (((df['Close'].shift(1)+50) < df['tenkan']) | ((df['Open'].shift(1)+50) < df['kijun'].shift(1))) 
-                            ))
+    
+    df['exit_short_kijun'] = (((df['Close'] > df['kijun']).rolling(3).sum() >= 3) &
+                              (df['Close'] > df['rolling_min_10']+df['ATR']))
+    
+    # df['exit_short_price_turn'] = ((((df['Open'] - df['Low']) > (df['High'] - df['Close'])*7).rolling(2).sum()>=1) &
+    #                             #    (df['price_below_cloud']) &
+    #                                (((df['Close']-50) > df['Open']).rolling(2).sum()>=2) &
+    #                                (((df['Close']-10) > df['Close'].shift(1)).rolling(2).sum()>=2) &
+    #                                (df['Close'] > (df['rolling_min_10'] + df['ATR']*1)) &
+    #                                ((df['Close']-100) > df['tenkan']))
+    # df['exit_short_tkcross'] = ((df['tk_cross_up'].rolling(3).sum() >= 2) | (
+    #                             df['price_below_cloud'] &
+    #                             (df['Close'] > (df['rolling_max_10']-df['ATR']*1)) &
+    #                             (df['line_gap'] < df['line_gap'].shift(1)) &
+    #                             (df['line_gap'].shift(1) <= df['line_gap'].shift(2)) &
+    #                             ((df['Close']+100) > df['tenkan']) &
+    #                             (df['Close'] > df['kijun']) &
+    #                             (df['Open'] < (df['Close']+200)) &
+    #                             (((df['Close'].shift(1)+50) < df['tenkan']) | ((df['Open'].shift(1)+50) < df['kijun'].shift(1))) 
+    #                         ))
 
 
-    df['trailing_stop_short0'] = df['Close'].expanding().max() - 2 * df['ATR']
+    # df['trailing_stop_short0'] = df['Close'].expanding().max() - 2 * df['ATR']
     df['trailing_stop_short'] = (
-                                (df['Close'] > (df['trailing_stop_short0']*0.89)) &
+                                # (df['Close'] > (df['trailing_stop_short0']*0.89)) &
                                 (df['Close'] > (df['rolling_min_10']+(df['ATR']*1))) &
                                 ((df['Open']-50) > df['Open'].shift(1)) &
                                 ((df['Open']-0) > df['Close']) 
+                                )
+    df['trailing_stop_short01'] = (
+                                # (df['Close'] > (df['trailing_stop_short0']*0.89)) &
+                                (df['Close'] > (df['rolling_min_10']+(df['ATR']*1))) &
+                                ((df['Open']-100) > df['Open'].shift(1)) &
+                                ((df['Open'] + 0) > df['Close']) &
+                                ((df['Open'] - 150) < df['Close']) &
+                                (df['ADX'] < df['ADX'].shift(1))
                                 )
     df['trailing_stop_short1'] = (
                                 (df['Close'] > (df['rolling_min_10']+(df['ATR']*0.8))) &
@@ -769,11 +1417,11 @@ def generate_signals(df, p):
 
 
     df = df.copy()
-
-    final_unique_long_condition = (df['entry_long_below_cloud'] | df['entry_long_price'] | df['entry_long_price_cloud'] | df['entry_long_oi_vol'] | 
-                                   df['entry_long_oi_vol1'] | df['entry_long_price_enter_cloud'] | df['entry_kumo_break_long'] | df['entry_long_high'] | 
-                                   df['exit_long_price_drop1'] | df['entry_gap_long'] | df['entry_long'] | df['entry_pullback_long'] | 
-                                   df['trailing_entry_long0'] | df['trailing_entry_long1'] | df['trailing_entry_long2'] | df['trailing_entry_long3']
+    #### df['exit_short_cloud_tenkan'] | df['entry_kumo_break_long'] | df['entry_long'] | df['entry_pullback_long'] | df['trailing_entry_long2'] | 
+    final_unique_long_condition = (df['entry_long_price'] | df['entry_long_price_cloud'] | df['entry_long_oi_vol'] | df['entry_long_below_cloud'] | 
+                                   df['entry_long_oi_vol1'] | df['entry_long_price_enter_cloud'] | df['entry_long_high'] | 
+                                   df['exit_long_price_drop1'] | df['entry_gap_long'] | 
+                                   df['trailing_entry_long0'] | df['trailing_entry_long1'] | df['trailing_entry_long3']
                                 )
 
     df['final_entry_long'] = np.select(
@@ -784,19 +1432,22 @@ def generate_signals(df, p):
             df['Market_Regime'] == 'Volatility Breakout / Regime Shift'
         ],
         [
-            df['trailing_entry_long1'] |  df['entry_long_below_cloud']  | ((df['trailing_stop_short3']| df['exit_short_price_turn'] | df['trailing_entry_long0'] | df['entry_long_price'])& (~df['entry_long_avoid'])),   ###df['trailing_entry_long1'] |  ##df['trailing_entry_long01'] | 
-            (( df['entry_long_price_cloud'] | df['trailing_entry_long3']) & (~df['entry_long_avoid1']) & (~df['entry_short_avoid'])),  ##.    ###df['entry_long_oi_vol'] | 
-            df['entry_long_price_enter_cloud']|df['exit_short_price_cloud1'] |  ((df['entry_long_price_cloud'] |df['entry_long_oi_vol1'] | df['entry_kumo_break_long']) )  ,#
-            df['entry_long_below_cloud']| df['entry_long_high'] | df['exit_short_tenkan'] |  ((df['trailing_entry_long2']| df['exit_short_price_turn'] | df['exit_short_cloud_tenkan'] | df['exit_long_price_drop1'] | df['entry_long_price_cloud'] | df['entry_gap_long']) & (~df['entry_long_avoid']))  ##df['exit_short_cloud_tenkan'] | 
+            df['entry_long_below_tk'] | df['trailing_entry_long1'] | df['exit_long_price_drop1'] |  df['entry_long_below_cloud']  | ((df['entry_long_high'] | df['trailing_stop_short3']| df['trailing_entry_long0'])& (~df['entry_long_avoid'])),  
+            df['entry_long_bt_tk'] |((df['entry_long_below_tk'] |   df['trailing_entry_long3']) & (~df['entry_long_avoid1']) & (~df['entry_short_avoid'])),  
+            df['entry_long_bt_tk'] | df['entry_long_below_tk'] | df['exit_long_price_drop1'] | df['entry_long_price_enter_cloud'] | df['entry_long_price_cloud'] | df['entry_long_oi_vol1'] ,
+            df['entry_long_below_tk'] | df['exit_long_price_drop1'] | df['entry_long_below_cloud'] | df['entry_long_high'] |  ((df['entry_long_oi_vol'] | df['entry_long_price']  | df['entry_gap_long']) & (~df['entry_long_avoid']))  
         ],
-        default= df['exit_short_price_cloud'] | df['exit_short_tkcross'] | df['entry_pullback_long'] |df['entry_long_price_cloud'] | df['entry_long_below_cloud'] 
-    )
+        default= df['entry_long_bt_tk'] |   df['entry_long_below_cloud'] | df['exit_short_price_cloud'] 
+    ) | ( df['entry_long_tenkan_cross'] |df['entry_long_cloud_enter'] |  df['entry_long_tk_cross'] |  df['entry_long_head_candle'] | 
+         df['entry_long_below_tk_cloud'] | df['entry_long_in_cloud'] ) 
+        # df['Entry_long_above_all'])
     # df['final_entry_long'] = False
-
-    final_unique_exit_long = (df['exit_long_price_turn'] | df['exit_long_price_turn1'] | df['entry_short_above_cloud'] | 
-                              df['exit_long_tkcross'] | df['exit_long_tkcross1'] | df['exit_long_kijun'] | df['exit_long_kijun1'] | df['exit_long_price_reversion'] | df['exit_long_price_cloud'] | 
-                              df['exit_long_price_drop'] | df['exit_long_price_down'] | df['exit_long_kumo_break'] | 
-                              df['trailing_stop_long1'] | df['trailing_stop_long2'] | df['trailing_stop_long3'] | df['trailing_stop_long4'] 
+    
+    
+    final_unique_exit_long = (df['entry_short_above_cloud'] | 
+                              df['exit_long_tkcross'] | df['exit_long_kijun'] |  df['exit_long_price_cloud'] | 
+                              df['exit_long_price_down'] | df['exit_long_kumo_break'] | 
+                              df['trailing_stop_long21'] | df['trailing_stop_long3'] | df['trailing_stop_long4'] 
                             )
 
     
@@ -808,17 +1459,20 @@ def generate_signals(df, p):
             df['Market_Regime'] == 'Volatility Breakout / Regime Shift'
         ],
         [   
-            df['exit_long_price_turn']| df['exit_long_avoid'] | ((df['trailing_stop_long21'])& (~df['entry_long_avoid'])& (~df['entry_short_avoid'])) ,  ####df['trailing_stop_long4']| 
-            df['exit_long_price_turn']| df['exit_long_price_turn1']|  ((df['exit_long_tkcross']|  df['exit_long_price_down'])& (~df['entry_long_avoid1'])& (~df['entry_short_avoid'])) ,    ###df['exit_long_price_drop']| 
-            df['exit_long_tkcross'] | df['exit_long_price_reversion'] | (( df['exit_long_price_cloud'])) ,  ###df['exit_long_tkcross']  | df['trailing_stop_long1'] || df['exit_long_kijun1']
-            df['exit_long_price_turn']| ((df['trailing_stop_long4'] | df['exit_long_price_cloud'] | df['exit_long_price_down'] | df['exit_long_kijun'] | df['trailing_stop_long3'] | df['exit_long_kumo_break'])& (~df['entry_short_avoid1']))    ###df['exit_long_price_drop'] |
+            (( df['exit_long_cloud_entry'] |df['exit_long_price_kijun'] | df['trailing_stop_long21']| df['exit_long_price_tk_cross2'] )& (~df['entry_long_avoid'])& (~df['entry_short_avoid'])) , 
+            df['exit_long_cloud_entry'] |df['exit_long_price_kijun'] |df['exit_long_price_tenkan1'] | df['exit_long_price_tk_cross2'] ,
+             df['exit_long_price_kijun'] | df['exit_long_tkcross'] | df['exit_long_price_tenkan1']| df['exit_long_price_tk_cross2'] ,  
+            ((df['exit_long_cloud_entry'] | df['exit_long_price_tenkan1']| df['exit_long_price_tk_cross2'] | df['exit_long_price_kijun'] |df['exit_long_price_cloud'] | df['exit_long_price_down'] | df['exit_long_kijun'] | df['trailing_stop_long3'] | df['exit_long_kumo_break'])& (~df['entry_short_avoid1']))    ###df['exit_long_price_drop'] |df['trailing_stop_long4'] | 
         ],
-        default= df['entry_short_above_cloud'] | df['exit_long_price_turn2'] | df['exit_long_avoid'] |  ((df['exit_long_tkcross1'] | df['exit_long_tkcross'] | df['trailing_stop_long4'] | df['trailing_stop_long3'] )& (~df['entry_long_avoid']))     ###df['exit_long_kumo_break']  |
-    )
-
-    final_unique_entry_short = (df['entry_short_kumo_break'] | df['entry_gap_short'] | df['entry_pullback_short'] | 
-                                df['entry_short_oi_vol'] | df['entry_short_oi_vol1'] | df['entry_short_above_cloud1'] | df['entry_short_above_cloud'] | 
-                                df['trailing_entry_short0'] | df['trailing_entry_short1'] | df['trailing_entry_short2'] | df['trailing_entry_short3'])
+        default= df['exit_long_cloud_entry'] | df['exit_long_price_tenkan1'] | df['exit_long_price_tk_cross2'] |  df['entry_short_above_cloud'] |  df['exit_long_avoid'] |  ((df['exit_long_price_down'] |df['exit_long_tkcross'] | df['trailing_stop_long4'])& (~df['entry_long_avoid']))     ### ###df['exit_long_price_turn2'] | | df['trailing_stop_long3'] 
+    ) | ( df['exit_long_price_tk_cross3'] |  df['entry_short_price_top'])
+    ### df['exit_long_price_tk_cross2'] | df['exit_long_price_tenkan1'] | df['exit_long_price_kijun'] | df['exit_long_cloud_entry'] |
+    
+    
+    ##df['entry_short_kumo_break'] | 
+    final_unique_entry_short = (df['entry_gap_short'] | df['entry_pullback_short'] | 
+                                df['entry_short_oi_vol']  | df['entry_short_above_cloud1'] | df['entry_short_above_cloud'] | 
+                                df['trailing_entry_short0'] | df['trailing_entry_short1'])
 
 
     df['final_entry_short'] = np.select(
@@ -829,19 +1483,20 @@ def generate_signals(df, p):
             df['Market_Regime'] == 'Volatility Breakout / Regime Shift'
         ],
         [   
-            ((df['entry_short_kumo_break'] |  df['trailing_entry_short0'] )& (~df['entry_short_avoid'])) ,  ###df['entry_short_oi_vol1'] | 
-            df['entry_gap_short']  | ((df['trailing_entry_short01'] | df['trailing_entry_short1'] | df['entry_short_above_cloud1'] | df['entry_short_above_cloud1']) & (~df['entry_short_avoid'])) ,    ####df['trailing_entry_short0'] | 
-            ((df['trailing_stop_long22'] | df['exit_long_tkcross'] | df['entry_short_above_cloud'] |  df['entry_short_oi_vol1'])& (~df['entry_short_avoid'])& (~df['entry_long_avoid'])),    ####df['trailing_entry_short3'] | 
-            ((df['entry_pullback_short'] | df['entry_short_oi_vol']  | df['entry_short_oi_vol1'] | df['entry_short_above_cloud']))     ##df['entry_pullback_short'] | df['trailing_stop_long5'] | 
+            (( df['trailing_entry_short0'] )& (~df['entry_short_avoid'])) , 
+            df['exit_long_price_kijun'] | (( df['entry_gap_short'] | df['trailing_entry_short01'] | df['trailing_entry_short1'] | df['entry_short_above_cloud1']) & (~df['entry_short_avoid'])) ,  
+            df['exit_long_price_kijun'] | (( df['trailing_entry_short02'] | df['exit_long_tkcross'] )& (~df['entry_short_avoid'])& (~df['entry_long_avoid'])),  
+            ((df['entry_pullback_short'] | df['entry_short_oi_vol']  | df['entry_short_above_cloud']))   
         ],
-        default=  ((df['entry_pullback_short'] | df['entry_short_price_drop'] | df['exit_long_price_down'] | df['trailing_entry_short1'] | df['entry_short_above_cloud'])) ## df['exit_long_price_drop'] |
-    )
+        default=  ((df['entry_pullback_short'] | df['entry_short_price_drop'] | df['exit_long_price_down'] | df['trailing_entry_short1'] | df['entry_short_above_cloud2'])) ## df['exit_long_price_drop'] |
+    )| ( df['exit_long_price_tenkan'] |  df['exit_long_cloud_entry'] | df['exit_long_price_tk_cross1'] |
+        df['exit_long_price_tk_cross3'] | df['entry_short_price_top'] | df['entry_short_above_tk'] | df['entry_short_cloud_exit']) ##df['entry_short_cloud_enter'] | 
     # df['final_entry_short'] = False
-
-    final_unique_exit_short = (df['exit_short_price_cloud'] | df['exit_short_price_cloud1'] | df['exit_short_price_turn'] | 
-                               df['exit_short_avoid'] | df['exit_short_high'] | df['exit_short_cloud_tenkan'] | df['exit_short_tkcross'] | 
+##| df['trailing_entry_long2'] df['exit_short_high'] | df['exit_short_cloud_tenkan'] | df['exit_short_price_turn'] | df['exit_short_tkcross'] | 
+    final_unique_exit_short = (df['exit_short_price_cloud'] | df['exit_short_price_cloud1'] | 
+                               df['exit_short_avoid'] | 
                                df['exit_short_kijun'] | df['exit_short_tenkan'] | df['exit_short_above_cloud'] |
-                               df['trailing_stop_short'] | df['trailing_stop_short1'] | df['trailing_entry_long2'] | df['trailing_stop_short3']
+                               df['trailing_stop_short'] | df['trailing_stop_short1']  | df['trailing_stop_short3']
     ) 
     
     
@@ -854,13 +1509,15 @@ def generate_signals(df, p):
         ],
         [
 
-            ((df['exit_short_cloud_tenkan'] | df['exit_short_tkcross'] | df['exit_short_avoid'] | df['exit_short_price_turn'] | df['trailing_entry_long0'] | df['exit_short_price_cloud1']  | df['entry_long_below_cloud1'] | df['trailing_stop_short'] )& (~df['entry_short_avoid'])) ,  ###
-            ((df['exit_short_cloud_tenkan'] | df['exit_short_price_turn'] | df['exit_short_avoid'] | df['exit_short_price_cloud'] | df['exit_short_tenkan'] | df['exit_short_tkcross'] | df['exit_short_above_cloud'])& (~df['entry_short_avoid'])), #  
-            df['exit_short_price_turn']| df['exit_short_avoid']| df['exit_short_cloud_tenkan'] |  ((  df['exit_short_kijun']  | df['exit_short_tenkan'])& (~df['entry_short_avoid'])& (~df['entry_long_avoid'])) ,#   ###df['exit_short_above_cloud'] |df['exit_short_tkcross']| df['exit_short_price_cloud1']    |
-            ((df['exit_short_price_cloud']   | df['exit_short_above_cloud'] |df['entry_long_price'] |  df['exit_short_high'] | df['exit_short_cloud_tenkan'] )& (~df['entry_long_avoid']))# | df['exit_short_kijun'] |  df['exit_short_above_cloud'] || df['exit_short_kumo_break']    ###df['exit_short_tkcross'] | df['trailing_stop_short1'] |
+            ((df['trailing_entry_long0'] | df['entry_long_below_cloud1'] | df['trailing_stop_short01']  )& (~df['entry_short_avoid'])) ,  
+            df['exit_short_price_cloud2'] | df['exit_short_cloud_enter'] ,
+            df['exit_short_cloud_enter'] |  df['exit_short_avoid']|  ((  df['exit_short_kijun'] | df['exit_short_tenkan'])& (~df['entry_short_avoid'])& (~df['entry_long_avoid'])) ,
+            df['exit_short_cloud_enter'] | ((df['exit_short_price_cloud2'] | df['exit_short_above_cloud'] )& (~df['entry_long_avoid']))
         ],
-        default = df['exit_short_cloud_tenkan'] | df['exit_short_avoid'] | df['exit_short_tenkan']| df['trailing_stop_short1'] | ((df['exit_short_price_turn'] | df['exit_short_tkcross'] |  df['exit_short_price_cloud1']   | df['trailing_stop_short3']))  ##df['trailing_entry_long2'] | 
-    )
+        default = df['exit_short_avoid']| df['exit_short_cloud_enter'] | df['exit_short_tenkan'] | df['exit_short_price_cloud1'] | df['trailing_stop_short3']
+    ) | (    ### df['entry_long_bt_tk'] | 
+        df['exit_short_tenkan_cross'] |df['exit_short_price_tk_cross2'] |   df['exit_short_at_top'] | df['exit_short_avoid_range'] |
+         df['exit_short_price_kijun'] |  df['exit_short_price_move_up'])
     
     
     

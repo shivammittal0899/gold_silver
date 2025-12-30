@@ -62,7 +62,12 @@ def fetch_with_retry(symbol, interval, retries=3, delay=5):
                 raise
 
 
-
+def cancel_order(orderid):
+    kite.cancel_order(
+                    variety=kite.VARIETY_REGULAR,
+                    order_id=orderid
+                    )
+    
 def backtest_with_capital(p):
     # ==============================
     # 🔧 C`ONFIGURATION
@@ -188,6 +193,9 @@ def backtest_with_capital(p):
             position = 0
             buy_sell = "SELL"
             quantity = qty
+            if sl_orderid != None:
+                cancel_order(sl_orderid)
+                sl_orderid = None
             kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
             log(f"Exit long: (Entry price - {entry_price}), (Exit price - {exit_price}), (PnL diff -- {price_diff})")
 
@@ -207,13 +215,13 @@ def backtest_with_capital(p):
             position = 0
             buy_sell = "BUY"
             quantity = qty
+            if sl_orderid != None:
+                cancel_order(sl_orderid)
+                sl_orderid = None
             kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
             log(f"Exit short: (Entry price - {entry_price}), (Exit price - {exit_price}), (PnL diff -- {price_diff})")
         if sl_orderid != None and position == 0:
-            kite.cancel_order(
-                            variety=kite.VARIETY_REGULAR,
-                            order_id=sl_orderid
-                            )
+            cancel_order(sl_orderid)
             sl_orderid = None
             # print(capital)
         # Entry logic

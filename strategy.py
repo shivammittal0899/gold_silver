@@ -257,7 +257,7 @@ def backtest_with_capital(p):
                 log(f"Sell price. ,{entry_time}, {entry_price}")
         
         if position == 1:
-            stoploss_val = stopless_point(cur, position)
+            stoploss_val = stopless_point(cur, position, entry_price, df.iloc[i-1])
             if (sl_orderid != None) and (stoploss_val != 0):
                 kite.modify_order(
                                 variety=kite.VARIETY_REGULAR,

@@ -1525,7 +1525,7 @@ def generate_signals(df, p):
     
     # df.to_csv('strategy_file.csv', index=False)
     return df
-def stopless_point(row, position):
+def stopless_point(row, position, entry_price, prow):
     price = row['Close']
     open = row['Close']
     pprice = prow['Close']
@@ -1596,9 +1596,9 @@ def stopless_point(row, position):
                 stoploss_value = max(senkou_a, senkou_b) - atr*2
             elif (kijun_senkou_a_diff < atr*2):
                 if senkou_a_b:
-                    stoploss_value = price - atr*5
+                    stoploss_value = max(pprice,price) - atr*5
                 else:
-                    stoploss_value = price - atr*4
+                    stoploss_value = max(pprice,price) - atr*4
         
         if price_tenkan and not price_kijun and price_cloud:
             if (tenkan_senkou_a_diff > atr*2) and tenkan_kijun_diff > atr:
@@ -1606,9 +1606,9 @@ def stopless_point(row, position):
                 stoploss_value = max(price, entry_price) - atr*5
             else:
                 stoploss_value = price - atr*1
-                stoploss_value = max(price, entry_price) - atr*5
+                stoploss_value = max(price, entry_price, pprice) - atr*5
         if not price_kijun and not price_tenkan and price_cloud:
-            stoploss_value = max(price, entry_price) - atr*3.5
+            stoploss_value = max(price, entry_price, pprice) - atr*3.5
         
         if price_incloud:
             if senkou_a_b and (senkou_a_b_diff > atr*1):
@@ -1627,9 +1627,9 @@ def stopless_point(row, position):
             if tenkan_kijun and senkou_a_b:
                 stoploss_value = price - atr*5
             if tenkan_kijun and (not senkou_a_b):
-                stoploss_value = price - atr*2
+                stoploss_value = max(price, entry_price, pprice) - atr*2
             if not tenkan_kijun and senkou_a_b:
-                stoploss_value = price - atr*1.5
+                stoploss_value = max(price, pprice) - atr*1.5
             elif not tenkan_kijun and (not senkou_a_b):
                 stoploss_value = tenkan - atr*2
         if not price_tenkan and price_cloud1:
@@ -1638,11 +1638,7 @@ def stopless_point(row, position):
                 stoploss_value = kijun - atr*1.5
             else:
                 stoploss_value = price - atr*2
-                
-        if stoploss_value < price:
-            if stoploss_value > (price - 100):
-                return int(stoploss_value) - 80
-            return int(stoploss_value)
+        
     return 0
 
 def stopless_point_short(row, position):

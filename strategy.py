@@ -82,7 +82,7 @@ def backtest_with_capital(p):
     total_diff = 0
     # exchange = "MCX"
     symbol = "GOLDM26JANFUT"   # example instrument
-    tradingsymbol = "GOLDM26JANFUT"
+    tradingsymbol = "GOLDM26FEBFUT"
     interval = "15minute"
     days = 5
     qty = p['quantity']

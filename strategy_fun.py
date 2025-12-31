@@ -1638,7 +1638,11 @@ def stopless_point(row, position, entry_price, prow):
                 stoploss_value = kijun - atr*1.5
             else:
                 stoploss_value = price - atr*2
-        
+        if stoploss_value < price:
+            # print(stoploss_value)
+            if stoploss_value > (price - 100):
+                return int(stoploss_value) - 80
+            return int(stoploss_value)
     return 0
 
 def stopless_point_short(row, position):

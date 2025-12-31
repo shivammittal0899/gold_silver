@@ -81,7 +81,7 @@ def backtest_with_capital(p):
     position_size = 0
     total_diff = 0
     # exchange = "MCX"
-    symbol = "GOLDM26JANFUT"   # example instrument
+    symbol = "GOLDM26FEBFUT"   # example instrument
     tradingsymbol = "GOLDM26FEBFUT"
     interval = "15minute"
     days = 5

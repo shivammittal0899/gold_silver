@@ -67,6 +67,58 @@ def cancel_order(orderid):
                     variety=kite.VARIETY_REGULAR,
                     order_id=orderid
                     )
+# order_id = kite.place_order(
+#                 variety=kite.VARIETY_REGULAR,
+#                 exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+#                 tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+#                 transaction_type=kite.TRANSACTION_TYPE_SELL,
+#                 quantity=quantity,                                # MCX lot size
+#                 product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+#                 order_type=kite.ORDER_TYPE_SLM,
+#                 trigger_price=stoploss_val,                        # initial SL trigger
+#                 validity=kite.VALIDITY_DAY
+#             )
+# sl_orderid = order_id
+
+# kite.modify_order(
+#         variety=kite.VARIETY_REGULAR,
+#         order_id=sl_orderid,
+#         trigger_price=stoploss_val                         # new SL trigger
+#     )
+
+
+
+# order_id = kite.place_order(
+#                 variety=kite.VARIETY_REGULAR,
+#                 exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+#                 tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+#                 transaction_type=kite.TRANSACTION_TYPE_BUY,
+#                 quantity=quantity,                                # MCX lot size
+#                 product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+#                 order_type=kite.ORDER_TYPE_SLM,
+#                 trigger_price=stoploss_val,                        # initial SL trigger
+#                 validity=kite.VALIDITY_DAY
+#             )
+def place_sl_order(tradingsymbol, TRANSACTION_SELL, quantity, stoploss_val):
+    order_id = kite.place_order(
+                variety=kite.VARIETY_REGULAR,
+                exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+                tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+                transaction_type=TRANSACTION_SELL,
+                quantity=quantity,                                # MCX lot size
+                product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+                order_type=kite.ORDER_TYPE_SLM,
+                trigger_price=stoploss_val,                        # initial SL trigger
+                validity=kite.VALIDITY_DAY
+            )
+    return order_id
+
+def modify_sl_order(sl_orderid, stoploss_val):
+    kite.modify_order(
+            variety=kite.VARIETY_REGULAR,
+            order_id=sl_orderid,
+            trigger_price=stoploss_val                         # new SL trigger
+        )
     
 def backtest_with_capital(p):
     # ==============================
@@ -89,6 +141,7 @@ def backtest_with_capital(p):
     print()
     log(qty)
     sl_orderid = None
+    rsl_orderid = None
     while  not STOP_FLAG:
         print(STOP_FLAG)
         # try:
@@ -151,6 +204,12 @@ def backtest_with_capital(p):
                 position1 = 0
 
             if position1 != position:
+                if rsl_orderid != None:
+                    if position1 == 0:  
+                        cancel_order(rsl_orderid)
+                    rsl_orderid = None
+                if sl_orderid != None:
+                    sl_orderid = None
                 position = position1
         else:
             log(f"⚪ No open position in {symbol}")
@@ -257,80 +316,57 @@ def backtest_with_capital(p):
                 log(f"Sell price. ,{entry_time}, {entry_price}")
         
         if position == 1:
-            stoploss_val = stopless_point(cur, position, entry_price, df.iloc[i-1])
+            stoploss_val, reverse_sl_val = stopless_point(cur, position, entry_price, df.iloc[i-1])
             if (sl_orderid != None) and (stoploss_val != 0):
-                kite.modify_order(
-                                variety=kite.VARIETY_REGULAR,
-                                order_id=sl_orderid,
-                                trigger_price=stoploss_val                         # new SL trigger
-                            )
-                
-                log(f"SL placed: {order_id} {stoploss_val}")
+                modify_sl_order(sl_orderid, stoploss_val)
+                log(f"SL placed: {sl_orderid} {stoploss_val}")
             elif (sl_orderid == None) and (stoploss_val != 0):
                 quantity = qty
-                order_id = kite.place_order(
-                                variety=kite.VARIETY_REGULAR,
-                                exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
-                                tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
-                                transaction_type=kite.TRANSACTION_TYPE_SELL,
-                                quantity=quantity,                                # MCX lot size
-                                product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
-                                order_type=kite.ORDER_TYPE_SLM,
-                                trigger_price=stoploss_val,                        # initial SL trigger
-                                validity=kite.VALIDITY_DAY
-                            )
-                sl_orderid = order_id
-                log(f"SL placed: {order_id} {stoploss_val}")
+                sl_orderid = place_sl_order(tradingsymbol, "kite.TRANSACTION_TYPE_SELL", quantity, stoploss_val)
+                log(f"SL placed: {sl_orderid} {stoploss_val}")
             elif (sl_orderid != None) and (stoploss_val == 0):
-                kite.cancel_order(
-                                variety=kite.VARIETY_REGULAR,
-                                order_id=sl_orderid
-                            )
+                cancel_order(sl_orderid)
                 sl_orderid = None
             else:
                 sl_orderid = None
+            
+            if (rsl_orderid != None) and (reverse_sl_val != 0):
+                modify_sl_order(rsl_orderid, reverse_sl_val)
+                log(f"SL placed: {rsl_orderid} {reverse_sl_val}")
+            elif (rsl_orderid == None) and (reverse_sl_val != 0):
+                quantity = qty
+                rsl_orderid = place_sl_order(tradingsymbol, "kite.TRANSACTION_TYPE_SELL", quantity, reverse_sl_val)
+                log(f"SL placed: {rsl_orderid} {reverse_sl_val}")
+            elif (rsl_orderid != None) and (reverse_sl_val == 0):
+                cancel_order(rsl_orderid)
+                rsl_orderid = None
+            else:
+                rsl_orderid = None
 
 
         elif position == -1:
-            stoploss_val = stopless_point_short(cur, position)
+            stoploss_val, reverse_sl_val = stopless_point_short(cur, position)
             if (sl_orderid != None) and (stoploss_val != 0):
-                kite.modify_order(
-                                variety=kite.VARIETY_REGULAR,
-                                order_id=sl_orderid,
-                                trigger_price=stoploss_val                         # new SL trigger
-                            )
-                
-                log(f"SL placed: {order_id} {stoploss_val}")
+
+                modify_sl_order(sl_orderid, stoploss_val)
+                log(f"SL placed: {sl_orderid} {stoploss_val}")
             elif (sl_orderid == None) and (stoploss_val != 0):
                 quantity = qty
-                order_id = kite.place_order(
-                                variety=kite.VARIETY_REGULAR,
-                                exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
-                                tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
-                                transaction_type=kite.TRANSACTION_TYPE_BUY,
-                                quantity=quantity,                                # MCX lot size
-                                product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
-                                order_type=kite.ORDER_TYPE_SLM,
-                                trigger_price=stoploss_val,                        # initial SL trigger
-                                validity=kite.VALIDITY_DAY
-                            )
-                sl_orderid = order_id
-                log(f"SL placed: {order_id} {stoploss_val}")
+                sl_orderid = place_sl_order(tradingsymbol, "kite.TRANSACTION_TYPE_BUY", quantity, stoploss_val)
+                log(f"SL placed: {sl_orderid} {stoploss_val}")
+
             elif (sl_orderid != None) and (stoploss_val == 0):
-                kite.cancel_order(
-                                variety=kite.VARIETY_REGULAR,
-                                order_id=sl_orderid
-                            )
+                cancel_order(sl_orderid)
                 sl_orderid = None
             else:
                 sl_orderid = None
         else: 
             if sl_orderid != None:
-                kite.cancel_order(
-                                variety=kite.VARIETY_REGULAR,
-                                order_id=sl_orderid
-                            )
+                cancel_order(sl_orderid)
             sl_orderid = None
+            if rsl_orderid != None:
+                cancel_order(rsl_orderid)
+            rsl_orderid = None
         # except Exception as e:
         #     print("⚠️ Error:", e)
         wait_until_next_15min_plus30()

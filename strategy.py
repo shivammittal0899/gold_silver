@@ -99,7 +99,7 @@ def cancel_order(orderid):
 #                 trigger_price=stoploss_val,                        # initial SL trigger
 #                 validity=kite.VALIDITY_DAY
 #             )
-def place_sl_order(tradingsymbol, TRANSACTION_SELL, transaction, quantity, stoploss_val):
+def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val):
     if transaction == "SELL":
         order_id = kite.place_order(
                     variety=kite.VARIETY_REGULAR,

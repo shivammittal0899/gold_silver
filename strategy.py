@@ -99,18 +99,31 @@ def cancel_order(orderid):
 #                 trigger_price=stoploss_val,                        # initial SL trigger
 #                 validity=kite.VALIDITY_DAY
 #             )
-def place_sl_order(tradingsymbol, TRANSACTION_SELL, quantity, stoploss_val):
-    order_id = kite.place_order(
-                variety=kite.VARIETY_REGULAR,
-                exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
-                tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
-                transaction_type=TRANSACTION_SELL,
-                quantity=quantity,                                # MCX lot size
-                product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
-                order_type=kite.ORDER_TYPE_SLM,
-                trigger_price=stoploss_val,                        # initial SL trigger
-                validity=kite.VALIDITY_DAY
-            )
+def place_sl_order(tradingsymbol, TRANSACTION_SELL, transaction, quantity, stoploss_val):
+    if transaction == "SELL":
+        order_id = kite.place_order(
+                    variety=kite.VARIETY_REGULAR,
+                    exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+                    tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+                    transaction_type=kite.TRANSACTION_TYPE_SELL,
+                    quantity=quantity,                                # MCX lot size
+                    product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+                    order_type=kite.ORDER_TYPE_SLM,
+                    trigger_price=stoploss_val,                        # initial SL trigger
+                    validity=kite.VALIDITY_DAY
+                )
+    elif transaction == "BUY":
+        order_id = kite.place_order(
+                    variety=kite.VARIETY_REGULAR,
+                    exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+                    tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+                    transaction_type=kite.TRANSACTION_TYPE_BUY,
+                    quantity=quantity,                                # MCX lot size
+                    product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+                    order_type=kite.ORDER_TYPE_SLM,
+                    trigger_price=stoploss_val,                        # initial SL trigger
+                    validity=kite.VALIDITY_DAY
+                )
     return order_id
 
 def modify_sl_order(sl_orderid, stoploss_val):
@@ -322,7 +335,7 @@ def backtest_with_capital(p):
                 log(f"SL placed: {sl_orderid} {stoploss_val}")
             elif (sl_orderid == None) and (stoploss_val != 0):
                 quantity = qty
-                sl_orderid = place_sl_order(tradingsymbol, "kite.TRANSACTION_TYPE_SELL", quantity, stoploss_val)
+                sl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, stoploss_val)
                 log(f"SL placed: {sl_orderid} {stoploss_val}")
             elif (sl_orderid != None) and (stoploss_val == 0):
                 cancel_order(sl_orderid)
@@ -335,7 +348,7 @@ def backtest_with_capital(p):
                 log(f"SL placed: {rsl_orderid} {reverse_sl_val}")
             elif (rsl_orderid == None) and (reverse_sl_val != 0):
                 quantity = qty
-                rsl_orderid = place_sl_order(tradingsymbol, "kite.TRANSACTION_TYPE_SELL", quantity, reverse_sl_val)
+                rsl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, reverse_sl_val)
                 log(f"SL placed: {rsl_orderid} {reverse_sl_val}")
             elif (rsl_orderid != None) and (reverse_sl_val == 0):
                 cancel_order(rsl_orderid)
@@ -352,7 +365,7 @@ def backtest_with_capital(p):
                 log(f"SL placed: {sl_orderid} {stoploss_val}")
             elif (sl_orderid == None) and (stoploss_val != 0):
                 quantity = qty
-                sl_orderid = place_sl_order(tradingsymbol, "kite.TRANSACTION_TYPE_BUY", quantity, stoploss_val)
+                sl_orderid = place_sl_order(tradingsymbol, "BUY", quantity, stoploss_val)
                 log(f"SL placed: {sl_orderid} {stoploss_val}")
 
             elif (sl_orderid != None) and (stoploss_val == 0):

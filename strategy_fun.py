@@ -1419,28 +1419,16 @@ def generate_signals(df, p):
     
     df['exit_short_above_cloud'] = ((df['Close'] >= df[['senkou_a','senkou_b']].max(axis=1)) &
                                     ((df['Close']-100) > df['Close'].shift(1)) &
-                                    ((df['Close']) > df['tenkan']) 
+                                    (((df['Close']).shift(1) + 200) > df['Open'].shift(1)) &
+                                    (((df['Close']) > df['tenkan']).rolling(1).sum() == 1) &
+                                    (df['RSI'] < 60) &
+                                    (df['RSI'] > 40) &
+                                    (df['ADX'] < 70)
                                     ) 
     
     df['exit_short_kijun'] = (((df['Close'] > df['kijun']).rolling(3).sum() >= 3) &
                               (df['Close'] > df['rolling_min_10']+df['ATR']))
     
-    # df['exit_short_price_turn'] = ((((df['Open'] - df['Low']) > (df['High'] - df['Close'])*7).rolling(2).sum()>=1) &
-    #                             #    (df['price_below_cloud']) &
-    #                                (((df['Close']-50) > df['Open']).rolling(2).sum()>=2) &
-    #                                (((df['Close']-10) > df['Close'].shift(1)).rolling(2).sum()>=2) &
-    #                                (df['Close'] > (df['rolling_min_10'] + df['ATR']*1)) &
-    #                                ((df['Close']-100) > df['tenkan']))
-    # df['exit_short_tkcross'] = ((df['tk_cross_up'].rolling(3).sum() >= 2) | (
-    #                             df['price_below_cloud'] &
-    #                             (df['Close'] > (df['rolling_max_10']-df['ATR']*1)) &
-    #                             (df['line_gap'] < df['line_gap'].shift(1)) &
-    #                             (df['line_gap'].shift(1) <= df['line_gap'].shift(2)) &
-    #                             ((df['Close']+100) > df['tenkan']) &
-    #                             (df['Close'] > df['kijun']) &
-    #                             (df['Open'] < (df['Close']+200)) &
-    #                             (((df['Close'].shift(1)+50) < df['tenkan']) | ((df['Open'].shift(1)+50) < df['kijun'].shift(1))) 
-    #                         ))
 
 
     # df['trailing_stop_short0'] = df['Close'].expanding().max() - 2 * df['ATR']
@@ -1536,6 +1524,14 @@ def generate_signals(df, p):
         (df['RSI'] < df['rsi_ma']*0.8) &
         (((df['RSI']) < df['RSI'].shift(1)).rolling(3).sum() >= 3)
 
+    )
+    df['exit_short_pullback'] = (
+        ((df['Open'] - 20) < df[['senkou_a','senkou_b']].max(axis=1)) &
+        (df['Close'] > df[['senkou_a','senkou_b']].max(axis=1)) &
+        # df['green_cloud'] &
+        ((df['Close'] - 200) > df['Open']) &
+        ((df['High'] + 50) > df[['tenkan','kijun']].min(axis=1)) &
+        ((df['Close'] + 50) > df['Open'].shift(1))
     )
     df = df.copy()
     #### df['exit_short_cloud_tenkan'] | df['entry_kumo_break_long'] | df['entry_long'] | df['entry_pullback_long'] | df['trailing_entry_long2'] | 
@@ -1644,7 +1640,7 @@ def generate_signals(df, p):
     ) | (    ### df['entry_long_bt_tk'] | 
         df['exit_short_tenkan_cross'] | df['exit_short_price_tk_cross2'] |  df['exit_short_price_tk_cross1'] | df['exit_short_at_top'] | df['exit_short_avoid_range'] |
          df['exit_short_price_kijun'] |  df['exit_short_price_move_up'] |
-          df['entry_long_below_tk_cloud'] | df['exit_short_move_up'])
+          df['entry_long_below_tk_cloud'] | df['exit_short_move_up'] | df['exit_short_pullback'])
     
     
     # df['exit_long'] | df['exit_long_below_cloud'] | df['exit_long_tkcross'] | df['exit_long_price_cloud'] | df['exit_long_tenkan'] | df['exit_long_kijun'] | df['trailing_stop_long']

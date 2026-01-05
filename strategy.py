@@ -345,11 +345,11 @@ def backtest_with_capital(p):
             
             if (rsl_orderid != None) and (reverse_sl_val != 0):
                 modify_sl_order(rsl_orderid, reverse_sl_val)
-                log(f"SL placed: {rsl_orderid} {reverse_sl_val}")
+                log(f"RSL placed: {rsl_orderid} {reverse_sl_val}")
             elif (rsl_orderid == None) and (reverse_sl_val != 0):
                 quantity = qty
                 rsl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, reverse_sl_val)
-                log(f"SL placed: {rsl_orderid} {reverse_sl_val}")
+                log(f"RSL placed: {rsl_orderid} {reverse_sl_val}")
             elif (rsl_orderid != None) and (reverse_sl_val == 0):
                 cancel_order(rsl_orderid)
                 rsl_orderid = None

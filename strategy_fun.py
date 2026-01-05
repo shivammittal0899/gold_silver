@@ -1789,7 +1789,7 @@ def stopless_point1(row, position, entry_price, prow):
             return int(stoploss_value)
     return 0
 
-def stopless_point(row, position, entry_price, prow, psl):
+def stopless_point(row, position, entry_price, prow):
     price = row['Close']
     open = row['Open']
     high = row['High']

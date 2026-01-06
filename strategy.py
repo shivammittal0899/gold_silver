@@ -229,6 +229,11 @@ def backtest_with_capital(p):
             # position = 0
         log(position)
         if position == 0:
+            if rsl_orderid != None:
+                cancel_order(rsl_orderid)
+            rsl_orderid = None
+            if sl_orderid != None:
+                sl_orderid = None
             sl_orderid = None
     # df['entry_long'] | df['entry_pullback_long'] | df['entry_kumo_break_long'] | df['entry_sideways_break_long'] | df['entry_gap_long'] | df['entry_long_price'] | df['entry_long_price_cloud']
     # df['entry_short'] | df['entry_pullback_short'] | df['entry_kumo_break_short'] | df['entry_sideways_break_short'] | df['entry_gap_short'] | df['entry_short_price'] | df['entry_short_price_cloud']

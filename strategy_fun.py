@@ -1917,13 +1917,23 @@ def stopless_point(row, position, entry_price, prow):
             stoploss_value = min5+10
         elif ((price - open_min5) > atr*2) and price_cloud1 and (open_min5 < kijun):
             stoploss_value = open_min5 + 10
-            
+        
         if ((min5 - stoploss_value) > 100):
             reverse_sl = stoploss_value - 50
         elif ((min5 - stoploss_value) > 50):
             reverse_sl = stoploss_value - 70
         if stoploss_value == 0:
             stoploss_value = price - atr*2
+        if reverse_sl == 0:
+            if price_cloud:
+                reverse_sl = stoploss_value - 200
+            elif price_incloud:
+                reverse_sl = stoploss_value - 150
+            else:
+                reverse_sl = stoploss_value - 150
+
+        if reverse_sl > stoploss_value:
+            reverse_sl = 0
         if stoploss_value < price:
             # print(stoploss_value)
             if stoploss_value > (price - 100):

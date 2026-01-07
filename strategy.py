@@ -180,14 +180,14 @@ def backtest_with_capital(p):
 
 
         df = normalize(df)
-        log_df(df.tail(5), title="Last 5 Candles")
+        # log_df(df.tail(5), title="Last 5 Candles")
 
         df = compute_ichimoku(df, p['tenkan'], p['kijun'], p['senkou_b'])
         df = compute_adx(df)
         df['ATR'] = ATR(df, 14)
         # Calculate RSI (14-period default)
         df['RSI'] = RSIIndicator(close=df['Close'], window=14).rsi()
-        log(df.columns)
+        # log(df.columns)
         print(f"✅ Data fetched: {len(df)} bars | Last candle at {df.index[-1]}")
         df = generate_signals(df, p)
 
@@ -345,27 +345,33 @@ def backtest_with_capital(p):
         if position == 1:
             stoploss_val, reverse_sl_val = stopless_point(cur, position, entry_price, df.iloc[i-1])
             if (sl_orderid != None) and (stoploss_val != 0):
+                log(f"MSL placed: {sl_orderid} {stoploss_val}")
                 modify_sl_order(sl_orderid, stoploss_val)
-                log(f"SL placed: {sl_orderid} {stoploss_val}")
+                log("MSL Placed")
             elif (sl_orderid == None) and (stoploss_val != 0):
                 quantity = qty
-                sl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, stoploss_val)
                 log(f"SL placed: {sl_orderid} {stoploss_val}")
+                sl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, stoploss_val)
+                log("SL Placed")
             elif (sl_orderid != None) and (stoploss_val == 0):
                 cancel_order(sl_orderid)
+                log("SL Canceled")
                 sl_orderid = None
             else:
                 sl_orderid = None
             
             if (rsl_orderid != None) and (reverse_sl_val != 0):
+                log(f"MRSL placed: {rsl_orderid} {reverse_sl_val}")
                 modify_sl_order(rsl_orderid, reverse_sl_val)
-                log(f"RSL placed: {rsl_orderid} {reverse_sl_val}")
+                log("MRSL Placed")
             elif (rsl_orderid == None) and (reverse_sl_val != 0):
                 quantity = qty
-                rsl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, reverse_sl_val)
                 log(f"RSL placed: {rsl_orderid} {reverse_sl_val}")
+                rsl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, reverse_sl_val)
+                log("RSL Placed")
             elif (rsl_orderid != None) and (reverse_sl_val == 0):
                 cancel_order(rsl_orderid)
+                log("RSL Canceled")
                 rsl_orderid = None
             else:
                 rsl_orderid = None

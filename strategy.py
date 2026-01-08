@@ -402,6 +402,7 @@ def backtest_with_capital(p):
             rsl_orderid = None
         # except Exception as e:
         #     print("⚠️ Error:", e)
+        log("#########################################################################")
         wait_until_next_15min_plus30()
 
 

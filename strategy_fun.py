@@ -2022,6 +2022,8 @@ def stopless_point(row, position, entry_price, prow):
 
         if reverse_sl > stoploss_value:
             reverse_sl = 0
+        if stoploss_value == 0:
+            reverse_sl == 0
         if stoploss_value < price:
             # print(stoploss_value)
             if stoploss_value > (price - 100):

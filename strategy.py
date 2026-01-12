@@ -364,7 +364,7 @@ def backtest_with_capital(p):
                 log(f"MRSL placed: {rsl_orderid} {reverse_sl_val}")
                 modify_sl_order(rsl_orderid, reverse_sl_val)
                 log("MRSL Placed")
-            elif (rsl_orderid == None) and (reverse_sl_val != 0):
+            elif (rsl_orderid == None) and (reverse_sl_val != 0) and (stoploss_val != 0):
                 quantity = qty
                 log(f"RSL placed: {rsl_orderid} {reverse_sl_val}")
                 rsl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, reverse_sl_val)

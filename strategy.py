@@ -177,17 +177,12 @@ def backtest_with_capital(p):
 
         df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
         log(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
-
-
         df = normalize(df)
-        # log_df(df.tail(5), title="Last 5 Candles")
-
-        df = compute_ichimoku(df, p['tenkan'], p['kijun'], p['senkou_b'])
         df = compute_adx(df)
+        df = compute_ichimoku(df, p['tenkan'], p['kijun'], p['senkou_b'])
         df['ATR'] = ATR(df, 14)
         # Calculate RSI (14-period default)
         df['RSI'] = RSIIndicator(close=df['Close'], window=14).rsi()
-        # log(df.columns)
         print(f"✅ Data fetched: {len(df)} bars | Last candle at {df.index[-1]}")
         df = generate_signals(df, p)
 
@@ -235,24 +230,8 @@ def backtest_with_capital(p):
             if sl_orderid != None:
                 sl_orderid = None
             sl_orderid = None
-    # df['entry_long'] | df['entry_pullback_long'] | df['entry_kumo_break_long'] | df['entry_sideways_break_long'] | df['entry_gap_long'] | df['entry_long_price'] | df['entry_long_price_cloud']
-    # df['entry_short'] | df['entry_pullback_short'] | df['entry_kumo_break_short'] | df['entry_sideways_break_short'] | df['entry_gap_short'] | df['entry_short_price'] | df['entry_short_price_cloud']
-    # df['exit_long'] | df['exit_long_below_cloud'] | df['exit_long_tkcross'] | df['exit_long_price_cloud'] | df['exit_long_tenkan'] | df['exit_long_kijun'] | df['trailing_stop_long']
-    # df['exit_short'] | df['exit_short_above_cloud'] | df['exit_short_tkcross'] | df['exit_short_price_cloud'] | df['exit_short_tenkan'] | df['exit_short_kijun'] | df['trailing_stop_short']
-        print(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")
-
-        # print(f"{cur['entry_long']} | {cur['entry_pullback_long']} | {cur['entry_kumo_break_long']} | {cur['entry_sideways_break_long']} | {cur['entry_gap_long']} | {cur['entry_long_price']} | {cur['entry_long_price_cloud']}")
-        # print(f"{cur['entry_short']} | {cur['entry_pullback_short']} | {cur['entry_kumo_break_short']} | {cur['entry_sideways_break_short']} | {cur['entry_gap_short']} | {cur['entry_short_price']} | {cur['entry_short_price_cloud']}")
-        # print(f"{cur['exit_long']} | {cur['exit_long_below_cloud']} | {cur['exit_long_tkcross']} | {cur['exit_long_price_cloud']} | {cur['exit_long_tenkan']} | {cur['exit_long_kijun']} | {cur['trailing_stop_long']}")
-        # print(f"{cur['exit_short']} | {cur['exit_short_above_cloud']} | {cur['exit_short_tkcross']} | {cur['exit_short_price_cloud']} | {cur['exit_short_tenkan']} | {cur['exit_short_kijun']} | {cur['trailing_stop_short']}")
-        
-        
+        print(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")        
         log(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")
-
-        # log(f"{cur['entry_long']} | {cur['entry_pullback_long']} | {cur['entry_kumo_break_long']} | {cur['entry_sideways_break_long']} | {cur['entry_gap_long']} | {cur['entry_long_price']} | {cur['entry_long_price_cloud']}")
-        # log(f"{cur['entry_short']} | {cur['entry_pullback_short']} | {cur['entry_kumo_break_short']} | {cur['entry_sideways_break_short']} | {cur['entry_gap_short']} | {cur['entry_short_price']} | {cur['entry_short_price_cloud']}")
-        # log(f"{cur['exit_long']} | {cur['exit_long_below_cloud']} | {cur['exit_long_tkcross']} | {cur['exit_long_price_cloud']} | {cur['exit_long_tenkan']} | {cur['exit_long_kijun']} | {cur['trailing_stop_long']}")
-        # log(f"{cur['exit_short']} | {cur['exit_short_above_cloud']} | {cur['exit_short_tkcross']} | {cur['exit_short_price_cloud']} | {cur['exit_short_tenkan']} | {cur['exit_short_kijun']} | {cur['trailing_stop_short']}")
 
         # if position == 1 and cur['exit_long_final']:
         if position == 1 and (cur['exit_long_final']):

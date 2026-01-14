@@ -1966,6 +1966,13 @@ def stopless_point(row, position, entry_price, prow):
             stoploss_value = min5+10
         elif ((price - open_min5) > atr*2) and price_cloud1 and (open_min5 < kijun):
             stoploss_value = open_min5 + 10
+        if price_cloud and row['-DI_up'] and (row['line_gap'] < 80) and not price_tenkan:
+            stoploss_value = price - atr*1.5
+        # elif price_cloud and row['-DI_up'] and not price_tenkan:
+        #     stoploss_value = price - 300
+        
+        
+        
         
         if ((min5 - stoploss_value) > 100):
             reverse_sl = stoploss_value - 50
@@ -1975,22 +1982,32 @@ def stopless_point(row, position, entry_price, prow):
             stoploss_value = price - atr*2
         if reverse_sl == 0:
             if price_cloud:
-                reverse_sl = stoploss_value - 200
+                if price_tenkan and (stoploss_value <= tenkan):
+                    reverse_sl = stoploss_value - 150
+                elif price_tenkan and (stoploss_value > tenkan) and (price_tenkan_diff > atr*2):
+                    reverse_sl = stoploss_value - atr
+                elif price_tenkan and (stoploss_value > tenkan) and (price_tenkan_diff > atr*1.5):
+                    reverse_sl = stoploss_value - atr*1.1
+                elif price_tenkan and (stoploss_value > tenkan) and (price_tenkan_diff > atr*0):
+                    reverse_sl = stoploss_value - 200
+                else:
+                    reverse_sl = stoploss_value - 100
+                # reverse_sl = stoploss_value - 200
             elif price_incloud:
                 reverse_sl = stoploss_value - 150
             else:
                 reverse_sl = stoploss_value - 150
 
-        if reverse_sl > stoploss_value:
+        if (reverse_sl >= stoploss_value):
             reverse_sl = 0
-        if stoploss_value <= 0:
-            reverse_sl == 0
+        if stoploss_value == 0:
+            reverse_sl = 0
         if stoploss_value < price:
-            # print(stoploss_value)
+            # print(row['date'], stoploss_value)
             if stoploss_value > (price - 100):
                 return int(stoploss_value) - 80, (int(reverse_sl) - 120)
             return int(stoploss_value), int(reverse_sl)
-    return 0,reverse_sl
+    return 0,0
 
 def stopless_point_short(row, position):
     price = row['Close']

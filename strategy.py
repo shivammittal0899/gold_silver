@@ -380,7 +380,7 @@ def backtest_with_capital(p):
                     cancel_order(rsl_orderid)
                 rsl_orderid = None
         except Exception as e:
-            log("⚠️ Error:", e)
+            log(f"⚠️ Error: {e}")
             if sl_orderid != None:
                 cancel_order(sl_orderid)
                 sl_orderid = None

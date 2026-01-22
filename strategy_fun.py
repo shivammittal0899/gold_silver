@@ -1950,6 +1950,9 @@ def stopless_point(row, position, entry_price, prow):
                 stoploss_value = max(price, entry_price, pprice) - atr*5
         if not price_kijun and not price_tenkan and price_cloud:
             stoploss_value = max(price, entry_price, pprice) - atr*3.5
+            if not tenkan_kijun:
+                stoploss_value = tenkan - atr*2
+                stoploss_value = max(price, entry_price) - atr*2.5
         
         if price_incloud:
             if senkou_a_b and (senkou_a_b_diff > atr*1):
@@ -2030,7 +2033,6 @@ def stopless_point(row, position, entry_price, prow):
             else:
                 reverse_sl = stoploss_value - 150
         # if (price - stoploss_value) > 1000:
-        #     print(f'{row['date']} -- {price} -- {stoploss_value} -- {price - stoploss_value}')
         if (reverse_sl >= stoploss_value):
             reverse_sl = 0
         if stoploss_value == 0:
@@ -2089,6 +2091,7 @@ def stopless_point_short(row, position):
                 if (price_kijun_diff > (kijun_senkou_b_diff)):
                     if (price_kijun_diff > atr*2):
                         stoploss_value = kijun - atr*0.2
+                        # stoploss_value = price + atr*0.5
                     elif price_tenkan_diff > atr*1.5:
                         stoploss_value = tenkan - atr*0.7
                 elif (tenkan_kijun_diff > price_tenkan_diff*2):
@@ -2129,7 +2132,9 @@ def stopless_point_short(row, position):
             else:
                 stoploss_value = max(senkou_a, kijun) + atr
         elif not price_kijun and not price_tenkan:
-            if price_senkou_a_diff > 0 and senkou_a_b:
+            if price_senkou_a_diff > atr and senkou_a_b:
+                stoploss_value = price - atr*1
+            elif price_senkou_a_diff > 0 and senkou_a_b:
                 stoploss_value = min(senkou_a, senkou_b) + atr*0.5
             else:
                 stoploss_value = price + atr*2
@@ -2141,7 +2146,11 @@ def stopless_point_short(row, position):
         min60 = row['rolling_min_60']
         price_cloud1 = True if (price >=max(senkou_a, senkou_b)) else False
         if ((open - price) > 500) and price_tenkan and price_kijun and (open > tenkan) and ((tenkan - price) > 250)and ((kijun - price) > 200):
-            stoploss_value = kijun - 40
+            if (price_kijun_diff > 1000):
+                stoploss_value = price + 500
+            else:
+                stoploss_value = kijun - 40
+            # stoploss_value = kijun - 40
         if stoploss_value == 0:
             stoploss_value = price + atr*2
         if ((max5 - price) > 350) and price_cloud1:
@@ -2158,7 +2167,7 @@ def stopless_point_short(row, position):
         #     reverse_sl = stoploss_value - 70
         # if stoploss_value == 0:
         #     stoploss_value = price - atr*2
-
+        
         if stoploss_value > price:
             if stoploss_value < (price + 100):
                 return int(price) + 80, int(reverse_sl)
@@ -2232,20 +2241,20 @@ def normalize(df):
     print(df.tail(5))
     return df
 def wait_until_next_15min_plus30():
-    """Wait until next 15-minute candle + 30 seconds mark."""
-    now = datetime.now() + timedelta(hours=5, minutes=30)
+    """Wait until next 15-minute candle + 15 seconds mark."""
+    now = datetime.now() + timedelta(hours=5, minutes=15)
     # now = datetime.now()
     print(now)
     # Find the next 15-minute multiple
     min = 15
     next_minute = (now.minute // min + 1) * min
-    log(next_minute)
-    next_time = now.replace(minute=0, second=30, microsecond=0) + timedelta(minutes=next_minute)
-    log(next_time)
+    # log(next_minute)
+    next_time = now.replace(minute=0, second=15, microsecond=0) + timedelta(minutes=next_minute)
+    # log(next_time)
     if next_minute >= 60:
-        next_time = now.replace(hour=(now.hour + 1) % 24, minute=0, second=30, microsecond=0)
+        next_time = now.replace(hour=(now.hour + 1) % 24, minute=0, second=15, microsecond=0)
     wait_seconds = (next_time - now).total_seconds()
-    log(wait_seconds)
+    # log(wait_seconds)
     if wait_seconds < 0:
         wait_seconds += (60*min)  # just in case of rounding errors
     log(f"⏳ Waiting {int(wait_seconds)} sec until next candle time {next_time.strftime('%H:%M:%S')}...")

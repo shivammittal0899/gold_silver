@@ -948,11 +948,15 @@ def generate_signals(df, p):
     df['entry_long_below_cloud1'] = (df['price_below_cloud'] &
                                     (df['Close'] > (df['rolling_min_10'].shift(1)+df['ATR']*0.5)) &
                                     ((df['Close']+100) > df['tenkan']) & 
+                                    # ((df['tenkan']+10) > df['kijun']) & 
                                     ((df['Close']-0) > df['Close'].shift(1)) & 
+                                    # (df['+DI'] > 18) &
                                     (df['+DI_move_up'] | (df['DI_gap'] > df['DI_gap'].shift(1)*0.95)) &
                                     (df['OI'] > df['oi_ma']*0.95) &
                                     (((df['Close']-50) > df['Open'])) &
                                     (df['Close'] > df['rolling_max_5'] - df['ATR']*0.5) &
+                                    (df['Close'] > df['rolling_min_5'] + 100) &
+                                    (df['range1'] > df['ATR']*1.5) &
                                     (((df['Close']+df['ATR']*1) > df['Open']).rolling(3).sum() > 1))
     
     df['entry_long_below_cloud2'] = (df['price_below_cloud'] &
@@ -1586,6 +1590,16 @@ def generate_signals(df, p):
         (df['ADX'] > df['ADX'].shift(1)*1.01) &
         (df['Close'] <= df['rolling_min_60'])
     )
+    df['entry_long_up_trend'] = (
+        (df['RSI'] > 60) &
+        (df['+DI'] > 25) &
+        (df['-DI'] > 20) &
+        df['+DI_up'] &
+        df['-DI_move_down'] &
+        df['price_above_cloud'] &
+        df['price_above_tk'] &
+        df['tenkan_above_kijun']
+    )
     df = df.copy()
     #### df['exit_short_cloud_tenkan'] | df['entry_kumo_break_long'] | df['entry_long'] | df['entry_pullback_long'] | df['trailing_entry_long2'] | 
     final_unique_long_condition = (df['entry_long_price'] | df['entry_long_price_cloud'] | df['entry_long_oi_vol'] | df['entry_long_below_cloud'] | df['exit_short_at_top'] |
@@ -1611,7 +1625,7 @@ def generate_signals(df, p):
             df['exit_short_move_up'] | df['exit_short_avoid'] | df['entry_long_cloud_enter'] | df['exit_short_price_tk_cross2'] | df['exit_short_tenkan_cross'] | df['entry_long_bt_tk'] | df['entry_long_below_tk'] | df['exit_long_price_drop1'] | df['entry_long_price_enter_cloud'] | df['entry_long_price_cloud'] | df['entry_long_oi_vol1'] ,
             df['exit_short_tenkan_cross'] | df['exit_short_price_kijun'] | df['entry_long_below_cloud2'] | df['entry_long_below_tk'] | df['exit_long_price_drop1'] | df['entry_long_below_cloud'] | df['entry_long_high'] |  ((df['entry_long_oi_vol'] | df['entry_long_price']  | df['entry_gap_long']) & (~df['entry_long_avoid']))  
         ],
-        default= df['exit_short_rsi_di'] | df['entry_long_cloud_enter'] | df['exit_short_price_kijun'] | df['entry_long_below_cloud2'] | df['exit_short_price_tk_cross2'] | df['entry_long_bt_tk'] | df['entry_long_below_cloud3'] |((df['exit_short_tenkan'] | df['entry_long_below_cloud1'] | df['exit_short_price_move_up'] | df['exit_short_tenkan_cross'] )& (~df['entry_short_avoid'])) | ((df['entry_long_below_cloud'])& (~df['entry_long_avoid']))  
+        default= df['entry_long_up_trend'] | df['exit_short_rsi_di'] | df['entry_long_cloud_enter'] | df['exit_short_price_kijun'] | df['entry_long_below_cloud2'] | df['exit_short_price_tk_cross2'] | df['entry_long_bt_tk'] | df['entry_long_below_cloud3'] |((df['exit_short_tenkan'] | df['entry_long_below_cloud1'] | df['exit_short_price_move_up'] | df['exit_short_tenkan_cross'] )& (~df['entry_short_avoid'])) | ((df['entry_long_below_cloud'])& (~df['entry_long_avoid']))  
     ) | ( df['entry_long_tenkan_cross'] |  df['entry_long_tk_cross'] |  df['entry_long_head_candle'] |  ## df['exit_short_price_cloud'] |
          df['entry_long_below_tk_cloud'] | df['entry_long_in_cloud'] | 
           df['exit_short_at_top']  ##df['exit_short_price_tk_cross1'] | 
@@ -1963,8 +1977,6 @@ def stopless_point(row, position, entry_price, prow):
             elif senkou_a_b:
                 stoploss_value = price - atr*2
             elif not senkou_a_b and (senkou_a_b_diff > atr):
-                # if price_tenkan and ((tenkan - senkou_a) > 200):
-                #     stoploss_value = senkou_a - atr*0
                 if price_tenkan:
                     stoploss_value = senkou_a - atr*2
                 else:
@@ -1994,6 +2006,15 @@ def stopless_point(row, position, entry_price, prow):
         open_min5 = row['open_min_5']
         if (price_senkou_a_diff > 500) and (not senkou_a_b) and ((price - min5) > 500) and (min5 < senkou_b):
             stoploss_value = price - 400
+            if row['+DI_up'] and row['candel_size'] > 500:
+                stoploss_value = open
+            elif row['+DI_up'] and price_cloud and ((price - senkou_b) > atr):
+                stoploss_value = senkou_b + atr*0.5
+                if price_tenkan and ((senkou_b - tenkan) < atr*1.5) and (row['RSI'] > 65):
+                    stoploss_value = tenkan-10
+            elif row['+DI_up'] and price_cloud:
+                stoploss_value = senkou_b
+                # stoploss_value = senkou_b
         if (senkou_a < senkou_b) and (high > senkou_b) and (senkou_a_b_diff > atr*1.5) and ((price-open) > 150):
             stoploss_value = open - 5
         
@@ -2021,6 +2042,9 @@ def stopless_point(row, position, entry_price, prow):
                     reverse_sl = stoploss_value - 150
                 elif price_tenkan and (stoploss_value > tenkan) and (price_tenkan_diff > atr*2):
                     reverse_sl = stoploss_value - atr
+                    if row['+DI_up']:
+                        reverse_sl = tenkan - 10
+                        
                 elif price_tenkan and (stoploss_value > tenkan) and (price_tenkan_diff > atr*1.5):
                     reverse_sl = stoploss_value - atr*1.1
                 elif price_tenkan and (stoploss_value > tenkan) and (price_tenkan_diff > atr*0):
@@ -2033,6 +2057,7 @@ def stopless_point(row, position, entry_price, prow):
             else:
                 reverse_sl = stoploss_value - 150
         # if (price - stoploss_value) > 1000:
+        # print(f'{row['date']} -- {price} -- {stoploss_value} -- {price - stoploss_value}')
         if (reverse_sl >= stoploss_value):
             reverse_sl = 0
         if stoploss_value == 0:
@@ -2128,7 +2153,11 @@ def stopless_point_short(row, position):
             if price_kijun_diff > atr:
                 stoploss_value = kijun + atr*0.5
             elif kijun_senkou_a and senkou_a_b:
+                # print("h", stoploss_value)
                 stoploss_value = max(senkou_a, senkou_b) - atr*0.5
+                if (tenkan_kijun_diff < atr) and (senkou_a_b_diff > atr*2):
+                    stoploss_value = min(senkou_a, senkou_b) - atr*1
+
             else:
                 stoploss_value = max(senkou_a, kijun) + atr
         elif not price_kijun and not price_tenkan:
@@ -2167,7 +2196,7 @@ def stopless_point_short(row, position):
         #     reverse_sl = stoploss_value - 70
         # if stoploss_value == 0:
         #     stoploss_value = price - atr*2
-        
+        # print(f'{row['date']} -- {price} -- {stoploss_value} -- {price - stoploss_value}')
         if stoploss_value > price:
             if stoploss_value < (price + 100):
                 return int(price) + 80, int(reverse_sl)
@@ -2242,9 +2271,9 @@ def normalize(df):
     return df
 def wait_until_next_15min_plus30():
     """Wait until next 15-minute candle + 15 seconds mark."""
-    now = datetime.now() + timedelta(hours=5, minutes=15)
+    now = datetime.now() + timedelta(hours=5, minutes=30)
     # now = datetime.now()
-    print(now)
+    log(now)
     # Find the next 15-minute multiple
     min = 15
     next_minute = (now.minute // min + 1) * min

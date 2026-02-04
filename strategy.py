@@ -63,10 +63,13 @@ def fetch_with_retry(symbol, interval, retries=3, delay=5):
 
 
 def cancel_order(orderid):
-    kite.cancel_order(
-                    variety=kite.VARIETY_REGULAR,
-                    order_id=orderid
-                    )
+    try:
+        kite.cancel_order(
+                        variety=kite.VARIETY_REGULAR,
+                        order_id=orderid
+                        )
+    except Exception as e: 
+        log(f"Stoploss cancel error {e}")
 # order_id = kite.place_order(
 #                 variety=kite.VARIETY_REGULAR,
 #                 exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
@@ -146,8 +149,8 @@ def backtest_with_capital(p):
     position_size = 0
     total_diff = 0
     # exchange = "MCX"
-    symbol = "GOLDM26FEBFUT"   # example instrument
-    tradingsymbol = "GOLDM26FEBFUT"
+    symbol = "GOLDM26MARFUT"   # example instrument
+    tradingsymbol = "GOLDM26MARFUT"
     interval = "15minute"
     days = 5
     qty = p['quantity']
@@ -155,6 +158,7 @@ def backtest_with_capital(p):
     log(qty)
     sl_orderid = None
     rsl_orderid = None
+    el_sl_orderid = None
     while  not STOP_FLAG:
         print(STOP_FLAG)
         try:
@@ -214,23 +218,38 @@ def backtest_with_capital(p):
                 if position1 != position:
                     if rsl_orderid != None:
                         if position1 == 0:  
-                            cancel_order(rsl_orderid)
+                            # cancel_order(rsl_orderid)
+                            try:
+                                cancel_order(rsl_orderid)
+                            except Exception as e: 
+                                log(f"Reverse stoploss cancel error {e}")
                         rsl_orderid = None
                     if sl_orderid != None:
                         sl_orderid = None
                     position = position1
+                if (position != 0) and (el_sl_orderid != None):
+                    try:
+                        cancel_order(el_sl_orderid)
+                    except Exception as e: 
+                        log(f"Entry stoploss cancel error {e}")
+                    el_sl_orderid = None
+
             else:
                 log(f"⚪ No open position in {symbol}")
                 # position = 0
             log(position)
             if position == 0:
                 if rsl_orderid != None:
-                    cancel_order(rsl_orderid)
+                    # cancel_order(rsl_orderid)
+                    try:
+                        cancel_order(rsl_orderid)
+                    except Exception as e: 
+                        log(f"Reverse stoploss cancel error {e}")
                 rsl_orderid = None
                 if sl_orderid != None:
                     sl_orderid = None
                 sl_orderid = None
-            print(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")        
+            # print(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")        
             log(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")
 
             # if position == 1 and cur['exit_long_final']:
@@ -302,6 +321,9 @@ def backtest_with_capital(p):
                     position = 1
                     buy_sell = "BUY"
                     quantity = qty
+                    if el_sl_orderid != None:
+                        cancel_order(el_sl_orderid)
+                        el_sl_orderid = None
                     kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
                     print("Buy price. ",entry_time, entry_price)
                     log(f"Buy price. ,{entry_time}, {entry_price}")
@@ -317,6 +339,9 @@ def backtest_with_capital(p):
                     position = -1
                     buy_sell = "SELL"
                     quantity = qty
+                    if el_sl_orderid != None:
+                        cancel_order(el_sl_orderid)
+                        el_sl_orderid = None
                     kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
                     print("Sell price. ",entry_time, entry_price)
                     log(f"Sell price. ,{entry_time}, {entry_price}")
@@ -325,7 +350,10 @@ def backtest_with_capital(p):
                 stoploss_val, reverse_sl_val = stopless_point(cur, position, entry_price, df.iloc[i-1])
                 if (sl_orderid != None) and (stoploss_val != 0):
                     log(f"MSL placed: {sl_orderid} {stoploss_val}")
-                    modify_sl_order(sl_orderid, stoploss_val)
+                    try:
+                        modify_sl_order(sl_orderid, stoploss_val)
+                    except Exception as e: 
+                        log(f"MSL order error {e}")
                     log("MSL Placed")
                 elif (sl_orderid == None) and (stoploss_val != 0):
                     quantity = qty
@@ -333,7 +361,11 @@ def backtest_with_capital(p):
                     sl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, stoploss_val)
                     log("SL Placed")
                 elif (sl_orderid != None) and (stoploss_val == 0):
-                    cancel_order(sl_orderid)
+                    # cancel_order(sl_orderid)
+                    try:
+                        cancel_order(sl_orderid)
+                    except Exception as e: 
+                        log(f"Stoploss cancel error {e}")
                     log("SL Canceled")
                     sl_orderid = None
                 else:
@@ -341,7 +373,10 @@ def backtest_with_capital(p):
                 
                 if (rsl_orderid != None) and (reverse_sl_val != 0):
                     log(f"MRSL placed: {rsl_orderid} {reverse_sl_val}")
-                    modify_sl_order(rsl_orderid, reverse_sl_val)
+                    try:
+                        modify_sl_order(rsl_orderid, reverse_sl_val)
+                    except Exception as e: 
+                        log(f"Modify stoploss error {e}")
                     log("MRSL Placed")
                 elif (rsl_orderid == None) and (reverse_sl_val != 0) and (stoploss_val != 0):
                     quantity = qty
@@ -349,7 +384,11 @@ def backtest_with_capital(p):
                     rsl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, reverse_sl_val)
                     log("RSL Placed")
                 elif (rsl_orderid != None) and (reverse_sl_val == 0):
-                    cancel_order(rsl_orderid)
+                    # cancel_order(rsl_orderid)
+                    try:
+                        cancel_order(rsl_orderid)
+                    except Exception as e: 
+                        log(f"Reverse stoploss cancel error {e}")
                     log("RSL Canceled")
                     rsl_orderid = None
                 else:
@@ -361,7 +400,7 @@ def backtest_with_capital(p):
                 if (sl_orderid != None) and (stoploss_val != 0):
 
                     modify_sl_order(sl_orderid, stoploss_val)
-                    log(f"SL placed: {sl_orderid} {stoploss_val}")
+                    log(f"SLM placed: {sl_orderid} {stoploss_val}")
                 elif (sl_orderid == None) and (stoploss_val != 0):
                     quantity = qty
                     sl_orderid = place_sl_order(tradingsymbol, "BUY", quantity, stoploss_val)
@@ -372,13 +411,47 @@ def backtest_with_capital(p):
                     sl_orderid = None
                 else:
                     sl_orderid = None
+                
+                if (rsl_orderid != None) and (reverse_sl_val != 0):
+                    log(f"MRSL placed: {rsl_orderid} {reverse_sl_val}")
+                    modify_sl_order(rsl_orderid, reverse_sl_val)
+                    log("MRSL Placed")
+                elif (rsl_orderid == None) and (reverse_sl_val != 0) and (stoploss_val != 0):
+                    quantity = qty
+                    log(f"RSL placed: {rsl_orderid} {reverse_sl_val}")
+                    rsl_orderid = place_sl_order(tradingsymbol, "BUY", quantity, reverse_sl_val)
+                    log("RSL Placed")
+                elif (rsl_orderid != None) and (reverse_sl_val == 0):
+                    cancel_order(rsl_orderid)
+                    log("RSL Canceled")
+                    rsl_orderid = None
+                else:
+                    rsl_orderid = None
+
+
             else: 
                 if sl_orderid != None:
                     cancel_order(sl_orderid)
-                sl_orderid = None
+                    sl_orderid = None
                 if rsl_orderid != None:
                     cancel_order(rsl_orderid)
-                rsl_orderid = None
+                    rsl_orderid = None
+                if (position == 0):
+                    entry_sl_val = stoploss_entry_point(cur, df.iloc[i-1])
+                    if (el_sl_orderid == None) and (entry_sl_val != 0):
+                        quantity = qty
+                        el_sl_orderid = place_sl_order(tradingsymbol, "BUY", quantity, entry_sl_val)
+                        log(f"ESL placed: {el_sl_orderid} {entry_sl_val}")
+                    elif (el_sl_orderid != None) and (entry_sl_val != 0):
+                        modify_sl_order(el_sl_orderid, entry_sl_val)
+                        log(f"ESL M placed: {el_sl_orderid} {entry_sl_val}")
+                    elif (el_sl_orderid != None) and (entry_sl_val == 0):
+                        cancel_order(el_sl_orderid)
+                        log("RSL Canceled")
+                        el_sl_orderid = None
+                    else:
+                        el_sl_orderid = None
+                    
         except Exception as e:
             log(f"⚠️ Error: {e}")
             if sl_orderid != None:
@@ -387,6 +460,10 @@ def backtest_with_capital(p):
             if rsl_orderid != None:
                 cancel_order(rsl_orderid)
                 rsl_orderid = None
+            if el_sl_orderid != None:
+                cancel_order(el_sl_orderid)
+                el_sl_orderid = None
+            
         log("#########################################################################")
         wait_until_next_15min_plus30()
 

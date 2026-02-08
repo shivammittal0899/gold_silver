@@ -41,7 +41,7 @@ def fetch_with_retry(symbol, interval, retries=3, delay=5):
             time_correction = timedelta(hours=5, minutes=30)
             # time_correction = 0
             time_now = datetime.now() + time_correction
-            time_delay = time_now - timedelta(days=5)
+            time_delay = time_now - timedelta(days=6)
             print(time_delay, time_now)
             instrument = kite.ltp(f"MCX:{symbol}")[f"MCX:{symbol}"]['instrument_token']
             data = kite.historical_data(
@@ -151,8 +151,8 @@ def backtest_with_capital(p):
     # exchange = "MCX"
     symbol = "GOLDM26MARFUT"   # example instrument
     tradingsymbol = "GOLDM26MARFUT"
-    interval = "15minute"
-    days = 5
+    interval = "30minute"
+    days = 6
     qty = p['quantity']
     print()
     log(qty)
@@ -165,7 +165,7 @@ def backtest_with_capital(p):
             now = datetime.now() + timedelta(hours=5, minutes=30)
             # now = datetime.now() 
             log(f'Present Time: {now}')
-            market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 9)
+            market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
             # market_open  = (now.hour >= 8)
             market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 55)
 

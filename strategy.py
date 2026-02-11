@@ -41,7 +41,7 @@ def fetch_with_retry(symbol, interval, retries=3, delay=5):
             time_correction = timedelta(hours=5, minutes=30)
             # time_correction = 0
             time_now = datetime.now() + time_correction
-            time_delay = time_now - timedelta(days=6)
+            time_delay = time_now - timedelta(days=15)
             print(time_delay, time_now)
             instrument = kite.ltp(f"MCX:{symbol}")[f"MCX:{symbol}"]['instrument_token']
             data = kite.historical_data(

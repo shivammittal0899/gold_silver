@@ -39,18 +39,31 @@ def ATR(df, n=14):
 
 # === Step 2: Compute ADX manually ===
 def compute_adx(df, n=14):
-    df['TR'] = np.maximum(df['High'] - df['Low'],
+    df['TR'] = np.maximum(df['High'] - df['Low'], 
                           np.maximum(abs(df['High'] - df['Close'].shift(1)), abs(df['Low'] - df['Close'].shift(1))))
-    df['+DM'] = np.where((df['High'] - df['High'].shift(1)) > (df['Low'].shift(1) - df['Low']),
+    df['+DM'] = np.where((df['High'] - df['High'].shift(1)) > (df['Low'].shift(1) - df['Low']), 
                          np.maximum(df['High'] - df['High'].shift(1), 0), 0)
-    df['-DM'] = np.where((df['Low'].shift(1) - df['Low']) > (df['High'] - df['High'].shift(1)),
+    df['-DM'] = np.where((df['Low'].shift(1) - df['Low']) > (df['High'] - df['High'].shift(1)), 
                          np.maximum(df['Low'].shift(1) - df['Low'], 0), 0)
-
+    
     df['TR_smooth'] = df['TR'].rolling(n).sum()
-    df['+DI'] = 100 * (df['+DM'].rolling(n).sum() / df['TR_smooth'])
-    df['-DI'] = 100 * (df['-DM'].rolling(n).sum() / df['TR_smooth'])
-    df['DX'] = 100 * abs(df['+DI'] - df['-DI']) / (df['+DI'] + df['-DI'])
-    df['ADX'] = df['DX'].rolling(n).mean()
+    # df['+DI'] = 100 * (df['+DM'].rolling(n).sum() / df['TR_smooth'])
+    # df['-DI'] = 100 * (df['-DM'].rolling(n).sum() / df['TR_smooth'])
+    # df['DX'] = 100 * abs(df['+DI'] - df['-DI']) / (df['+DI'] + df['-DI'])
+    # df['ADX'] = df['DX'].rolling(n).mean()
+    adx_indicator = ADXIndicator(
+        high=df['High'],
+        low=df['Low'],
+        close=df['Close'],
+        window=14
+    )
+
+    df['ADX'] = adx_indicator.adx()
+    df['+DI'] = adx_indicator.adx_pos()
+    df['-DI'] = adx_indicator.adx_neg()
+    df['ADX1'] = adx_indicator.adx()
+    df['+DI1'] = adx_indicator.adx_pos()
+    df['-DI1'] = adx_indicator.adx_neg()
     return df
 
 
@@ -1477,7 +1490,7 @@ def stopless_point_short(row, position):
         stoploss_val = min_cloud + atr*4
     if (row['line_gap_range'] < atr) and (row['DI_gap_range'] < 5):
         stoploss_val = price + atr*1
-        
+
     if stoploss_val > price:
         return int(stoploss_val), int(stoploss_val + 5)
     return int(0), int(0)

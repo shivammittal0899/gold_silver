@@ -354,6 +354,13 @@ def backtest_with_capital(p):
                         modify_sl_order(sl_orderid, stoploss_val)
                     except Exception as e: 
                         log(f"MSL order error {e}")
+                        if "Trigger price" in e:
+                            cancel_order(sl_orderid)
+                            sl_orderid = None
+                            buy_sell = "SELL"
+                            quantity = qty
+                            kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                            log(f"Error occured so MSL order canceled and exit long position")
                     log("MSL Placed")
                 elif (sl_orderid == None) and (stoploss_val != 0):
                     quantity = qty
@@ -377,6 +384,13 @@ def backtest_with_capital(p):
                         modify_sl_order(rsl_orderid, reverse_sl_val)
                     except Exception as e: 
                         log(f"Modify stoploss error {e}")
+                        if "Trigger price" in e:
+                            cancel_order(rsl_orderid)
+                            rsl_orderid = None
+                            buy_sell = "SELL"
+                            quantity = qty
+                            kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                            log(f"Error occured so MRSL order canceled and take short position")
                     log("MRSL Placed")
                 elif (rsl_orderid == None) and (reverse_sl_val != 0) and (stoploss_val != 0):
                     quantity = qty
@@ -398,8 +412,18 @@ def backtest_with_capital(p):
             elif position == -1:
                 stoploss_val, reverse_sl_val = stopless_point_short(cur, position)
                 if (sl_orderid != None) and (stoploss_val != 0):
-
-                    modify_sl_order(sl_orderid, stoploss_val)
+                    log(f"MSL placed: {sl_orderid} {stoploss_val} start")
+                    try:
+                        modify_sl_order(sl_orderid, stoploss_val)
+                    except Exception as e:
+                        log(f"Error - {e}")
+                        if "Trigger price" in e:
+                            cancel_order(sl_orderid)
+                            sl_orderid = None
+                            buy_sell = "BUY"
+                            quantity = qty
+                            kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                            log(f"Error occured so SL order canceled and exit from short position")
                     log(f"SLM placed: {sl_orderid} {stoploss_val}")
                 elif (sl_orderid == None) and (stoploss_val != 0):
                     quantity = qty
@@ -414,7 +438,18 @@ def backtest_with_capital(p):
                 
                 if (rsl_orderid != None) and (reverse_sl_val != 0):
                     log(f"MRSL placed: {rsl_orderid} {reverse_sl_val}")
-                    modify_sl_order(rsl_orderid, reverse_sl_val)
+                    try:
+                        modify_sl_order(rsl_orderid, reverse_sl_val)
+                    except Exception as e:
+                        log(f"Error - {e}")
+                        if "Trigger price" in e:
+                            cancel_order(rsl_orderid)
+                            rsl_orderid = None
+                            buy_sell = "BUY"
+                            quantity = qty
+                            kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                            log(f"Error occured so RSL order canceled and take long position")
+
                     log("MRSL Placed")
                 elif (rsl_orderid == None) and (reverse_sl_val != 0) and (stoploss_val != 0):
                     quantity = qty
@@ -443,7 +478,16 @@ def backtest_with_capital(p):
                         el_sl_orderid = place_sl_order(tradingsymbol, "BUY", quantity, entry_sl_val)
                         log(f"ESL placed: {el_sl_orderid} {entry_sl_val}")
                     elif (el_sl_orderid != None) and (entry_sl_val != 0):
-                        modify_sl_order(el_sl_orderid, entry_sl_val)
+                        try:
+                            modify_sl_order(el_sl_orderid, entry_sl_val)
+                        except Exception as e:
+                            if "Trigger price" in e:
+                                cancel_order(el_sl_orderid)
+                                el_sl_orderid = None
+                                buy_sell = "BUY"
+                                quantity = qty
+                                kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                                log(f"Error occured so ESL order canceled and take long position")
                         log(f"ESL M placed: {el_sl_orderid} {entry_sl_val}")
                     elif (el_sl_orderid != None) and (entry_sl_val == 0):
                         cancel_order(el_sl_orderid)

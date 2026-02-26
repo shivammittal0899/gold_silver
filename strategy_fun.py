@@ -910,12 +910,13 @@ def generate_signals(df, p):
         (df['cloud_gap'] < df['ATR']) &
         ((abs(df['High'] - df['Low']) > abs(df['Close'] - df['Open'])*3.5).rolling(3).sum() >= 2)
     )
+    
     ##################
 
     df['entry_long_indicators'] = (
         (df['+DI'] > df['-DI']) &
         (~(df['RSI'] < df['rsi_ma']*0.92)) &
-        (((df['Close']+ 100) > df['Open']).rolling(2).sum()>= 1) &
+        (((df['Close']+ 0) > df['Open']).rolling(2).sum()>= 1) &
         ((df['tenkan'] + df['ATR']*0.1) > df['kijun']) &
         (df['tenkan'] >= df['kijun']) &
         (df['Close'] > df['kijun']) &
@@ -1277,6 +1278,27 @@ def generate_signals(df, p):
         (~df['avoid_exit_long2']) & 
         (~df['avoid_exit_long5']) 
     )
+    df['exit_short_price_pullback'] = (
+        ((df['Close'] > df['Open']).rolling(2).sum()==2) &
+        ((df['candel_size'] > 1000).rolling(5).sum() >= 1) &
+        (df['Close'] > df['Open']) &
+        df['green_cloud'] &
+        (df['range2'] > df['ATR']*1.5) &
+        (
+            (df['price_above_tk'] &
+            df['tenkan_above_kijun'] &
+            (df['-DI'] < 25) &
+            df['price_above_cloud']) |
+            
+            ((df['RSI'] > df['RSI'].shift(1)) &
+            df['price_in_cloud'] &
+            (df['RSI'] > 35) &
+            df['-DI_move_down'] &
+            (df['-DI'] < 35))
+        ) &
+        df['DI_gap_reduce'] &
+        (df['Close'] > (df['rolling_min_5'] + df['ATR']))
+    )
     df = df.copy()
     #### df['exit_short_cloud_tenkan'] | df['entry_kumo_break_long'] | df['entry_long'] | df['entry_pullback_long'] | df['trailing_entry_long2'] | 
     df['final_entry_long'] = (np.select(
@@ -1376,7 +1398,7 @@ def generate_signals(df, p):
             ((df['exit_short_price_cloud2'] | df['exit_short_above_cloud'] )& (~df['entry_long_avoid']))
         ],
         default = df['exit_short_tenkan'] |  (( df['exit_short_cloud_enter'] |  df['exit_short_price_cloud'])& (~df['entry_long_avoid'])) 
-    ) | (  df['exit_short_candle_green']  | 
+    ) | (  df['exit_short_candle_green']  |  df['exit_short_price_pullback'] |
         df['exit_short_tenkan_cross'] | df['exit_short_price_tk_cross1'] | df['exit_short_avoid_range'] | df['exit_short_rsi_di'] | df['exit_short_indicators']  )
     
     # df['exit_long'] | df['exit_long_below_cloud'] | df['exit_long_tkcross'] | df['exit_long_price_cloud'] | df['exit_long_tenkan'] | df['exit_long_kijun'] | df['trailing_stop_long']

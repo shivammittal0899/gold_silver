@@ -189,12 +189,13 @@ def backtest_with_capital(p):
             df['RSI'] = RSIIndicator(close=df['Close'], window=14).rsi()
             print(f"✅ Data fetched: {len(df)} bars | Last candle at {df.index[-1]}")
             df = generate_signals(df, p)
-
+            
             i = -2
             cur = df.iloc[i]
             nxt = df.iloc[i+1]
             t_next = df.index[i+1]
             exchange = "MCX"
+            log(f"{cur['final_entry_long']} -- {cur['exit_long_final']} -- {cur['final_entry_short']} -- {cur['final_exit_short']}")
             # Fetch all open positions
             positions = kite.positions()
 

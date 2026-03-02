@@ -149,8 +149,8 @@ def backtest_with_capital(p):
     position_size = 0
     total_diff = 0
     # exchange = "MCX"
-    symbol = "GOLDM26MARFUT"   # example instrument
-    tradingsymbol = "GOLDM26MARFUT"
+    symbol = "GOLDM26APRFUT"   # example instrument
+    tradingsymbol = "GOLDM26APRFUT"
     interval = "30minute"
     days = 6
     qty = p['quantity']

@@ -1817,20 +1817,23 @@ def stoploss_entry_point(row, prow):
             stoploss_val = kijun + atr*0.2
             if price_kijun_diff < atr:
                 stoploss_val = kijun + 50
+            
         else:
             if row['DI_gap_reduce'] and (row['RSI'] > 40) and row['price_below_cloud']:
                 
                 if row['DI_gap_reduce'] and (row['RSI'] > 45):
+                    
                     stoploss_val = price + atr*0.6
             
-                    if row['green_cloud'] and ((price - open)<800):
+                    # if row['green_cloud']:
+                    if row['green_cloud'] and ((price - open)<800) and ((price - open)>00):
                         stoploss_val = min(kijun, stoploss_val+50)
 
                 elif row['-DI_move_down']:
                     stoploss_val = price + atr*0.8
                 else:
                     stoploss_val = price + atr*1
-
+                
             elif (min_line > max_cloud) and (tenkan_kijun_diff > atr*1):
                 
                 stoploss_val = kijun + atr*0.3
@@ -1846,6 +1849,7 @@ def stoploss_entry_point(row, prow):
                     # if row['price_above_cloud']:
                     #     stoploss_val = kijun + atr*0.5
 
+            
     elif (not price_kijun) and tenkan_kijun:
         # print(row['date'], "--1")
         # stoploss_val = tenkan

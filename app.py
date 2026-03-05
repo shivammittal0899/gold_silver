@@ -9,7 +9,7 @@ app = Flask(__name__)
 # api_key = "0qw10pvn638g9jid"
 # api_secret = "8bbev51ab3ov4jfkq0ddhmsw1itviexc"
 API_KEY = "0qw10pvn638g9jid"
-API_SECRET = "8bbev51ab3ov4jfkq0ddhmsw1itviexc"
+API_SECRET = "6przxtyeeoi9jtvyx76qga4hrv7q86qr"
 REDIRECT_URL = "http://localhost:8000/callback"
 
 kite = KiteConnect(api_key=API_KEY)

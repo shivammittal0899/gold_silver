@@ -1678,7 +1678,7 @@ def stopless_point_short(row, position):
                 if row['DI_gap_reduce'] and (row['RSI'] > 45) and (row['range2'] > atr*0.8):
                     stoploss_val = price + atr*0.5
                 elif row['-DI_move_down'] and (row['range2'] > atr*0.8):
-                    stoploss_val = price + atr*0.8
+                    stoploss_val = price + atr*0.6
                 # if row['DI_gap_reduce'] and (row['RSI'] > 45):
                 #     stoploss_val = price + atr*0.6
                 # elif row['-DI_move_down']:
@@ -1747,7 +1747,7 @@ def stopless_point_short(row, position):
     # print(f'{row['date']} -- {price} -- {stoploss_val} -- {price - stoploss_val}')
     # if (row['line_gap_range'] < atr) and (row['DI_gap_range'] < 5):
     #     stoploss_val = stoploss_val + atr*1
-    reverse_sl = stoploss_val+1
+    reverse_sl = stoploss_val
     if stoploss_val > price:
         return int(stoploss_val), int(reverse_sl)
     return int(0), int(0)
@@ -1831,16 +1831,16 @@ def stoploss_entry_point(row, prow):
             
             if row['DI_gap_reduce'] and (row['RSI'] > 40) and row['price_below_cloud']:
                 
-                if row['DI_gap_reduce'] and (row['RSI'] > 45) and ((row['+DI'] > 22) or((row['-DI'] < 30) and (row['range2'] > atr*0.8))):
+                if row['DI_gap_reduce'] and (row['RSI'] > 45) and ((row['+DI'] > 20) or((row['-DI'] < 30) and (row['range2'] > atr*0.8))):
                     # print(row['date'])
-                    stoploss_val = price + atr*0.6
+                    stoploss_val = price + atr*0.5
             
                     # if row['green_cloud']:
                     if row['green_cloud'] and ((price - open)<800) and ((price - open)>00):
                         stoploss_val = min(kijun, stoploss_val+50)
 
                 elif row['-DI_move_down'] and (row['range2'] > atr*0.8):
-                    stoploss_val = price + atr*0.8
+                    stoploss_val = price + atr*0.9
                 else:
                     stoploss_val = price + atr*1
                 

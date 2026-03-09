@@ -476,8 +476,19 @@ def backtest_with_capital(p):
                     entry_sl_val = stoploss_entry_point(cur, df.iloc[i-1])
                     if (el_sl_orderid == None) and (entry_sl_val != 0):
                         quantity = qty
-                        el_sl_orderid = place_sl_order(tradingsymbol, "BUY", quantity, entry_sl_val)
-                        log(f"ESL placed: {el_sl_orderid} {entry_sl_val}")
+                        try:
+                            el_sl_orderid = place_sl_order(tradingsymbol, "BUY", quantity, entry_sl_val)
+                            log(f"ESL placed: {el_sl_orderid} {entry_sl_val}")
+                        except Exception as e:
+                            log(f"Error occured during ESL order placing Error is -- {e}")
+                            if "Trigger price" in e:
+                                # cancel_order(el_sl_orderid)
+                                el_sl_orderid = None
+                                buy_sell = "BUY"
+                                quantity = qty
+                                kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                                log(f"Error occured so ESL order not placed and take long position")
+                        
                     elif (el_sl_orderid != None) and (entry_sl_val != 0):
                         try:
                             modify_sl_order(el_sl_orderid, entry_sl_val)

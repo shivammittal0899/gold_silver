@@ -167,8 +167,8 @@ def backtest_with_capital(p):
             log(f'Present Time: {now}')
             market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
             # market_open  = (now.hour >= 8)
-            market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 55)
-
+            market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 30)
+            time23 = (now.hour > 23)
 
             if not (market_open and not market_close):
                 print("🕘 MCX Market Closed — sleeping...")
@@ -252,7 +252,100 @@ def backtest_with_capital(p):
                 sl_orderid = None
             # print(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")        
             log(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")
+            if (now.hour, now.minute) > (23, 24):
+                if (position == 1 and (nxt['exit_long_final'] or nxt['final_entry_short'] or nxt['exit_long_final_end'])) :
+                
+                    exit_price = nxt['Close']
+                    price_diff = exit_price - entry_price
+                    total_diff +=price_diff
+                    pnl_price_units = price_diff * position_size
+                    pnl_inr = pnl_price_units * p['contract_value'] - position_size * p['commission'] * p['contract_value'] 
+                    pnl_diff = price_diff - p['commission'] 
+                    total_pnl_diff += pnl_diff
+                    capital += pnl_inr
+                    trades.append({
+                        'entry_time': entry_time, 'exit_time': t_next, 'side': 'long',
+                        'entry_price': entry_price, 'exit_price': exit_price, 'difference': price_diff, 'total_diff': total_diff,
+                        'pnl_diff': pnl_diff, 'total_pnl_diff': total_pnl_diff,
+                        'contracts': position_size, 'pnl_inr': pnl_inr, 'capital': capital
+                    })
+                    position = 0
+                    buy_sell = "SELL"
+                    quantity = qty
+                    if sl_orderid != None:
+                        cancel_order(sl_orderid)
+                        sl_orderid = None
+                    if rsl_orderid != None:
+                        cancel_order(rsl_orderid)
+                        rsl_orderid = None
+                    kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                    log(f"Exit long: (Entry price - {entry_price}), (Exit price - {exit_price}), (PnL diff -- {price_diff})")
 
+                elif (position == -1 and (nxt['final_exit_short_end'])):## or nxt['final_entry_long'] or nxt['exit_long_final_end'])) :
+                # if position == 1 and cur['exit_long_final']:
+                    exit_price = nxt['Close']
+                    price_diff = entry_price - exit_price
+                    total_diff +=price_diff
+                    pnl_price_units = price_diff * position_size
+                    pnl_inr = pnl_price_units * p['contract_value'] - position_size * p['commission'] * p['contract_value'] 
+                    pnl_diff = price_diff - p['commission'] 
+                    total_pnl_diff += pnl_diff
+                    capital += pnl_inr
+                    trades.append({
+                        'entry_time': entry_time, 'exit_time': t_next, 'side': 'short',
+                        'entry_price': entry_price, 'exit_price': exit_price, 'difference': price_diff, 'total_diff': total_diff,
+                        'pnl_diff': pnl_diff, 'total_pnl_diff': total_pnl_diff,
+                        'contracts': position_size, 'pnl_inr': pnl_inr, 'capital': capital
+                    })
+                    position = 0
+                    buy_sell = "BUY"
+                    quantity = qty
+                    if sl_orderid != None:
+                        cancel_order(sl_orderid)
+                        sl_orderid = None
+                    if rsl_orderid != None:
+                        cancel_order(rsl_orderid)
+                        rsl_orderid = None
+                    kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                    log(f"Exit short: (Entry price - {entry_price}), (Exit price - {exit_price}), (PnL diff -- {price_diff})")
+                
+                if position == 0:
+
+                    if (nxt['final_entry_long'] and (not nxt['exit_long_final_end'])) and (dt3 or dt4):
+                        # print(capital)
+                        risk_amount = p['risk_per_trade'] * capital
+                        position_size = np.floor(risk_amount / (nxt['Close']))
+                        if position_size <= 0: position_size = 1
+                        entry_price = nxt['Close'] + p['slippage']
+                        entry_time = t_next
+                        position = 1
+                        buy_sell = "BUY"
+                        quantity = qty
+                        if el_sl_orderid != None:
+                            cancel_order(el_sl_orderid)
+                            el_sl_orderid = None
+                        kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                        print("Buy price. ",entry_time, entry_price)
+                        log(f"Buy price. ,{entry_time}, {entry_price}")
+                        # print("Buy price. ",entry_time, entry_price)
+                        # print(position_size)
+                    elif (nxt['final_entry_short']) and (dt3 or dt4): ##  and (not nxt['final_exit_short_end'])
+                        risk_amount = p['risk_per_trade'] * capital
+                        # position_size = math.floor(risk_amount / (df['Close'].std() or 1))
+                        position_size = np.floor(risk_amount / (nxt['Close']))
+                        if position_size <= 0: position_size = 1
+                        entry_price = nxt['Close'] - p['slippage']
+                        entry_time = t_next
+                        position = -1
+                        buy_sell = "SELL"
+                        quantity = qty
+                        if el_sl_orderid != None:
+                            cancel_order(el_sl_orderid)
+                            el_sl_orderid = None
+                        kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                        print("Sell price. ",entry_time, entry_price)
+                        log(f"Sell price. ,{entry_time}, {entry_price}")
+                time.sleep(500)
             # if position == 1 and cur['exit_long_final']:
             if position == 1 and (cur['exit_long_final']):
                 exit_price = nxt['Open'] - p['slippage']
@@ -521,7 +614,11 @@ def backtest_with_capital(p):
                 el_sl_orderid = None
             
         log("#########################################################################")
-        wait_until_next_15min_plus30()
+        if time23:
+            wait_until_next_25min()
+        else:
+            wait_until_next_15min_plus30()
+        
 
 
 def log(msg):

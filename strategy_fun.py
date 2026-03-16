@@ -20,14 +20,15 @@ def compute_ichimoku(df, tenkan=9, kijun=26, senkou_b=52):
     df['kijun'] = (high_k + low_k) / 2
 
     df['senkou_a'] = ((df['tenkan'] + df['kijun']) / 2).shift(kijun)
+    df['senkou_af'] = ((df['tenkan'] + df['kijun']) / 2)
 
     high_s = df['High'].rolling(window=senkou_b).max()
     low_s  = df['Low'].rolling(window=senkou_b).min()
     df['senkou_b'] = ((high_s + low_s) / 2).shift(kijun)
-
-    df['chikou'] = df['Close'].shift(-kijun)
+    df['senkou_bf'] = ((high_s + low_s) / 2)
+    
+    # df['chikou'] = df['Close'].shift(-kijun)
     return df
-
 
 def ATR(df, n=14):
     tr = pd.concat([

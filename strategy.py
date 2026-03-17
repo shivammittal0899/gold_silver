@@ -168,7 +168,7 @@ def backtest_with_capital(p):
             market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
             # market_open  = (now.hour >= 8)
             market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 30)
-            time23 = (now.hour > 23)
+            time23 = (now.hour >= 23)
 
             if not (market_open and not market_close):
                 print("🕘 MCX Market Closed — sleeping...")
@@ -252,7 +252,8 @@ def backtest_with_capital(p):
                 sl_orderid = None
             # print(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")        
             log(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")
-            if (now.hour, now.minute) > (23, 24):
+            if (now.hour, now.minute) >= (23, 24):
+                log(f"time is 23:24")
                 if (position == 1 and (nxt['exit_long_final'] or nxt['final_entry_short'] or nxt['exit_long_final_end'])) :
                 
                     exit_price = nxt['Close']
@@ -345,6 +346,7 @@ def backtest_with_capital(p):
                         kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
                         print("Sell price. ",entry_time, entry_price)
                         log(f"Sell price. ,{entry_time}, {entry_price}")
+                log("Now wait for next 5 minutes")
                 time.sleep(500)
             # if position == 1 and cur['exit_long_final']:
             if position == 1 and (cur['exit_long_final']):

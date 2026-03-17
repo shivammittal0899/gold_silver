@@ -1500,7 +1500,9 @@ def generate_signals(df, p):
         (
             df['price_below_cloud'] &
             df['price_below_tk'] &
+            (df['Close'] < df['tenkan'] - df['ATR']*1.5) &
             (df['cloud_gap'] < df['ATR']) &
+            # (df['cloud_gapf'] < df['ATR']) &
             (df['DI_gap_reduce']) &
             (df['Close'] < (df['senkou_a'] - df['ATR']*2.5))
         ) |
@@ -1698,10 +1700,13 @@ def stopless_point(row, position, entry_price, prow):
     multiplier = 3
     stoploss_value = 0
     reverse_sl = 0
-    if position == 1:
+    if position == 1 or position == 0:
         
         
         stoploss_value = kijun - atr
+
+        # if price_tenkan and price_cloud and row['price_move_up'] and row['+DI_up'] and (min5 > cloud_top) and (price_senkou_a_diff > atr*3) and ((price - min5) > atr):
+        #     stoploss_value = min5
         if price_kijun and tenkan_kijun and row['+DI_move_down'] and (row['Close'] < row['Open']) and (tenkan_kijun_diff > atr*1.5):
             stoploss_value = kijun - atr*0.2
         if not senkou_a_b and price_kijun:
@@ -1750,10 +1755,9 @@ def stopless_point(row, position, entry_price, prow):
             stoploss_value = min5 - atr*1.5
         elif (row['range1'] < atr*1) and (row['DI_gap'] < 3) and (prow['DI_gap'] < 3) and price_kijun:
             stoploss_value = min5 - atr*1.5
-        
         if ((price-min5) > atr*2) and (price_senkou_a_diff > atr) and (min5 < (senkou_a - atr*0.5)) and (row['ADX'] < 25):
             stoploss_value = min5 + atr*1.2
-
+    
         if stoploss_value == 0:
             stoploss_value = price - atr*2
 
@@ -1795,17 +1799,20 @@ def stopless_point(row, position, entry_price, prow):
             reverse_sl = stoploss_value - atr*2
         if (row['line_gap_range'] < atr):
             reverse_sl = stoploss_value - atr
-        
+        if (not price_tenkan) and (not tenkan_kijun):
+            reverse_sl = stoploss_value - 100
         if (reverse_sl >= stoploss_value):
             reverse_sl = 0
         if stoploss_value == 0:
             reverse_sl = 0
         # reverse_sl = 0
         # stoploss_value = 0
+        if reverse_sl > stoploss_value:
+            reverse_sl = stoploss_value
         if stoploss_value < price:
             # print(row['date'], stoploss_value)
             if stoploss_value > (price - 100):
-                return int(stoploss_value) - 80, (int(reverse_sl) - 120)
+                return int(stoploss_value) - 80, (int(reverse_sl) - 80)
             return int(stoploss_value), int(reverse_sl)
     return 0,0
 
@@ -1844,7 +1851,8 @@ def stopless_point_short(row, position):
                             stoploss_val = tenkan + atr*1
                     elif row['RSI'] > 40 or (row['green_cloud'] and (row['-DI'] < 35)):
                         stoploss_val = tenkan + 100
-
+                    elif (price < row['senkou_af']) and (not price_tenkan) and ((open - price) > 500):
+                        stoploss_val = open - 350
                     else:
                         stoploss_val = kijun + 100
             elif (tenkan_kijun_diff > atr*1):
@@ -1888,6 +1896,7 @@ def stopless_point_short(row, position):
             stoploss_val = kijun + atr*0.2
             if price_kijun_diff < atr:
                 stoploss_val = kijun + 50
+        
         else:
             
             if row['DI_gap_reduce'] and (row['RSI'] > 40) and row['price_below_cloud']:
@@ -1934,7 +1943,7 @@ def stopless_point_short(row, position):
         # print(row['date'])
         if price_tenkan_diff > atr:
             stoploss_val = tenkan + atr*1
-
+    
         elif (price_tenkan_diff <= atr) and (row['+DI'] > 25):
             stoploss_val = tenkan + atr*1
             if (row['range2'] < atr):
@@ -1998,17 +2007,18 @@ def stoploss_entry_point(row, prow):
             if (tenkan_kijun_diff > atr*2):
                 stoploss_val = tenkan + atr*0.5
                 if row['exit_long_final']:
-                    if row['+DI'] > 15:
+                    if row['+DI'] > 14:
                         stoploss_val = tenkan + atr*0.3
                         if (tenkan_kijun_diff > atr*4):
                             stoploss_val = tenkan + atr*1
                     elif row['RSI'] > 40:
-                        stoploss_val = tenkan + 100
+                        stoploss_val = tenkan + 50
                     else:
                         stoploss_val = kijun + 100
                 if (row['cloud_gap'] < atr*0.2):
                     stoploss_val = kijun
-
+                if (price < row['senkou_af']) and (not price_tenkan) and ((open - price) > 500):
+                    stoploss_val = open - 250
             elif (tenkan_kijun_diff > atr*1):
                 # print(row['date'], "---1")
                 if row['+DI_up']:
@@ -2036,7 +2046,9 @@ def stoploss_entry_point(row, prow):
                 elif row['DI_gap_reduce'] and (row['DI_gap'] < 5):
                     stoploss_val = kijun + atr*0.2
                 elif row['price_below_cloud'] and (row['RSI'] > 30) and (row['-DI'] < 40):
-                    stoploss_val = kijun + atr*0.5
+                    stoploss_val = kijun + atr*0.4
+                    if (row['-DI'] < 35):
+                        stoploss_val = kijun + atr*0.0
                     
                     
         elif tenkan_kijun_diff > atr*2:

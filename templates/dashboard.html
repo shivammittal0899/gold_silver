@@ -142,7 +142,48 @@
             Stop Strategy
         </button>
     </form>
+    <form action="/start_trailing" method="POST">
 
+        <!-- Selection Box -->
+        <label>Select Indicator:</label>
+        <select name="indicator" required>
+            <option value="senkou_a">Senkou A</option>
+            <option value="senkou_b">Senkou B</option>
+            <option value="tenkan">Tenkan</option>
+            <option value="kijun">Kijun</option>
+            <option value="high">High</option>
+            <option value="low">Low</option>
+        </select>
+
+        <br><br>
+
+        <!-- Min, Multiplier, Max -->
+        <label>Min:</label>
+        <input type="number" name="min" required>
+
+        <label>Multiplier:</label>
+        <input type="number" step="0.01" name="multiplier" required>
+
+        <label>Max:</label>
+        <input type="number" name="max" required>
+
+        <br><br>
+
+        <!-- Start Trailing Button -->
+        <button type="submit" style="padding:10px; font-size:18px;">
+            Start Trailing Stoploss
+        </button>
+
+    </form>
+
+    <br>
+
+    <!-- Stop Trailing Form -->
+    <form action="/stop_trailing" method="GET">
+        <button style="padding:10px; font-size:18px; background:red; color:white;">
+            Stop Trailing
+        </button>
+    </form>
     <br>
     <a href="/logs">View Live Logs</a>
     <h3>Recent Logs</h3>

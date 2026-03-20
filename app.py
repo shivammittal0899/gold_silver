@@ -122,6 +122,34 @@ def stop():
     STRATEGY_RUNNING = False
     return redirect("/dashboard")
 
+def log(msg):
+    with open("static/logs.txt", "a") as f:
+        f.write(f"{msg}\n")
+@app.route('/start_trailing', methods=['POST'])
+def start_trailing():
+    indicator = request.form.get('indicator')
+    min_val = request.form.get('min')
+    multiplier = request.form.get('multiplier')
+    max_val = request.form.get('max')
+
+    log(f"{indicator}, {min_val}, {multiplier}, {max_val}")
+
+    # Your trailing logic here
+
+    # return redirect('/')
+    
+
+@app.route('/stop_trailing')
+def stop_trailing():
+    log("Trailing stopped")
+    
+    # Stop logic here
+
+    # return redirect('/')
+
+
+
+
 @app.route("/start_silver", methods=["POST"])
 def start_silver():
     global STRATEGY_RUNNING

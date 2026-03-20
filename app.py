@@ -53,8 +53,12 @@ def login_callback():
 @app.route("/dashboard")
 def dashboard():
     token = read_access_token()
-    quantity = read_quantity()
-    return render_template("dashboard.html", token=token, quantity=quantity)
+    quantity = read_quantity("quantity")
+    indicator = read_quantity("indicator")
+    min_val = read_quantity("min_val")
+    max_val = read_quantity("max_val")
+    multiplier = read_quantity("multiplier")
+    return render_template("dashboard.html", token=token, quantity=quantity, indicator=indicator, min_val=min_val, max_val=max_val, multiplier=multiplier)
 
 # # ---------------------- STRATEGY EXECUTOR ----------------------
 # def run_my_strategy(options):
@@ -214,11 +218,32 @@ def save_quantity(value, file):
     # with open("quantity.txt", "w") as f:
     #     f.write(str(qty))
 
-def read_quantity():
-    try:
-        return int(open("quantity.txt").read().strip())
-    except:
-        return 10    # default value
+def read_quantity(file):
+    if file == "quantity":
+        try:
+            return int(open("quantity.txt").read().strip())
+        except:
+            return 10    # default value
+    elif file == "indicator":
+        try:
+            return int(open("indicator.txt").read().strip())
+        except:
+            return "senkou_a"    # default value
+    elif file == "min_val":
+        try:
+            return int(open("min_val.txt").read().strip())
+        except:
+            return "0"    # default value
+    elif file == "max_val":
+        try:
+            return int(open("max_val.txt").read().strip())
+        except:
+            return "0"    # default value
+    elif file == "multiplier":
+        try:
+            return int(open("multiplier.txt").read().strip())
+        except:
+            return "0"    # default value
 
 
 # ----------------------------

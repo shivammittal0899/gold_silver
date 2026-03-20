@@ -89,16 +89,14 @@
         .minmaxmul {
             position: relative;
             padding: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        @media screen and (min-width: 480px) {
+        @media screen and (min-width: 560px) {
             input[type="number"] {
-                max-width: -webkit-fill-available;
-            }
-            .minmaxmul {
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                    flex-wrap: wrap;
+                max-width: max-content;
             }
         }
         /* Responsive fix for small screens */

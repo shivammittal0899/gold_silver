@@ -73,7 +73,7 @@ def start():
     global STRATEGY_RUNNING
     access_token = read_access_token()
     quantity = int(request.form.get("quantity"))
-    save_quantity(quantity)    # <---- SAVE IT HERE
+    save_quantity(quantity, "quantity")    # <---- SAVE IT HERE
     params = {
         # Ichimoku
         'tenkan': 9,
@@ -132,7 +132,10 @@ def start_trailing():
     min_val = int(request.form.get('min'))
     multiplier = float(request.form.get('multiplier'))
     max_val = int(request.form.get('max'))
-
+    save_quantity(indicator, "indicator") 
+    save_quantity(min_val, "min_val") 
+    save_quantity(multiplier, "multiplier") 
+    save_quantity(max_val, "max_val") 
     log1(f"{indicator}, {min_val}, {multiplier}, {max_val}")
 
     # Your trailing logic here
@@ -191,9 +194,25 @@ def strategy_status():
     return "running" if STRATEGY_RUNNING else "stopped"
 
 
-def save_quantity(qty):
-    with open("quantity.txt", "w") as f:
-        f.write(str(qty))
+def save_quantity(value, file):
+    if file == "quantity":
+        with open("quantity.txt", "w") as f:
+            f.write(str(value))
+    elif file == "indicator":
+        with open("indicator.txt", "w") as f:
+            f.write(str(value))
+    elif file == "min_val":
+        with open("min_val.txt", "w") as f:
+            f.write(str(value))
+    elif file == "max_val":
+        with open("max_val.txt", "w") as f:
+            f.write(str(value))
+    elif file == "multiplier":
+        with open("multiplier.txt", "w") as f:
+            f.write(str(value))
+    
+    # with open("quantity.txt", "w") as f:
+    #     f.write(str(qty))
 
 def read_quantity():
     try:

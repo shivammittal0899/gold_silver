@@ -206,10 +206,10 @@ def save_quantity(value, file):
         with open("indicator.txt", "w") as f:
             f.write(str(value))
     elif file == "min_val":
-        with open("min_val.txt", "w") as f:
+        with open("minval.txt", "w") as f:
             f.write(str(value))
     elif file == "max_val":
-        with open("max_val.txt", "w") as f:
+        with open("maxval.txt", "w") as f:
             f.write(str(value))
     elif file == "multiplier":
         with open("multiplier.txt", "w") as f:
@@ -231,12 +231,12 @@ def read_quantity(file):
             return "senkou_a"    # default value
     elif file == "min_val":
         try:
-            return int(open("min_val.txt").read().strip())
+            return int(open("minval.txt").read().strip())
         except:
             return "0"    # default value
     elif file == "max_val":
         try:
-            return int(open("max_val.txt").read().strip())
+            return int(open("maxval.txt").read().strip())
         except:
             return "0"    # default value
     elif file == "multiplier":

@@ -662,3 +662,4 @@ def run_strategy(API_KEY, ACCESS_TOKEN, params):
     # time.sleep(15)
 
     log("🟢 Strategy stopped successfully.")
+

@@ -136,7 +136,7 @@ def start_trailing():
 
     # Your trailing logic here
 
-    # return redirect('/')
+    return redirect('/dashboard')
     
 
 @app.route('/stop_trailing')
@@ -145,7 +145,7 @@ def stop_trailing():
     
     # Stop logic here
 
-    # return redirect('/')
+    return redirect('/dashboard')
 
 
 

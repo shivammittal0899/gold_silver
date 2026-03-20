@@ -219,31 +219,21 @@ def save_quantity(value, file):
     #     f.write(str(qty))
 
 def read_quantity(file):
-    if file == "quantity":
-        try:
-            return int(open("quantity.txt").read().strip())
-        except:
-            return 10    # default value
-    elif file == "indicator":
-        try:
-            return int(open("indicator.txt").read().strip())
-        except:
-            return "senkou_a"    # default value
-    elif file == "min_val":
-        try:
-            return int(open("minval.txt").read().strip())
-        except:
-            return "0"    # default value
-    elif file == "max_val":
-        try:
-            return int(open("maxval.txt").read().strip())
-        except:
-            return "0"    # default value
-    elif file == "multiplier":
-        try:
-            return int(open("multiplier.txt").read().strip())
-        except:
-            return "0"    # default value
+    # def read_value(file):
+    config = {
+        "quantity": ("quantity.txt", int, 10),
+        "indicator": ("indicator.txt", str, "senkou_a"),
+        "min_val": ("minval.txt", int, 0),
+        "max_val": ("maxval.txt", int, 0),
+        "multiplier": ("multiplier.txt", float, 1.0),
+    }
+
+    filename, dtype, default = config[file]
+
+    try:
+        return dtype(open(filename).read().strip())
+    except:
+        return default
 
 
 # ----------------------------

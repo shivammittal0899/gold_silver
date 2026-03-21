@@ -86,13 +86,34 @@
             min-width: 200px;
             height: 30px;
         }
+        .select-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .select-row select {
+            flex: 1;          /* takes remaining space */
+            padding: 8px;
+        }
         .minmaxmul, .buttons {
             position: relative;
             padding: 5px;
             display: flex;
             align-items: center;
+            justify-content: 1;
+            align-content: center;
             gap: 10px;
             flex-wrap: wrap;
+        }
+        .buttons button{
+            flex: 1;
+            width: max-content;
+            min-width: 200px;
+        }
+        .trailingRow {
+            padding-top: 20px;
         }
         @media screen and (min-width: 560px) {
             input[type="number"] {
@@ -213,14 +234,16 @@
     <div id="trailingContainer">
 
         <div class="trailingRow">
-            <label>Select Indicator:</label>
-            <select name="indicator">
-                <option value="senkou_a">Senkou A</option>
-                <option value="senkou_b">Senkou B</option>
-                <option value="tenkan">Tenkan</option>
-                <option value="kijun">Kijun</option>
-                <option value="highlow">HighLow</option>
-            </select>
+            <div class="select-row">
+                <label>Select Indicator:</label>
+                <select name="indicator">
+                    <option value="senkou_a">Senkou A</option>
+                    <option value="senkou_b">Senkou B</option>
+                    <option value="tenkan">Tenkan</option>
+                    <option value="kijun">Kijun</option>
+                    <option value="highlow">HighLow</option>
+                </select>
+            </div>
             <div class="minmaxmul">
                 <label>Min:</label>
                 <input type="number" name="min" placeholder="Min">

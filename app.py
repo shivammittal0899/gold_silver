@@ -5,6 +5,7 @@ import threading
 import time
 from strategy import run_strategy, stop_strategy
 from trailling_strategy import run_trailling_strategy, stop_trailling_strategy
+import uuid
 
 app = Flask(__name__)
 # api_key = "0qw10pvn638g9jid"
@@ -17,7 +18,30 @@ kite = KiteConnect(api_key=API_KEY)
 LOGIN_URL = kite.login_url()
 STRATEGY_RUNNING = False
 TRAILLING_STRATEGY = False
+TRAILING_CONFIGS = []
 
+
+import sqlite3
+
+def init_db():
+    conn = sqlite3.connect("trailing.db")
+    c = conn.cursor()
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS trailing (
+        id TEXT PRIMARY KEY,
+        indicator TEXT,
+        min INTEGER,
+        multiplier REAL,
+        max INTEGER,
+        running INTEGER
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_db()
 # ---------------------- SAVE TOKEN ----------------------
 def save_access_token(token):
     with open("access_token.txt", "w") as f:
@@ -60,7 +84,7 @@ def dashboard():
     min_val = read_quantity("min_val")
     max_val = read_quantity("max_val")
     multiplier = read_quantity("multiplier")
-    return render_template("dashboard.html", token=token, quantity=quantity, indicator=indicator, min_val=min_val, max_val=max_val, multiplier=multiplier)
+    return render_template("dashboard.html", token=token, quantity=quantity, indicator=indicator, min_val=min_val, max_val=max_val, multiplier=multiplier, trailing_configs=TRAILING_CONFIGS)
 
 # # ---------------------- STRATEGY EXECUTOR ----------------------
 # def run_my_strategy(options):
@@ -161,6 +185,134 @@ def stop_trailing():
     # Stop logic here
 
     return redirect('/dashboard')
+
+
+
+# @app.route('/start_trailing_row', methods=['POST'])
+# def start_trailing_row():
+#     data = request.json
+
+#     config = {
+#         "id": str(uuid.uuid4()),
+#         "indicator": data['indicator'],
+#         "min": int(data['min']),
+#         "multiplier": float(data['multiplier']),
+#         "max": int(data['max']),
+#         "running": True
+#     }
+
+#     TRAILING_CONFIGS.append(config)
+
+#     return config
+
+
+import threading
+import time
+
+TRAILING_THREADS = {}
+
+def trailing_worker(task_id, indicator, min_val, multiplier, max_val):
+    while True:
+        conn = sqlite3.connect("trailing.db")
+        c = conn.cursor()
+
+        status = c.execute(
+            "SELECT running FROM trailing WHERE id=?",
+            (task_id,)
+        ).fetchone()
+
+        conn.close()
+
+        if not status or status[0] == 0:
+            print(f"{task_id} stopped")
+            break
+
+        print(f"[{task_id}] Running {indicator} | min={min_val} max={max_val}")
+
+        # 👉 put your real trading logic here
+
+        time.sleep(2)
+
+
+# import uuid
+# from flask import request
+
+@app.route('/start_trailing_row', methods=['POST'])
+def start_trailing_row():
+    data = request.json
+
+    task_id = str(uuid.uuid4())
+
+    indicator = data['indicator']
+    min_val = int(data['min'])
+    multiplier = float(data['multiplier'])
+    max_val = int(data['max'])
+
+    conn = sqlite3.connect("trailing.db")
+    c = conn.cursor()
+
+    c.execute("""
+    INSERT INTO trailing VALUES (?, ?, ?, ?, ?, ?)
+    """, (task_id, indicator, min_val, multiplier, max_val, 1))
+
+    conn.commit()
+    conn.close()
+
+    # start thread
+    thread = threading.Thread(
+        target=trailing_worker,
+        args=(task_id, indicator, min_val, multiplier, max_val)
+    )
+    thread.daemon = True
+    thread.start()
+
+    TRAILING_THREADS[task_id] = thread
+
+    return {"id": task_id}
+
+
+@app.route('/stop_trailing_row', methods=['POST'])
+def stop_trailing_row():
+    data = request.json
+    task_id = data['id']
+
+    conn = sqlite3.connect("trailing.db")
+    c = conn.cursor()
+
+    c.execute("UPDATE trailing SET running=0 WHERE id=?", (task_id,))
+
+    conn.commit()
+    conn.close()
+
+    return {"status": "stopped"}
+
+@app.route('/get_trailing')
+def get_trailing():
+    conn = sqlite3.connect("trailing.db")
+    c = conn.cursor()
+
+    rows = c.execute("SELECT * FROM trailing").fetchall()
+    conn.close()
+
+    data = []
+    for r in rows:
+        data.append({
+            "id": r[0],
+            "indicator": r[1],
+            "min": r[2],
+            "multiplier": r[3],
+            "max": r[4],
+            "running": r[5]
+        })
+
+    return data
+
+
+
+
+
+
+
 
 
 

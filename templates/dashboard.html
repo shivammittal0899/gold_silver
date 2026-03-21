@@ -178,8 +178,6 @@
             </select>
         </div>
 
-        <br><br>
-
         <!-- Min, Multiplier, Max -->
          <div class="minmaxmul">
             <label>Min:</label>
@@ -209,6 +207,38 @@
         </button>
     </form>
     <br>
+
+    <h3>Trailing Stoploss</h3>
+
+    <div id="trailingContainer">
+
+        <div class="trailingRow">
+            <select name="indicator">
+                <option value="senkou_a">Senkou A</option>
+                <option value="senkou_b">Senkou B</option>
+                <option value="tenkan">Tenkan</option>
+                <option value="kijun">Kijun</option>
+                <option value="highlow">HighLow</option>
+            </select>
+
+            <input type="number" name="min" placeholder="Min">
+            <input type="number" step="0.01" name="multiplier" placeholder="Multiplier">
+            <input type="number" name="max" placeholder="Max">
+
+            <!-- Buttons -->
+            <button type="button" onclick="startRow(this)">▶ Start</button>
+            <button type="button" onclick="stopRow(this)">⛔ Stop</button>
+            <button type="button" onclick="removeRow(this)">❌</button>
+        </div>
+
+    </div>
+
+    <br>
+
+    <button type="button" onclick="addRow()">➕ Add Row</button>
+    
+    
+    
     <a href="/logs">View Live Logs</a>
     <h3>Recent Logs</h3>
 
@@ -261,6 +291,71 @@
 
     setInterval(updateStatus, 2000);
     updateStatus();
+    </script>
+    <script>
+    function addRow() {
+        let container = document.getElementById("trailingContainer");
+        let row = document.querySelector(".trailingRow").cloneNode(true);
+
+        row.removeAttribute("data-id");
+
+        row.querySelectorAll("input").forEach(input => input.value = "");
+
+        container.appendChild(row);
+    }
+
+    function removeRow(btn) {
+        let row = btn.parentElement;
+        let container = document.getElementById("trailingContainer");
+
+        if (container.children.length > 1) {
+            row.remove();
+        }
+    }
+
+    // START
+    function startRow(btn) {
+        let row = btn.parentElement;
+
+        let data = {
+            indicator: row.querySelector('[name="indicator"]').value,
+            min: row.querySelector('[name="min"]').value,
+            multiplier: row.querySelector('[name="multiplier"]').value,
+            max: row.querySelector('[name="max"]').value
+        };
+
+        fetch('/start_trailing_row', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            row.setAttribute("data-id", res.id);
+            row.style.background = "#e6ffe6"; // green highlight
+        });
+    }
+
+    // STOP
+    function stopRow(btn) {
+        let row = btn.parentElement;
+        let id = row.getAttribute("data-id");
+
+        if (!id) {
+            alert("Not started!");
+            return;
+        }
+
+        fetch('/stop_trailing_row', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id })
+        })
+        .then(res => res.json())
+        .then(res => {
+            row.style.background = "#ffe6e6"; // red highlight
+        });
+    }
     </script>
 
 </body>

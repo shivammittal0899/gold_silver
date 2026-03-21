@@ -4,6 +4,7 @@ import os
 import threading
 import time
 from strategy import run_strategy, stop_strategy
+from trailling_strategy import run_trailling_strategy, stop_trailling_strategy
 
 app = Flask(__name__)
 # api_key = "0qw10pvn638g9jid"
@@ -15,6 +16,7 @@ REDIRECT_URL = "http://localhost:8000/callback"
 kite = KiteConnect(api_key=API_KEY)
 LOGIN_URL = kite.login_url()
 STRATEGY_RUNNING = False
+TRAILLING_STRATEGY = False
 
 # ---------------------- SAVE TOKEN ----------------------
 def save_access_token(token):
@@ -132,6 +134,7 @@ def log1(msg):
 
 @app.route('/start_trailing', methods=['POST'])
 def start_trailing():
+    global TRAILLING_STRATEGY
     indicator = request.form.get('indicator')
     min_val = int(request.form.get('min'))
     multiplier = float(request.form.get('multiplier'))
@@ -141,7 +144,11 @@ def start_trailing():
     save_quantity(multiplier, "multiplier") 
     save_quantity(max_val, "max_val") 
     log1(f"{indicator}, {min_val}, {multiplier}, {max_val}")
-
+    TRAILLING_STRATEGY = True
+    access_token = read_access_token()
+    thread_t = threading.Thread(target=run_trailling_strategy, args=(API_KEY, access_token))
+    thread_t.daemon = True
+    thread_t.start()
     # Your trailing logic here
 
     return redirect('/dashboard')

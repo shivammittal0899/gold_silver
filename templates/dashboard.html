@@ -86,7 +86,7 @@
             min-width: 200px;
             height: 30px;
         }
-        .minmaxmul {
+        .minmaxmul, .buttons {
             position: relative;
             padding: 5px;
             display: flex;
@@ -222,8 +222,11 @@
                 <option value="highlow">HighLow</option>
             </select>
             <div class="minmaxmul">
+                <label>Min:</label>
                 <input type="number" name="min" placeholder="Min">
+                <label>Multiplier:</label>
                 <input type="number" step="0.01" name="multiplier" placeholder="Multiplier">
+                <label>Max:</label>
                 <input type="number" name="max" placeholder="Max">
             </div>
             <div class="buttons">

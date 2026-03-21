@@ -179,7 +179,7 @@
         </div>
 
         <!-- Min, Multiplier, Max -->
-         <div class="minmaxmul">
+        <div class="minmaxmul">
             <label>Min:</label>
             <input type="number" name="min" value="{{ min_val }}" required>
 
@@ -213,6 +213,7 @@
     <div id="trailingContainer">
 
         <div class="trailingRow">
+            <label>Select Indicator:</label>
             <select name="indicator">
                 <option value="senkou_a">Senkou A</option>
                 <option value="senkou_b">Senkou B</option>
@@ -220,15 +221,17 @@
                 <option value="kijun">Kijun</option>
                 <option value="highlow">HighLow</option>
             </select>
-
-            <input type="number" name="min" placeholder="Min">
-            <input type="number" step="0.01" name="multiplier" placeholder="Multiplier">
-            <input type="number" name="max" placeholder="Max">
-
+            <div class="minmaxmul">
+                <input type="number" name="min" placeholder="Min">
+                <input type="number" step="0.01" name="multiplier" placeholder="Multiplier">
+                <input type="number" name="max" placeholder="Max">
+            </div>
+            <div class="buttons">
             <!-- Buttons -->
-            <button type="button" onclick="startRow(this)">▶ Start</button>
-            <button type="button" onclick="stopRow(this)">⛔ Stop</button>
-            <button type="button" onclick="removeRow(this)">❌</button>
+                <button type="button" onclick="startRow(this)">▶ Start</button>
+                <button type="button" onclick="stopRow(this)">⛔ Stop</button>
+                <button type="button" onclick="removeRow(this)">❌ Remove</button>
+            </div>
         </div>
 
     </div>

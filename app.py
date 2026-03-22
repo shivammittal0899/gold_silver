@@ -212,28 +212,47 @@ import time
 TRAILING_THREADS = {}
 
 def trailing_worker(task_id, indicator, min_val, multiplier, max_val):
-    va = 1
-    while True:
+    try:
+        log1(f"[{task_id}] Worker started")
+
+        va = 1
+
+        while True:
+            conn = sqlite3.connect("trailing.db")
+            c = conn.cursor()
+
+            status = c.execute(
+                "SELECT running FROM trailing WHERE id=?",
+                (task_id,)
+            ).fetchone()
+
+            conn.close()
+
+            # ⛔ STOP CONDITION
+            if not status or status[0] == 0:
+                log1(f"[{task_id}] Stopped normally")
+                break
+
+            # 🚀 YOUR STRATEGY LOGIC
+            log1(f"[{task_id}] Running {indicator} | min={min_val} max={max_val} value={va}")
+            va += 1
+
+            time.sleep(2)
+
+    except Exception as e:
+        log1(f"[{task_id}] ERROR: {str(e)}")
+
+        # ❌ Mark as stopped due to error
         conn = sqlite3.connect("trailing.db")
         c = conn.cursor()
-
-        status = c.execute(
-            "SELECT running FROM trailing WHERE id=?",
-            (task_id,)
-        ).fetchone()
-
+        c.execute("UPDATE trailing SET running=0 WHERE id=?", (task_id,))
+        conn.commit()
         conn.close()
 
-        if not status or status[0] == 0:
-            log1(f"{task_id} stopped")
-            break
-
-        log1(f"[{task_id}] Running {indicator} | min={min_val} max={max_val} value={va}")
-        va = va+1
-
-        # 👉 put your real trading logic here
-
-        time.sleep(2)
+    finally:
+        # 🧹 CLEAN THREAD FROM MEMORY
+        TRAILING_THREADS.pop(task_id, None)
+        log1(f"[{task_id}] Thread cleaned up")
 
 
 # import uuid
@@ -247,24 +266,48 @@ def start_trailing_row():
     min_val = int(data['min'])
     multiplier = float(data['multiplier'])
     max_val = int(data['max'])
-    # log1(f"Going to start Trailing {task_id}")
+
     conn = sqlite3.connect("trailing.db")
     c = conn.cursor()
 
-    # 🔍 CHECK IF SAME CONFIG ALREADY RUNNING
+    # 🔍 CHECK IF SAME CONFIG EXISTS
     existing = c.execute("""
-    SELECT id FROM trailing 
-    WHERE indicator=? AND min=? AND multiplier=? AND max=?
+        SELECT id FROM trailing 
+        WHERE indicator=? AND min=? AND multiplier=? AND max=?
     """, (indicator, min_val, multiplier, max_val)).fetchone()
 
+    # 🔁 RESTART EXISTING
     if existing:
-        c.execute("UPDATE trailing SET running=1 WHERE id=?", (existing[0],))
+        task_id = existing[0]
+
+        # 🛑 Prevent duplicate thread
+        if task_id in TRAILING_THREADS:
+            log1(f"Thread already running {task_id}")
+            conn.close()
+            return jsonify({"id": task_id})
+
+        # 🔄 Restart
+        c.execute("UPDATE trailing SET running=1 WHERE id=?", (task_id,))
         conn.commit()
         conn.close()
-        return jsonify({"id": existing[0]})
 
-    # 🆕 CREATE NEW TASK
+        log1(f"Restarting Trailing {indicator} | ID: {task_id}")
+
+        thread = threading.Thread(
+            target=trailing_worker,
+            args=(task_id, indicator, min_val, multiplier, max_val)
+        )
+        thread.daemon = True
+        thread.start()
+
+        TRAILING_THREADS[task_id] = thread
+
+        return jsonify({"id": task_id})
+
+    # 🆕 NEW TASK
     task_id = str(uuid.uuid4())
+
+    log1(f"Going to start Trailing {indicator} | ID: {task_id}")
 
     c.execute("""
         INSERT INTO trailing (id, indicator, min, multiplier, max, running)
@@ -274,9 +317,8 @@ def start_trailing_row():
     conn.commit()
     conn.close()
 
-    log1(f"Trailing START {task_id}")
+    log1(f"Trailing STARTED {task_id}")
 
-    # 🚀 START THREAD
     thread = threading.Thread(
         target=trailing_worker,
         args=(task_id, indicator, min_val, multiplier, max_val)
@@ -320,7 +362,8 @@ def get_trailing():
             "min": r[2],
             "multiplier": r[3],
             "max": r[4],
-            "running": r[5]
+            "running": r[5],
+            "status": "running" if r[5] == 1 else "stopped"
         })
 
     return jsonify(data)

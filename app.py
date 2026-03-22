@@ -224,10 +224,10 @@ def trailing_worker(task_id, indicator, min_val, multiplier, max_val):
         conn.close()
 
         if not status or status[0] == 0:
-            print(f"{task_id} stopped")
+            log1(f"{task_id} stopped")
             break
 
-        print(f"[{task_id}] Running {indicator} | min={min_val} max={max_val}")
+        log1(f"[{task_id}] Running {indicator} | min={min_val} max={max_val}")
 
         # 👉 put your real trading logic here
 
@@ -254,7 +254,7 @@ def start_trailing_row():
     c.execute("""
     INSERT INTO trailing VALUES (?, ?, ?, ?, ?, ?)
     """, (task_id, indicator, min_val, multiplier, max_val, 1))
-
+    log1(f"Trailling start button {task_id}")
     conn.commit()
     conn.close()
 
@@ -278,7 +278,7 @@ def stop_trailing_row():
 
     conn = sqlite3.connect("trailing.db")
     c = conn.cursor()
-
+    log1(f"Trailling stop button {task_id}")
     c.execute("UPDATE trailing SET running=0 WHERE id=?", (task_id,))
 
     conn.commit()

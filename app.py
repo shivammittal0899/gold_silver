@@ -247,7 +247,7 @@ def start_trailing_row():
     min_val = int(data['min'])
     multiplier = float(data['multiplier'])
     max_val = int(data['max'])
-
+    log1(f"Going to start Trailing {task_id}")
     conn = sqlite3.connect("trailing.db")
     c = conn.cursor()
 

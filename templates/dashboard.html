@@ -177,6 +177,7 @@
     <h2>Strategy Dashboard</h2>
 
     <p><b>Access Token:</b> {{ token }}</p>
+    
     <div id="statusBox" style="padding:10px; font-size:18px;">
         Checking status...
     </div>
@@ -282,7 +283,6 @@
 
     // refresh every 3 seconds
     setInterval(loadRecentLogs, 3000);
-
     loadRecentLogs();
     </script>
     <script>
@@ -316,71 +316,7 @@
     setInterval(updateStatus, 2000);
     updateStatus();
     </script>
-    <!-- <script>
-    function addRow() {
-        let container = document.getElementById("trailingContainer");
-        let row = document.querySelector(".trailingRow").cloneNode(true);
-
-        row.removeAttribute("data-id");
-
-        row.querySelectorAll("input").forEach(input => input.value = "");
-
-        container.appendChild(row);
-    }
-
-    function removeRow(btn) {
-        let row = btn.parentElement;
-        let container = document.getElementById("trailingContainer");
-
-        if (container.children.length > 1) {
-            row.remove();
-        }
-    }
-
-    // START
-    function startRow(btn) {
-        let row = btn.parentElement;
-
-        let data = {
-            indicator: row.querySelector('[name="indicator"]').value,
-            min: row.querySelector('[name="min"]').value,
-            multiplier: row.querySelector('[name="multiplier"]').value,
-            max: row.querySelector('[name="max"]').value
-        };
-
-        fetch('/start_trailing_row', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(res => res.json())
-        .then(res => {
-            row.setAttribute("data-id", res.id);
-            row.style.background = "#e6ffe6"; // green highlight
-        });
-    }
-
-    // STOP
-    function stopRow(btn) {
-        let row = btn.parentElement;
-        let id = row.getAttribute("data-id");
-
-        if (!id) {
-            alert("Not started!");
-            return;
-        }
-
-        fetch('/stop_trailing_row', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: id })
-        })
-        .then(res => res.json())
-        .then(res => {
-            row.style.background = "#ffe6e6"; // red highlight
-        });
-    }
-    </script> -->
+    
     <script>
 
     // 🔄 Load rows from backend (works across devices)
@@ -518,5 +454,74 @@
     loadRows();
 
     </script>
+
+
+
+
+    <!-- <script>
+    function addRow() {
+        let container = document.getElementById("trailingContainer");
+        let row = document.querySelector(".trailingRow").cloneNode(true);
+
+        row.removeAttribute("data-id");
+
+        row.querySelectorAll("input").forEach(input => input.value = "");
+
+        container.appendChild(row);
+    }
+
+    function removeRow(btn) {
+        let row = btn.parentElement;
+        let container = document.getElementById("trailingContainer");
+
+        if (container.children.length > 1) {
+            row.remove();
+        }
+    }
+
+    // START
+    function startRow(btn) {
+        let row = btn.parentElement;
+
+        let data = {
+            indicator: row.querySelector('[name="indicator"]').value,
+            min: row.querySelector('[name="min"]').value,
+            multiplier: row.querySelector('[name="multiplier"]').value,
+            max: row.querySelector('[name="max"]').value
+        };
+
+        fetch('/start_trailing_row', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(res => {
+            row.setAttribute("data-id", res.id);
+            row.style.background = "#e6ffe6"; // green highlight
+        });
+    }
+
+    // STOP
+    function stopRow(btn) {
+        let row = btn.parentElement;
+        let id = row.getAttribute("data-id");
+
+        if (!id) {
+            alert("Not started!");
+            return;
+        }
+
+        fetch('/stop_trailing_row', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id })
+        })
+        .then(res => res.json())
+        .then(res => {
+            row.style.background = "#ffe6e6"; // red highlight
+        });
+    }
+    </script> -->
 </body>
 </html>

@@ -373,9 +373,7 @@
     // ▶ START (save + run)
     function startRow(btn) {
         let row = btn.closest(".trailingRow");
-        let badge = row.querySelector(".statusBadge");
-        badge.innerText = "🟢 Running";
-        badge.className = "statusBadge running";
+        
         
         let data = {
             indicator: row.querySelector('[name="indicator"]').value,
@@ -388,12 +386,19 @@
             alert("Fill all fields");
             return;
         }
+        let badge = row.querySelector(".statusBadge");
+        badge.innerText = "🟢 Running";
+        badge.className = "statusBadge running";
         fetch('/start_trailing_row', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify(data)
         })
-        .then(res => res.json())
+        // .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error("Server error");
+            return res.json();
+        })
         .then(() => {
             loadRows(); // 🔥 reload from backend
         })

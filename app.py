@@ -267,7 +267,8 @@ def start_trailing_row():
     timeframe = data.get('timeframe', '5m')
     min_val = int(data['min'])
     multiplier = float(data['multiplier'])
-    max_val = int(data['max'])
+    # max_val = int(data['max'])
+    max_val = int(data['max']) if data.get('max') else 0
 
     conn = sqlite3.connect("trailing.db")
     c = conn.cursor()

@@ -212,6 +212,7 @@ import time
 TRAILING_THREADS = {}
 
 def trailing_worker(task_id, indicator, min_val, multiplier, max_val):
+    va = 1
     while True:
         conn = sqlite3.connect("trailing.db")
         c = conn.cursor()
@@ -227,7 +228,8 @@ def trailing_worker(task_id, indicator, min_val, multiplier, max_val):
             log1(f"{task_id} stopped")
             break
 
-        log1(f"[{task_id}] Running {indicator} | min={min_val} max={max_val}")
+        log1(f"[{task_id}] Running {indicator} | min={min_val} max={max_val} value={va}")
+        va = va+1
 
         # 👉 put your real trading logic here
 

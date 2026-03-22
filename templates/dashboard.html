@@ -116,7 +116,11 @@
             min-width: 200px;
         }
         .trailingRow {
-            padding-top: 20px;
+            margin-top: 20px;
+            padding: 15px;
+            border: 4px;
+            border-radius: 10px;
+            background: #ddd;
         }
         @media screen and (min-width: 560px) {
             input[type="number"] {
@@ -345,7 +349,8 @@
         let row = document.createElement("div");
         row.className = "trailingRow";
         row.setAttribute("data-id", data.id || "");
-
+        let statusText = data.running == 1 ? "🟢 Running" : "🔴 Stopped";
+        let statusClass = data.running == 1 ? "running" : "stopped";
         row.innerHTML = `
             <div class="select-row">
                 <label>Select Indicator:</label>
@@ -371,7 +376,7 @@
                 <button onclick="startRow(this)">▶ Start</button>
                 <button onclick="stopRow(this)">⛔ Stop</button>
                 <button onclick="removeRow(this)">❌ Remove</button>
-                <span class="statusBadge stopped">🔴 Stopped</span>
+                <span class="statusBadge ${statusClass}">${statusText}</span>
             </div>
         `;
 
@@ -394,7 +399,9 @@
     // ▶ START (save + run)
     function startRow(btn) {
         let row = btn.closest(".trailingRow");
-        row.querySelector(".statusBadge").innerText = "🟢 Running";
+        let badge = row.querySelector(".statusBadge");
+        badge.innerText = "🟢 Running";
+        badge.className = "statusBadge running";
         let data = {
             indicator: row.querySelector('[name="indicator"]').value,
             min: row.querySelector('[name="min"]').value,
@@ -419,7 +426,9 @@
     function stopRow(btn) {
         let row = btn.closest(".trailingRow");
         let id = row.getAttribute("data-id");
-        row.querySelector(".statusBadge").innerText = "🔴 Stopped";
+        let badge = row.querySelector(".statusBadge");
+        badge.innerText = "🔴 Stopped";
+        badge.className = "statusBadge stopped";
         if (!id) return alert("Not started");
 
         fetch('/stop_trailing_row', {

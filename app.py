@@ -31,6 +31,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS trailing (
         id TEXT PRIMARY KEY,
         indicator TEXT,
+        timeframe TEXT,
         min INTEGER,
         multiplier REAL,
         max INTEGER,
@@ -263,7 +264,7 @@ def start_trailing_row():
     data = request.json
 
     indicator = data['indicator']
-    timeframe = data['timeframe']
+    timeframe = data.get('timeframe', '5m')
     min_val = int(data['min'])
     multiplier = float(data['multiplier'])
     max_val = int(data['max'])
@@ -275,7 +276,7 @@ def start_trailing_row():
     existing = c.execute("""
         SELECT id FROM trailing 
         WHERE indicator=? AND timeframe=? AND min=? AND multiplier=? AND max=?
-    """, (indicator, min_val, multiplier, max_val)).fetchone()
+    """, (indicator, timeframe, min_val, multiplier, max_val)).fetchone()
 
     # 🔁 RESTART EXISTING
     if existing:
@@ -296,7 +297,7 @@ def start_trailing_row():
 
         thread = threading.Thread(
             target=trailing_worker,
-            args=(task_id, indicator, min_val, multiplier, max_val)
+            args=(task_id, indicator, timeframe, min_val, multiplier, max_val)
         )
         thread.daemon = True
         thread.start()
@@ -360,12 +361,12 @@ def get_trailing():
         data.append({
             "id": r[0],
             "indicator": r[1],
-            "timeframe": r[2],
+            "timeframe": r[2] or "5m",
             "min": r[3],
             "multiplier": r[4],
             "max": r[5],
             "running": r[6],
-            "status": "running" if r[5] == 1 else "stopped"
+            "status": "running" if r[6] == 1 else "stopped"
         })
 
     return jsonify(data)

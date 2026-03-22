@@ -212,13 +212,6 @@
 
     <br>
 
-    <!-- Stop Trailing Form -->
-    <form action="/stop_trailing" method="GET">
-        <button style="padding:10px; font-size:18px; background:red; color:white;">
-            Stop Trailing
-        </button>
-    </form>
-    <br>
 
     <h3>Trailing Stoploss</h3>
 
@@ -318,6 +311,7 @@
         let row = document.createElement("div");
         row.className = "trailingRow";
         row.setAttribute("data-id", data.id || "");
+        let tf = data.timeframe || "5m";
         let statusText = data.running == 1 ? "🟢 Running" : "🔴 Stopped";
         let statusClass = data.running == 1 ? "running" : "stopped";
         row.innerHTML = `
@@ -335,10 +329,10 @@
                 <div class="select_box">
                     <label>Timeframe:</label>
                     <select name="timeframe">
-                        <option value="5m" ${data.timeframe=="5m"?"selected":""}>5 Min</option>
-                        <option value="15m" ${data.timeframe=="15m"?"selected":""}>15 Min</option>
-                        <option value="30m" ${data.timeframe=="30m"?"selected":""}>30 Min</option>
-                        <option value="1h" ${data.timeframe=="1h"?"selected":""}>1 Hour</option>
+                        <option value="5m" ${tf=="5m"?"selected":""}>5 Min</option>
+                        <option value="15m" ${tf=="15m"?"selected":""}>15 Min</option>
+                        <option value="30m" ${tf=="30m"?"selected":""}>30 Min</option>
+                        <option value="1h" ${tf=="1h"?"selected":""}>1 Hour</option>
                     </select>
                 </div>
             </div>
@@ -382,6 +376,7 @@
         let badge = row.querySelector(".statusBadge");
         badge.innerText = "🟢 Running";
         badge.className = "statusBadge running";
+        
         let data = {
             indicator: row.querySelector('[name="indicator"]').value,
             timeframe: row.querySelector('[name="timeframe"]').value,
@@ -389,7 +384,10 @@
             multiplier: row.querySelector('[name="multiplier"]').value,
             max: row.querySelector('[name="max"]').value
         };
-
+        if (!data.min || !data.multiplier) {
+            alert("Fill all fields");
+            return;
+        }
         fetch('/start_trailing_row', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
@@ -398,6 +396,10 @@
         .then(res => res.json())
         .then(() => {
             loadRows(); // 🔥 reload from backend
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error starting row");
         });
         // .then(res => {
         //     row.setAttribute("data-id", res.id);

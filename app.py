@@ -211,7 +211,7 @@ import time
 
 TRAILING_THREADS = {}
 
-def trailing_worker(task_id, indicator, min_val, multiplier, max_val):
+def trailing_worker(task_id, indicator, timeframe, min_val, multiplier, max_val):
     try:
         log1(f"[{task_id}] Worker started")
 
@@ -263,6 +263,7 @@ def start_trailing_row():
     data = request.json
 
     indicator = data['indicator']
+    timeframe = data['timeframe']
     min_val = int(data['min'])
     multiplier = float(data['multiplier'])
     max_val = int(data['max'])
@@ -273,7 +274,7 @@ def start_trailing_row():
     # 🔍 CHECK IF SAME CONFIG EXISTS
     existing = c.execute("""
         SELECT id FROM trailing 
-        WHERE indicator=? AND min=? AND multiplier=? AND max=?
+        WHERE indicator=? AND timeframe=? AND min=? AND multiplier=? AND max=?
     """, (indicator, min_val, multiplier, max_val)).fetchone()
 
     # 🔁 RESTART EXISTING
@@ -310,9 +311,9 @@ def start_trailing_row():
     log1(f"Going to start Trailing {indicator} | ID: {task_id}")
 
     c.execute("""
-        INSERT INTO trailing (id, indicator, min, multiplier, max, running)
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (task_id, indicator, min_val, multiplier, max_val, 1))
+        INSERT INTO trailing (id, indicator, timeframe, min, multiplier, max, running)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (task_id, indicator, timeframe, min_val, multiplier, max_val, 1))
 
     conn.commit()
     conn.close()
@@ -321,7 +322,7 @@ def start_trailing_row():
 
     thread = threading.Thread(
         target=trailing_worker,
-        args=(task_id, indicator, min_val, multiplier, max_val)
+        args=(task_id, indicator, timeframe, min_val, multiplier, max_val)
     )
     thread.daemon = True
     thread.start()
@@ -359,10 +360,11 @@ def get_trailing():
         data.append({
             "id": r[0],
             "indicator": r[1],
-            "min": r[2],
-            "multiplier": r[3],
-            "max": r[4],
-            "running": r[5],
+            "timeframe": r[2],
+            "min": r[3],
+            "multiplier": r[4],
+            "max": r[5],
+            "running": r[6],
             "status": "running" if r[5] == 1 else "stopped"
         })
 

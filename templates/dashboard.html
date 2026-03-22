@@ -331,11 +331,13 @@
             let container = document.getElementById("trailingContainer");
             container.innerHTML = "";
 
-            if (data.length === 0) {
-                addRow(); // show empty row
-                return;
-            }
-
+            // if (data.length === 0) {
+            //     addRow(); // show empty row
+            //     return;
+            // }
+            // if (data.length === 0) {
+            //     return; // show nothing
+            // }
             data.forEach(row => {
                 container.appendChild(createRow(row));
             });
@@ -415,10 +417,13 @@
             body: JSON.stringify(data)
         })
         .then(res => res.json())
-        .then(res => {
-            row.setAttribute("data-id", res.id);
-            row.style.background = "#e6ffe6";
+        .then(() => {
+            loadRows(); // 🔥 reload from backend
         });
+        // .then(res => {
+        //     row.setAttribute("data-id", res.id);
+        //     row.style.background = "#e6ffe6";
+        // });
     }
 
 
@@ -437,10 +442,13 @@
             body: JSON.stringify({id: id})
         })
         .then(() => {
-            row.style.background = "#ffe6e6";
+            loadRows(); // 🔥 reload from backend
         });
+        // .then(() => {
+        //     row.style.background = "#ffe6e6";
+        // });
     }
-
+    
 
     // ❌ REMOVE (delete from DB)
     function removeRow(btn) {
@@ -452,10 +460,14 @@
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({id: id})
+            })
+            .then(() => {
+                loadRows(); // 🔥 reload after delete
+                // row.remove(); // remove AFTER backend delete
             });
+        } else {
+            row.remove(); // local row only
         }
-
-        row.remove();
     }
 
 

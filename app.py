@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, render_template, url_for
+from flask import Flask, redirect, request, render_template, url_for, jsonify
 from kiteconnect import KiteConnect
 import os
 import threading
@@ -243,8 +243,6 @@ def trailing_worker(task_id, indicator, min_val, multiplier, max_val):
 def start_trailing_row():
     data = request.json
 
-    task_id = str(uuid.uuid4())
-
     indicator = data['indicator']
     min_val = int(data['min'])
     multiplier = float(data['multiplier'])
@@ -253,14 +251,32 @@ def start_trailing_row():
     conn = sqlite3.connect("trailing.db")
     c = conn.cursor()
 
+    # 🔍 CHECK IF SAME CONFIG ALREADY RUNNING
+    existing = c.execute("""
+    SELECT id FROM trailing 
+    WHERE indicator=? AND min=? AND multiplier=? AND max=?
+    """, (indicator, min_val, multiplier, max_val)).fetchone()
+
+    if existing:
+        c.execute("UPDATE trailing SET running=1 WHERE id=?", (existing[0],))
+        conn.commit()
+        conn.close()
+        return jsonify({"id": existing[0]})
+
+    # 🆕 CREATE NEW TASK
+    task_id = str(uuid.uuid4())
+
     c.execute("""
-    INSERT INTO trailing VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO trailing (id, indicator, min, multiplier, max, running)
+        VALUES (?, ?, ?, ?, ?, ?)
     """, (task_id, indicator, min_val, multiplier, max_val, 1))
-    log1(f"Trailling start button {task_id}")
+
     conn.commit()
     conn.close()
 
-    # start thread
+    log1(f"Trailing START {task_id}")
+
+    # 🚀 START THREAD
     thread = threading.Thread(
         target=trailing_worker,
         args=(task_id, indicator, min_val, multiplier, max_val)
@@ -270,7 +286,7 @@ def start_trailing_row():
 
     TRAILING_THREADS[task_id] = thread
 
-    return {"id": task_id}
+    return jsonify({"id": task_id})
 
 
 @app.route('/stop_trailing_row', methods=['POST'])
@@ -307,51 +323,28 @@ def get_trailing():
             "running": r[5]
         })
 
-    return data
+    return jsonify(data)
+
+
+@app.route('/delete_trailing_row', methods=['POST'])
+def delete_trailing_row():
+    data = request.json
+    task_id = data.get('id')
+
+    conn = sqlite3.connect("trailing.db")
+    c = conn.cursor()
+
+    c.execute("DELETE FROM trailing WHERE id = ?", (task_id,))
+    conn.commit()
+    conn.close()
+
+    log1(f"Deleted row {task_id}")
+
+    return jsonify({"status": "deleted"})
 
 
 
 
-
-
-
-
-
-
-
-@app.route("/start_silver", methods=["POST"])
-def start_silver():
-    global STRATEGY_RUNNING
-    access_token = read_access_token()
-    quantity = int(request.form.get("quantity"))
-
-    params = {
-        # Ichimoku
-        'tenkan': 9,
-        'kijun': 26,
-        'senkou_b': 52,
-        # Participation filters
-        'vol_ma_window': 50,
-        'oi_ma_window': 50,
-        # Capital & risk
-        'starting_capital': 5000000,   # ₹ 20 lakh
-        'risk_per_trade': 1,          # 2% of capital per trade
-        'contract_value': 10,           # ₹ per 1 price point (change this if 1 tick = ₹100)
-        # Execution / costs
-        'slippage': 0.0,
-        'commission': 20,                # ₹50 per side per trade
-        'verbose': True,
-        "quantity": quantity
-    }
-    # mark running
-    STRATEGY_RUNNING = True
-    
-
-    thread = threading.Thread(target=run_strategy, args=(API_KEY, access_token, params))
-    thread.daemon = True
-    thread.start()
-
-    return redirect("/dashboard")
 
 @app.route("/strategy_status")
 def strategy_status():

@@ -30,6 +30,7 @@ def init_db():
     c.execute("""
     CREATE TABLE IF NOT EXISTS trailing (
         id TEXT PRIMARY KEY,
+        instrument TEXT,
         indicator TEXT,
         timeframe TEXT,
         min INTEGER,

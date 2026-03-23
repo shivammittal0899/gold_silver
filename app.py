@@ -227,7 +227,8 @@ def download_instruments():
                 "instrument_token": i["instrument_token"]
             }
             for i in instruments
-            if i["name"] in ["GOLD", "SILVER"]
+            if (i["name"] in ["GOLD", "SILVER"] and
+                i["instrument_type"] == "FUT")
         ]
         log1(data)
         # Save to file

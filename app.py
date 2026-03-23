@@ -286,7 +286,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             elif timeframe == "1hr":
                 sleeptime = 20
             # 🚀 YOUR STRATEGY LOGIC
-            log1(f"[{task_id}] Running {indicator} | min={min_val} max={max_val} | Quantity= {qty} |  value={va}")
+            log1(f"[{task_id}] | {instrument} | Running {indicator} | min={min_val} max={max_val} | Quantity= {qty} |  value={va}")
             log1(f"{timeframe} -- {sleeptime}")
 
             va += 1
@@ -319,7 +319,7 @@ def start_trailing_row():
     instrument = data.get('instrument')
     indicator = data['indicator']
     timeframe = data.get('timeframe', '5m')
-    qty = int(data['qty'])
+    qty = int(data['qty']) if data.get('qty') else 1
     min_val = int(data['min'])
     multiplier = float(data['multiplier'])
     max_val = int(data['max']) if data.get('max') else 0

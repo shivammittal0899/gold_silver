@@ -265,7 +265,7 @@
     let instrumentData = [];
 
     function loadSavedInstruments() {
-        fetch('/get_saved_instruments')
+        return fetch('/get_saved_instruments')
         .then(res => res.json())
         .then(data => {
             instrumentData = data;

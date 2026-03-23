@@ -375,7 +375,7 @@ def start_trailing_row():
 
     thread = threading.Thread(
         target=trailing_worker,
-        args=(task_id, indicator, timeframe, min_val, multiplier, max_val)
+        args=(task_id, instrument, indicator, timeframe, min_val, multiplier, max_val)
     )
     thread.daemon = True
     thread.start()

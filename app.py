@@ -33,6 +33,7 @@ def init_db():
         instrument TEXT,
         indicator TEXT,
         timeframe TEXT,
+        qty INTEGER,
         min INTEGER,
         multiplier REAL,
         max INTEGER,
@@ -254,7 +255,7 @@ def get_saved_instruments():
     
 TRAILING_THREADS = {}
 
-def trailing_worker(task_id, instrument, indicator, timeframe, min_val, multiplier, max_val):
+def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val):
     try:
         log1(f"[{task_id}] Worker started")
 
@@ -285,7 +286,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, min_val, multipli
             elif timeframe == "1hr":
                 sleeptime = 20
             # 🚀 YOUR STRATEGY LOGIC
-            log1(f"[{task_id}] Running {indicator} | min={min_val} max={max_val} value={va}")
+            log1(f"[{task_id}] Running {indicator} | min={min_val} max={max_val} | Quantity= {qty} |  value={va}")
             log1(f"{timeframe} -- {sleeptime}")
 
             va += 1
@@ -318,9 +319,9 @@ def start_trailing_row():
     instrument = data.get('instrument')
     indicator = data['indicator']
     timeframe = data.get('timeframe', '5m')
+    qty = int(data['qty'])
     min_val = int(data['min'])
     multiplier = float(data['multiplier'])
-    # max_val = int(data['max'])
     max_val = int(data['max']) if data.get('max') else 0
 
     conn = sqlite3.connect("trailing.db", check_same_thread=False)
@@ -329,8 +330,8 @@ def start_trailing_row():
     # 🔍 CHECK IF SAME CONFIG EXISTS
     existing = c.execute("""
         SELECT id FROM trailing 
-        WHERE instrument=? AND indicator=? AND timeframe=? AND min=? AND multiplier=? AND max=?
-    """, (instrument, indicator, timeframe, min_val, multiplier, max_val)).fetchone()
+        WHERE instrument=? AND indicator=? AND timeframe=? AND qty=? AND min=? AND multiplier=? AND max=?
+    """, (instrument, indicator, timeframe, qty, min_val, multiplier, max_val)).fetchone()
 
     # 🔁 RESTART EXISTING
     if existing:
@@ -351,7 +352,7 @@ def start_trailing_row():
 
         thread = threading.Thread(
             target=trailing_worker,
-            args=(task_id, instrument, indicator, timeframe, min_val, multiplier, max_val)
+            args=(task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val)
         )
         thread.daemon = True
         thread.start()
@@ -366,9 +367,9 @@ def start_trailing_row():
     log1(f"Going to start Trailing {indicator} | ID: {task_id}")
 
     c.execute("""
-    INSERT INTO trailing (id, instrument, indicator, timeframe, min, multiplier, max, running)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (task_id, instrument, indicator, timeframe, min_val, multiplier, max_val, 1))
+    INSERT INTO trailing (id, instrument, indicator, timeframe, qty, min, multiplier, max, running)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val, 1))
     conn.commit()
     conn.close()
 
@@ -376,7 +377,7 @@ def start_trailing_row():
 
     thread = threading.Thread(
         target=trailing_worker,
-        args=(task_id, instrument, indicator, timeframe, min_val, multiplier, max_val)
+        args=(task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val)
     )
     thread.daemon = True
     thread.start()
@@ -416,11 +417,12 @@ def get_trailing():
             "instrument": r[1],
             "indicator": r[2],
             "timeframe": r[3] or "5m",
-            "min": r[4],
-            "multiplier": r[5],
-            "max": r[6],
-            "running": r[7],
-            "status": "running" if r[7] == 1 else "stopped"
+            "qty": r[4],
+            "min": r[5],
+            "multiplier": r[6],
+            "max": r[7],
+            "running": r[8],
+            "status": "running" if r[8] == 1 else "stopped"
         })
 
     return jsonify(data)

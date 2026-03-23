@@ -390,6 +390,8 @@
             </div>
 
             <div class="minmaxmul">
+                <label>Quantity:</label>
+                <input type="number" name="quantity" value="${data.qty || ''}">
                 <label>Min:</label>
                 <input type="number" name="min" value="${data.min || ''}">
                 <label>Multiplier:</label>
@@ -444,6 +446,7 @@
             instrument: row.querySelector('[name="instrument"]').value,  // ✅ NEW
             indicator: row.querySelector('[name="indicator"]').value,
             timeframe: row.querySelector('[name="timeframe"]').value,
+            qty: row.querySelector('[name="quantity"]').value,
             min: row.querySelector('[name="min"]').value,
             multiplier: row.querySelector('[name="multiplier"]').value,
             max: row.querySelector('[name="max"]').value

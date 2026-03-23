@@ -313,12 +313,22 @@
         let selects = document.querySelectorAll('[name="instrument"]');
 
         selects.forEach(select => {
+
+            // ✅ Save current selected value
+            let selected = select.value;
+
             select.innerHTML = '<option value="">Select Instrument</option>';
 
             instrumentData.forEach(inst => {
                 let option = document.createElement("option");
                 option.value = inst.tradingsymbol;
                 option.text = inst.tradingsymbol + " (" + inst.name + ")";
+
+                // ✅ Restore selection
+                if (inst.tradingsymbol === selected) {
+                    option.selected = true;
+                }
+
                 select.appendChild(option);
             });
         });
@@ -331,17 +341,12 @@
         .then(data => {
             let container = document.getElementById("trailingContainer");
             container.innerHTML = "";
-
-            // if (data.length === 0) {
-            //     addRow(); // show empty row
-            //     return;
-            // }
-            // if (data.length === 0) {
-            //     return; // show nothing
-            // }
             data.forEach(row => {
                 container.appendChild(createRow(row));
             });
+            if (instrumentData.length > 0) {
+                populateInstrumentDropdowns();
+            }
         });
     }
 
@@ -360,7 +365,7 @@
                 <div class="select_box">
                     <label>Instrument:</label>
                     <select name="instrument">
-                        <option value="">Load Instruments First</option>
+                        ${data.instrument ? `<option value="${data.instrument}" selected>${data.instrument}</option>` : '<option value="">Select Instrument</option>'}
                     </select>
                 </div>
                 <div class="select_box">
@@ -443,7 +448,7 @@
             multiplier: row.querySelector('[name="multiplier"]').value,
             max: row.querySelector('[name="max"]').value
         };
-        if (!data.min || !data.multiplier) {
+        if (!data.instrument || !data.min || !data.multiplier) {
             alert("Fill all fields");
             return;
         }
@@ -519,8 +524,11 @@
 
 
     // 🔄 Load on page open
-    loadRows();
-
+    // loadRows();
+    window.onload = async function () {
+        await loadSavedInstruments();
+        loadRows();
+    };
     </script>
 
 

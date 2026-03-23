@@ -24,7 +24,7 @@ TRAILING_CONFIGS = []
 import sqlite3
 
 def init_db():
-    conn = sqlite3.connect("trailing.db")
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
     c = conn.cursor()
 
     c.execute("""
@@ -230,7 +230,7 @@ def download_instruments():
             if (i["name"] in ["GOLD", "SILVER"] and
                 i["instrument_type"] == "FUT")
         ]
-        log1(data)
+        log1(f"Saved {len(data)} instruments")
         # Save to file
         with open("instruments.json", "w") as f:
             json.dump(data, f)
@@ -253,14 +253,14 @@ def get_saved_instruments():
     
 TRAILING_THREADS = {}
 
-def trailing_worker(task_id, indicator, timeframe, min_val, multiplier, max_val):
+def trailing_worker(task_id, instrument, indicator, timeframe, min_val, multiplier, max_val):
     try:
         log1(f"[{task_id}] Worker started")
 
         va = 1
 
         while True:
-            conn = sqlite3.connect("trailing.db")
+            conn = sqlite3.connect("trailing.db", check_same_thread=False)
             c = conn.cursor()
 
             status = c.execute(
@@ -295,7 +295,7 @@ def trailing_worker(task_id, indicator, timeframe, min_val, multiplier, max_val)
         log1(f"[{task_id}] ERROR: {str(e)}")
 
         # ❌ Mark as stopped due to error
-        conn = sqlite3.connect("trailing.db")
+        conn = sqlite3.connect("trailing.db", check_same_thread=False)
         c = conn.cursor()
         c.execute("UPDATE trailing SET running=0 WHERE id=?", (task_id,))
         conn.commit()
@@ -322,14 +322,14 @@ def start_trailing_row():
     # max_val = int(data['max'])
     max_val = int(data['max']) if data.get('max') else 0
 
-    conn = sqlite3.connect("trailing.db")
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
     c = conn.cursor()
 
     # 🔍 CHECK IF SAME CONFIG EXISTS
     existing = c.execute("""
         SELECT id FROM trailing 
-        WHERE indicator=? AND timeframe=? AND min=? AND multiplier=? AND max=?
-    """, (indicator, timeframe, min_val, multiplier, max_val)).fetchone()
+        WHERE instrument=? AND indicator=? AND timeframe=? AND min=? AND multiplier=? AND max=?
+    """, (instrument, indicator, timeframe, min_val, multiplier, max_val)).fetchone()
 
     # 🔁 RESTART EXISTING
     if existing:
@@ -350,7 +350,7 @@ def start_trailing_row():
 
         thread = threading.Thread(
             target=trailing_worker,
-            args=(task_id, indicator, timeframe, min_val, multiplier, max_val)
+            args=(task_id, instrument, indicator, timeframe, min_val, multiplier, max_val)
         )
         thread.daemon = True
         thread.start()
@@ -365,10 +365,9 @@ def start_trailing_row():
     log1(f"Going to start Trailing {indicator} | ID: {task_id}")
 
     c.execute("""
-        INSERT INTO trailing (id, indicator, timeframe, min, multiplier, max, running)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-    """, (task_id, indicator, timeframe, min_val, multiplier, max_val, 1))
-
+    INSERT INTO trailing (id, instrument, indicator, timeframe, min, multiplier, max, running)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (task_id, instrument, indicator, timeframe, min_val, multiplier, max_val, 1))
     conn.commit()
     conn.close()
 
@@ -391,7 +390,7 @@ def stop_trailing_row():
     data = request.json
     task_id = data['id']
 
-    conn = sqlite3.connect("trailing.db")
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
     c = conn.cursor()
     log1(f"Trailling stop button {task_id}")
     c.execute("UPDATE trailing SET running=0 WHERE id=?", (task_id,))
@@ -403,7 +402,7 @@ def stop_trailing_row():
 
 @app.route('/get_trailing')
 def get_trailing():
-    conn = sqlite3.connect("trailing.db")
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
     c = conn.cursor()
 
     rows = c.execute("SELECT * FROM trailing").fetchall()
@@ -413,13 +412,14 @@ def get_trailing():
     for r in rows:
         data.append({
             "id": r[0],
-            "indicator": r[1],
-            "timeframe": r[2] or "5m",
-            "min": r[3],
-            "multiplier": r[4],
-            "max": r[5],
-            "running": r[6],
-            "status": "running" if r[6] == 1 else "stopped"
+            "instrument": r[1],
+            "indicator": r[2],
+            "timeframe": r[3] or "5m",
+            "min": r[4],
+            "multiplier": r[5],
+            "max": r[6],
+            "running": r[7],
+            "status": "running" if r[7] == 1 else "stopped"
         })
 
     return jsonify(data)
@@ -430,7 +430,7 @@ def delete_trailing_row():
     data = request.json
     task_id = data.get('id')
 
-    conn = sqlite3.connect("trailing.db")
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
     c = conn.cursor()
 
     c.execute("DELETE FROM trailing WHERE id = ?", (task_id,))

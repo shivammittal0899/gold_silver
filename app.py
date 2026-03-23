@@ -210,6 +210,46 @@ def stop_trailing():
 import threading
 import time
 
+import json
+
+@app.route('/download_instruments')
+def download_instruments():
+    try:
+        access_token = read_access_token()
+        kite.set_access_token(access_token)
+
+        # instruments = kite.instruments("NSE")
+        instruments = kite.instruments("MCX")
+        data = [
+            {
+                "tradingsymbol": i["tradingsymbol"],
+                "name": i["name"],
+                "instrument_token": i["instrument_token"]
+            }
+            for i in instruments
+            if i["name"] in ["GOLD", "SILVER"]
+        ]
+        log1(data)
+        # Save to file
+        with open("instruments.json", "w") as f:
+            json.dump(data, f)
+
+        return jsonify({"status": "saved", "count": len(data)})
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
+@app.route('/get_saved_instruments')
+def get_saved_instruments():
+    try:
+        with open("instruments.json") as f:
+            data = json.load(f)
+
+        return jsonify(data)
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
 TRAILING_THREADS = {}
 
 def trailing_worker(task_id, indicator, timeframe, min_val, multiplier, max_val):

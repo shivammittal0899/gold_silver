@@ -181,7 +181,8 @@
     <h2>Strategy Dashboard</h2>
 
     <p><b>Access Token:</b> {{ token }}</p>
-    
+    <button onclick="downloadInstruments()">📥 Download Instruments</button>
+    <button onclick="loadSavedInstruments()">📂 Load Instruments</button>
     <div id="statusBox" style="padding:10px; font-size:18px;">
         Checking status...
     </div>
@@ -250,6 +251,31 @@
     loadRecentLogs();
     </script>
     <script>
+    function downloadInstruments() {
+        fetch('/download_instruments')
+        .then(res => res.json())
+        .then(data => {
+            alert("Saved " + data.count + " instruments");
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error downloading instruments");
+        });
+    }
+    let instrumentData = [];
+
+    function loadSavedInstruments() {
+        fetch('/get_saved_instruments')
+        .then(res => res.json())
+        .then(data => {
+            instrumentData = data;
+            populateInstrumentDropdowns();
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error loading instruments");
+        });
+    }
     // auto-update button colors every 2 sec
     function updateStatus() {
         fetch("/strategy_status")

@@ -229,7 +229,7 @@ def download_instruments():
                 "instrument_token": i["instrument_token"]
             }
             for i in instruments
-            if (i["name"] in ["GOLD", "SILVER"] and
+            if (i["name"] in ["GOLDM", "SILVERM"] and
                 i["instrument_type"] == "FUT")
         ]
         log1(f"Saved {len(data)} instruments")

@@ -314,6 +314,7 @@ def trailing_worker(task_id, indicator, timeframe, min_val, multiplier, max_val)
 def start_trailing_row():
     data = request.json
 
+    instrument = data.get('instrument')
     indicator = data['indicator']
     timeframe = data.get('timeframe', '5m')
     min_val = int(data['min'])

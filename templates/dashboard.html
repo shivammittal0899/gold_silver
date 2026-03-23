@@ -309,6 +309,21 @@
     
     <script>
 
+    function populateInstrumentDropdowns() {
+        let selects = document.querySelectorAll('[name="instrument"]');
+
+        selects.forEach(select => {
+            select.innerHTML = '<option value="">Select Instrument</option>';
+
+            instrumentData.forEach(inst => {
+                let option = document.createElement("option");
+                option.value = inst.tradingsymbol;
+                option.text = inst.tradingsymbol + " (" + inst.name + ")";
+                select.appendChild(option);
+            });
+        });
+    }
+
     // 🔄 Load rows from backend (works across devices)
     function loadRows() {
         fetch('/get_trailing')
@@ -342,6 +357,12 @@
         let statusClass = data.running == 1 ? "running" : "stopped";
         row.innerHTML = `
             <div class="select-row">
+                <div class="select_box">
+                    <label>Instrument:</label>
+                    <select name="instrument">
+                        <option value="">Load Instruments First</option>
+                    </select>
+                </div>
                 <div class="select_box">
                     <label>Select Indicator:</label>
                     <select name="indicator">
@@ -392,7 +413,20 @@
     // ➕ Add new empty row (not saved yet)
     function addRow() {
         let container = document.getElementById("trailingContainer");
-        container.appendChild(createRow());
+        let row = createRow();
+        container.appendChild(row);
+
+        // populate dropdown for new row
+        let select = row.querySelector('[name="instrument"]');
+
+        if (instrumentData.length > 0) {
+            instrumentData.forEach(inst => {
+                let option = document.createElement("option");
+                option.value = inst.tradingsymbol;
+                option.text = inst.tradingsymbol + " (" + inst.name + ")";
+                select.appendChild(option);
+            });
+        }
     }
 
 
@@ -402,6 +436,7 @@
         
         
         let data = {
+            instrument: row.querySelector('[name="instrument"]').value,  // ✅ NEW
             indicator: row.querySelector('[name="indicator"]').value,
             timeframe: row.querySelector('[name="timeframe"]').value,
             min: row.querySelector('[name="min"]').value,

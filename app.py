@@ -233,12 +233,22 @@ def trailing_worker(task_id, indicator, timeframe, min_val, multiplier, max_val)
             if not status or status[0] == 0:
                 log1(f"[{task_id}] Stopped normally")
                 break
-
+            sleeptime = 0
+            if timeframe == "5m":
+                sleeptime = 5
+            elif timeframe == "15m":
+                sleeptime = 10
+            elif timeframe == "30m":
+                sleeptime = 15
+            elif timeframe == "1hr":
+                sleeptime = 20
             # 🚀 YOUR STRATEGY LOGIC
             log1(f"[{task_id}] Running {indicator} | min={min_val} max={max_val} value={va}")
+            log1(f"{timeframe} -- {sleeptime}")
+
             va += 1
 
-            time.sleep(2)
+            time.sleep(sleeptime)
 
     except Exception as e:
         log1(f"[{task_id}] ERROR: {str(e)}")

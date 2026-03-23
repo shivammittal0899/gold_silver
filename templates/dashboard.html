@@ -470,7 +470,7 @@
         })
         .catch(err => {
             console.error(err);
-            alert("Error starting row");
+            alert("Error: " + err.message);
         });
         // .then(res => {
         //     row.setAttribute("data-id", res.id);

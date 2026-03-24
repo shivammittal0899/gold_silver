@@ -259,6 +259,7 @@ def get_saved_instruments():
 import json
 
 def load_instrument_map():
+    log1("loading instrument token")
     with open("instruments.json") as f:
         instruments = json.load(f)
 
@@ -295,27 +296,26 @@ def fetch_with_retry_token(symbol, token, interval, retries=3, delay=5):
 TRAILING_THREADS = {}
 
 def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val):
-    # 🚀 YOUR STRATEGY LOGIC
-    log1(f"[{task_id}] | {instrument} | Running {indicator} | min={min_val} max={max_val} | Quantity= {qty} |  value={va}")
-    log1(f"{timeframe} -- {sleeptime}")
-    instrument_map = load_instrument_map()
-
-    instrument_token = instrument_map.get(instrument)
-
-    if not instrument_token:
-        log1(f"❌ Token not found for {instrument}")
-        return
-    interval_map = {
-        "5m": "5minute",
-        "15m": "15minute",
-        "30m": "30minute",
-        "1h": "60minute"
-    }
-    
-    kite_interval = interval_map.get(timeframe, "5minute")
-
     
     try:
+        # 🚀 YOUR STRATEGY LOGIC
+        log1(f"[{task_id}] | {instrument} | Running {indicator} | min={min_val} max={max_val} | Quantity= {qty} |  value={va}")
+        log1(f"{timeframe} -- {sleeptime}")
+        instrument_map = load_instrument_map()
+
+        instrument_token = instrument_map.get(instrument)
+
+        if not instrument_token:
+            log1(f"❌ Token not found for {instrument}")
+            return
+        interval_map = {
+            "5m": "5minute",
+            "15m": "15minute",
+            "30m": "30minute",
+            "1h": "60minute"
+        }
+        
+        kite_interval = interval_map.get(timeframe, "5minute")
         access_token = read_access_token()
         log1(f"[{task_id}] Worker started")
         global kite    

@@ -286,10 +286,10 @@ def fetch_with_retry_token(symbol, token, interval, retries=3, delay=5):
                 oi = True
             )
             df = pd.DataFrame(data)
-            log(df['date'].iloc[-1])
+            log1(df['date'].iloc[-1])
             return df
         except Exception as e:
-            print(f"⚠️ Attempt {attempt+1} failed: {e}")
+            log1(f"⚠️ Attempt {attempt+1} failed: {e}")
             if attempt < retries - 1:
                 time.sleep(delay)
             else:

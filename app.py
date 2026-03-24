@@ -290,7 +290,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             
             now = datetime.now() + timedelta(hours=5, minutes=30)
             # now = datetime.now() 
-            log(f'Present Time: {now}')
+            log1(f'Present Time: {now}')
             market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
             # market_open  = (now.hour >= 8)
             market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 30)
@@ -298,13 +298,13 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
 
             if not (market_open and not market_close):
                 print("🕘 MCX Market Closed — sleeping...")
-                log("🕘 MCX Market Closed — sleeping...")
+                log1("🕘 MCX Market Closed — sleeping...")
                 wait_until_next_time(timeframe)
                 # time.sleep(600)
                 continue
             df = fetch_with_retry(instrument, timeframe)
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
-            log(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
+            log1(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
 
             stoploss_value = get_stoploss_value(df, instrument, indicator, min_val, multiplier, max_val)
             # 🚀 YOUR STRATEGY LOGIC

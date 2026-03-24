@@ -371,8 +371,19 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             log1("Fetching data complete")
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             log1(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
-
-            stoploss_value = get_stoploss_value(df, instrument, indicator, min_val, multiplier, max_val)
+            log1("Fetching position")
+            position = 0
+            positions = kite.positions()
+            pos = next((p for p in positions["net"] if p["tradingsymbol"] == instrument), None)
+            if pos:
+                log1(f"🟢 Symbol: {pos['tradingsymbol']} | 📊 Quantity: {pos['quantity']} | 💰 Avg Price: {pos['average_price']} | 📈 P&L: {pos['pnl']}")
+                if pos['quantity'] > 0:
+                    position = 1
+                elif pos['quantity'] < 0:
+                    position = -1
+                else:
+                    position = 0
+            stoploss_value = get_stoploss_value(df, instrument, indicator, min_val, multiplier, max_val, position)
             
             log1(va)
             va += 1

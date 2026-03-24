@@ -300,7 +300,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
     try:
         # 🚀 YOUR STRATEGY LOGIC
         log1(f"[{task_id}] | {instrument} | Running {indicator} | min={min_val} max={max_val} | Quantity= {qty}")
-        log1(f"{timeframe} -- {sleeptime}")
+        # log1(f"{timeframe} -- {sleeptime}")
         instrument_map = load_instrument_map()
 
         instrument_token = instrument_map.get(instrument)

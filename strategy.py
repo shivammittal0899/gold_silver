@@ -52,7 +52,7 @@ def fetch_with_retry(symbol, interval, retries=3, delay=5):
                 oi = True
             )
             df = pd.DataFrame(data)
-            print(df['date'].iloc[-1])
+            log(df['date'].iloc[-1])
             return df
         except Exception as e:
             print(f"⚠️ Attempt {attempt+1} failed: {e}")

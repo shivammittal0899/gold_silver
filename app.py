@@ -255,10 +255,66 @@ def get_saved_instruments():
 
     except Exception as e:
         return jsonify({"error": str(e)})
-    
+
+import json
+
+def load_instrument_map():
+    with open("instruments.json") as f:
+        instruments = json.load(f)
+
+    return {
+        i["tradingsymbol"]: i["instrument_token"]
+        for i in instruments
+    }
+
+def fetch_with_retry_token(symbol, token, interval, retries=3, delay=5):
+    for attempt in range(retries):
+        try:
+            time_correction = timedelta(hours=5, minutes=30)
+            # time_correction = 0
+            time_now = datetime.now() + time_correction
+            time_delay = time_now - timedelta(days=30)
+            # print(time_delay, time_now)
+            # instrument = kite.ltp(f"MCX:{symbol}")[f"MCX:{symbol}"]['instrument_token']
+            data = kite.historical_data(
+                instrument_token=token,
+                from_date=time_delay,
+                to_date=time_now,
+                interval=interval,
+                oi = True
+            )
+            df = pd.DataFrame(data)
+            log(df['date'].iloc[-1])
+            return df
+        except Exception as e:
+            print(f"⚠️ Attempt {attempt+1} failed: {e}")
+            if attempt < retries - 1:
+                time.sleep(delay)
+            else:
+                raise
 TRAILING_THREADS = {}
 
 def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val):
+    # 🚀 YOUR STRATEGY LOGIC
+    log1(f"[{task_id}] | {instrument} | Running {indicator} | min={min_val} max={max_val} | Quantity= {qty} |  value={va}")
+    log1(f"{timeframe} -- {sleeptime}")
+    instrument_map = load_instrument_map()
+
+    instrument_token = instrument_map.get(instrument)
+
+    if not instrument_token:
+        log1(f"❌ Token not found for {instrument}")
+        return
+    interval_map = {
+        "5m": "5minute",
+        "15m": "15minute",
+        "30m": "30minute",
+        "1h": "60minute"
+    }
+    
+    kite_interval = interval_map.get(timeframe, "5minute")
+
+    
     try:
         access_token = read_access_token()
         log1(f"[{task_id}] Worker started")
@@ -308,15 +364,13 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 # time.sleep(600)
                 continue
             log1("Fetching data")
-            df = fetch_with_retry(instrument, timeframe)
+            df = fetch_with_retry_token(instrument, kite_interval, instrument_token)
             log1("Fetching data complete")
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             log1(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
 
             stoploss_value = get_stoploss_value(df, instrument, indicator, min_val, multiplier, max_val)
-            # 🚀 YOUR STRATEGY LOGIC
-            log1(f"[{task_id}] | {instrument} | Running {indicator} | min={min_val} max={max_val} | Quantity= {qty} |  value={va}")
-            log1(f"{timeframe} -- {sleeptime}")
+            
 
             va += 1
 

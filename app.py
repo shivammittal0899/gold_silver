@@ -304,6 +304,8 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
         instrument_map = load_instrument_map()
 
         instrument_token = instrument_map.get(instrument)
+        log1(instrument_map)
+        log1(instrument_token)
 
         if not instrument_token:
             log1(f"❌ Token not found for {instrument}")

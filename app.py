@@ -299,7 +299,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
     
     try:
         # 🚀 YOUR STRATEGY LOGIC
-        log1(f"[{task_id}] | {instrument} | Running {indicator} | min={min_val} max={max_val} | Quantity= {qty} |  value={va}")
+        log1(f"[{task_id}] | {instrument} | Running {indicator} | min={min_val} max={max_val} | Quantity= {qty}")
         log1(f"{timeframe} -- {sleeptime}")
         instrument_map = load_instrument_map()
 
@@ -371,7 +371,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
 
             stoploss_value = get_stoploss_value(df, instrument, indicator, min_val, multiplier, max_val)
             
-
+            log1(va)
             va += 1
 
             time.sleep(sleeptime)

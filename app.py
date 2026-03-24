@@ -269,6 +269,7 @@ def load_instrument_map():
     }
 
 def fetch_with_retry_token(symbol, token, interval, retries=3, delay=5):
+    print(token)
     for attempt in range(retries):
         try:
             time_correction = timedelta(hours=5, minutes=30)

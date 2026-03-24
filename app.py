@@ -269,7 +269,7 @@ def load_instrument_map():
     }
 
 def fetch_with_retry_token(symbol, token, interval, retries=3, delay=5):
-    print(token)
+    log1(token)
     for attempt in range(retries):
         try:
             time_correction = timedelta(hours=5, minutes=30)
@@ -367,7 +367,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 # time.sleep(600)
                 continue
             log1("Fetching data")
-            df = fetch_with_retry_token(instrument, kite_interval, instrument_token)
+            df = fetch_with_retry_token(instrument, instrument_token, kite_interval)
             log1("Fetching data complete")
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             log1(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")

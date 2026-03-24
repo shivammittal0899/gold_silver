@@ -260,8 +260,12 @@ TRAILING_THREADS = {}
 
 def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val):
     try:
+        access_token = read_access_token()
         log1(f"[{task_id}] Worker started")
+        global kite    
 
+        kite = KiteConnect(api_key=API_KEY)
+        kite.set_access_token(access_token)
         va = 1
 
         while True:
@@ -291,6 +295,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             now = datetime.now() + timedelta(hours=5, minutes=30)
             # now = datetime.now() 
             log1(f'Present Time: {now}')
+
             market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
             # market_open  = (now.hour >= 8)
             market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 30)
@@ -302,7 +307,9 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 wait_until_next_time(timeframe)
                 # time.sleep(600)
                 continue
+            log1("Fetching data")
             df = fetch_with_retry(instrument, timeframe)
+            log1("Fetching data complete")
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             log1(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
 

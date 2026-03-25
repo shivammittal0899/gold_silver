@@ -46,23 +46,13 @@ def wait_until_next_time(tf):
     time.sleep(wait_seconds)
 
 
-def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val):
+def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, position):
     df = compute_adx(df)
     df = compute_ichimoku(df, 9, 26, 52)
     df['ATR'] = ATR(df, 14)
     # Calculate RSI (14-period default)
     df['RSI'] = RSIIndicator(close=df['Close'], window=14).rsi()
-    position = 0
-    positions = kite.positions()
-    pos = next((p for p in positions["net"] if p["tradingsymbol"] == symbol), None)
-    if pos:
-        log(f"🟢 Symbol: {pos['tradingsymbol']} | 📊 Quantity: {pos['quantity']} | 💰 Avg Price: {pos['average_price']} | 📈 P&L: {pos['pnl']}")
-        if pos['quantity'] > 0:
-            position = 1
-        elif pos['quantity'] < 0:
-            position = -1
-        else:
-            position = 0
+    
     
     if indicator == "highlow":
         if position == 1:
@@ -74,6 +64,18 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val):
 
     
     stoploss_value = df['refline'].iat[-1]
+    
+    atr = df['ATR'].iat[-1]*multiplier
+    if (atr > min_val) and (atr > max_val):
+        margin_val = max_val
+    elif (atr > min_val):
+        margin_val = atr
+    else:
+        margin_val = min_val
+    if position == 1:
+        stoploss_value = stoploss_value - margin_val
+    elif position == -1:
+        stoploss_value = stoploss_value + margin_val
     log(stoploss_value)
     
     return stoploss_value

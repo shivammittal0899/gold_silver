@@ -325,8 +325,9 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
 
         kite = KiteConnect(api_key=API_KEY)
         kite.set_access_token(access_token)
-        va = 1
-
+        
+        exchange = "MCX"
+        sl_orderid = None
         while True:
             conn = sqlite3.connect("trailing.db", check_same_thread=False)
             c = conn.cursor()
@@ -369,6 +370,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             log1("Fetching data")
             df = fetch_with_retry_token(instrument, instrument_token, kite_interval)
             log1("Fetching data complete")
+            log1(df.tail(3))
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             log1(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
             log1("Fetching position")
@@ -383,12 +385,76 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                     position = -1
                 else:
                     position = 0
-            stoploss_value = get_stoploss_value(df, instrument, indicator, min_val, multiplier, max_val, position)
+            if position != 0:
+                stoploss_val = get_stoploss_value(df, instrument, indicator, min_val, multiplier, max_val, position)
+            else:
+                sl_orderid == None
+                try:
+                    cancel_order(sl_orderid)
+                except Exception as e: 
+                    log(f"Stoploss cancel error {e}")
             
-            log1(va)
-            va += 1
+            price = df['Close'].iat[-1]
+            # if stoploss_value 
+            if (position == 1):
+                if (sl_orderid != None):
+                    try:
+                        log1(f"MSL placed: {sl_orderid} {stoploss_val}")
+                        modify_sl_order(sl_orderid, stoploss_val)
+                    except Exception as e: 
+                        log1(f"MSL order error {e}")
+                        if "Trigger price" in e:
+                            cancel_order(sl_orderid)
+                            sl_orderid = None
+                            buy_sell = "SELL"
+                            quantity = qty
+                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity)
+                            log1(f"Error occured so MSL order canceled and exit long position")
+                elif(sl_orderid == None) and (price > stoploss_val):
+                    quantity = qty
+                    log1(f"SL placed: {sl_orderid} {stoploss_val}")
+                    sl_orderid = place_sl_order(instrument, "SELL", quantity, stoploss_val)
+                    log1("SL Placed")
+                elif (sl_orderid != None) and (stoploss_val == 0):
+                    try:
+                        cancel_order(sl_orderid)
+                    except Exception as e: 
+                        log1(f"Stoploss cancel error {e}")
+                    log1("SL Canceled")
+                    sl_orderid = None
+                else:
+                    sl_orderid = None
+            if position == -1:
+                if (sl_orderid != None) and (stoploss_val != 0):
+                    try:
+                        log1(f"MSL placed: {sl_orderid} {stoploss_val} start")
+                        modify_sl_order(sl_orderid, stoploss_val)
+                        log1(f"SLM placed: {sl_orderid} {stoploss_val}")
+                    except Exception as e:
+                        log1(f"Error - {e}")
+                        if "Trigger price" in e:
+                            cancel_order(sl_orderid)
+                            sl_orderid = None
+                            buy_sell = "BUY"
+                            quantity = qty
+                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity)
+                            log1(f"Error occured so SL order canceled and exit from short position")
+                    
+                elif (sl_orderid == None) and (stoploss_val != 0):
+                    quantity = qty
+                    sl_orderid = place_sl_order(instrument , "BUY", quantity, stoploss_val)
+                    log1(f"SL placed: {sl_orderid} {stoploss_val}")
 
-            time.sleep(sleeptime)
+                elif (sl_orderid != None) and (stoploss_val == 0):
+                    try:
+                        cancel_order(sl_orderid)
+                    except Exception as e: 
+                        log1(f"Stoploss cancel error {e}")
+                    sl_orderid = None
+                else:
+                    sl_orderid = None
+            # time.sleep(sleeptime)
+            wait_until_next_time(timeframe)
 
     except Exception as e:
         log1(f"[{task_id}] ERROR: {str(e)}")

@@ -259,15 +259,40 @@ def get_saved_instruments():
 
 import json
 
-def load_instrument_map():
-    log1("loading instrument token")
-    with open("instruments.json") as f:
-        instruments = json.load(f)
+# def load_instrument_map():
+#     log1("loading instrument token")
+#     with open("instruments.json") as f:
+#         instruments = json.load(f)
 
-    return {
+#     return {
+#         i["tradingsymbol"]: i["instrument_token"]
+#         for i in instruments
+#     }
+
+INSTRUMENT_MAP = {}
+
+def load_instruments_once():
+    global INSTRUMENT_MAP
+    with open("instruments.json") as f:
+        data = json.load(f)
+
+    INSTRUMENT_MAP = {
         i["tradingsymbol"]: i["instrument_token"]
-        for i in instruments
+        for i in data
     }
+
+load_instruments_once()
+
+def stop_task(task_id, reason):
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
+    c = conn.cursor()
+    c.execute(
+        "UPDATE trailing SET running=0 WHERE id=?",
+        (task_id,)
+    )
+    conn.commit()
+    conn.close()
+    log1(f"[{task_id}] STOPPED: {reason}")
 
 def fetch_with_retry_token(symbol, token, interval, retries=3, delay=5):
     log1(token)
@@ -303,14 +328,19 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
         # 🚀 YOUR STRATEGY LOGIC
         log1(f"[{task_id}] | {instrument} | Running {indicator} | min={min_val} max={max_val} | Quantity= {qty}")
         # log1(f"{timeframe} -- {sleeptime}")
-        instrument_map = load_instrument_map()
+        instrument_token = INSTRUMENT_MAP.get(instrument)
 
-        instrument_token = instrument_map.get(instrument)
-        log1(instrument_map)
         log1(instrument_token)
 
         if not instrument_token:
             log1(f"❌ Token not found for {instrument}")
+
+            conn = sqlite3.connect("trailing.db", check_same_thread=False)
+            c = conn.cursor()
+            c.execute("UPDATE trailing SET running=0 WHERE id=?", (task_id,))
+            conn.commit()
+            conn.close()
+
             return
         interval_map = {
             "5m": "5minute",
@@ -344,14 +374,14 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 log1(f"[{task_id}] Stopped normally")
                 break
             sleeptime = 0
-            if timeframe == "5m":
-                sleeptime = (5*60)
-            elif timeframe == "15m":
-                sleeptime = (15*60)
-            elif timeframe == "30m":
-                sleeptime = (30*60)
-            elif timeframe == "1hr":
-                sleeptime = (60*60)
+            sleep_map = {
+                "5m": 300,
+                "15m": 900,
+                "30m": 1800,
+                "1h": 3600
+            }
+
+            sleeptime = sleep_map.get(timeframe, 300)
             
             now = datetime.now() + timedelta(hours=5, minutes=30)
             # now = datetime.now() 
@@ -395,6 +425,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                         cancel_order(sl_orderid)
                     except Exception as e: 
                         log(f"Stoploss cancel error {e}")
+                stop_task(task_id, "No Position")
                 break
             
             price = df['Close'].iat[-1]
@@ -506,7 +537,7 @@ def start_trailing_row():
         task_id = existing[0]
 
         # 🛑 Prevent duplicate thread
-        if task_id in TRAILING_THREADS:
+        if task_id in TRAILING_THREADS and TRAILING_THREADS[task_id].is_alive():
             log1(f"Thread already running {task_id}")
             conn.close()
             return jsonify({"id": task_id})

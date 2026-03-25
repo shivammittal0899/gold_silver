@@ -3,7 +3,8 @@ from kiteconnect import KiteConnect
 import os
 import threading
 import time
-from strategy import run_strategy, stop_strategy
+# from strategy import run_strategy, stop_strategy
+from strategy import *
 from trailling_strategy import run_trailling_strategy, stop_trailling_strategy
 import uuid
 from datetime import datetime, timedelta
@@ -394,7 +395,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                         cancel_order(sl_orderid)
                     except Exception as e: 
                         log(f"Stoploss cancel error {e}")
-                continue
+                break
             
             price = df['Close'].iat[-1]
             # if stoploss_value 

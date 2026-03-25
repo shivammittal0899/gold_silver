@@ -418,6 +418,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                     position = 0
             if position != 0:
                 stoploss_val = get_stoploss_value(df, instrument, indicator, min_val, multiplier, max_val, position)
+                stoploss_val = int(stoploss_val)
             else:
                 sl_orderid == None
                 if sl_orderid != None:

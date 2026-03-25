@@ -453,6 +453,8 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                     sl_orderid = None
                 else:
                     sl_orderid = None
+            if position == 0:
+                log1("No positions")
             # time.sleep(sleeptime)
             wait_until_next_time(timeframe)
 

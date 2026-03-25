@@ -389,10 +389,11 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 stoploss_val = get_stoploss_value(df, instrument, indicator, min_val, multiplier, max_val, position)
             else:
                 sl_orderid == None
-                try:
-                    cancel_order(sl_orderid)
-                except Exception as e: 
-                    log(f"Stoploss cancel error {e}")
+                if sl_orderid != None:
+                    try:
+                        cancel_order(sl_orderid)
+                    except Exception as e: 
+                        log(f"Stoploss cancel error {e}")
                 continue
             
             price = df['Close'].iat[-1]

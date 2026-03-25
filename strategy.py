@@ -19,21 +19,21 @@ STOP_FLAG = False      # global controller
 kite = None
 
 # Place market sell (to exit/short) — change transaction_type to "SELL"
-def kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity):
-    # Place market buy
-    # print(time.now())
-    order_id = kite.place_order(
-        variety = kite.VARIETY_REGULAR,      # regular order
-        exchange = exchange,
-        tradingsymbol = tradingsymbol,
-        transaction_type = buy_sell,            # or "SELL"
-        quantity = quantity,
-        order_type = "MARKET",
-        product = "NRML",                    # NRML for futures (or MIS for intraday margin intraday)
-        validity = "DAY"
-    )
-    print(f"Placed {buy_sell} of {tradingsymbol} quantity is {quantity} order id: {order_id}")
-    return order_id
+# def kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity):
+#     # Place market buy
+#     # print(time.now())
+#     order_id = kite.place_order(
+#         variety = kite.VARIETY_REGULAR,      # regular order
+#         exchange = exchange,
+#         tradingsymbol = tradingsymbol,
+#         transaction_type = buy_sell,            # or "SELL"
+#         quantity = quantity,
+#         order_type = "MARKET",
+#         product = "NRML",                    # NRML for futures (or MIS for intraday margin intraday)
+#         validity = "DAY"
+#     )
+#     print(f"Placed {buy_sell} of {tradingsymbol} quantity is {quantity} order id: {order_id}")
+#     return order_id
 
 def fetch_with_retry(symbol, interval, retries=3, delay=5):
     for attempt in range(retries):
@@ -62,14 +62,14 @@ def fetch_with_retry(symbol, interval, retries=3, delay=5):
                 raise
 
 
-def cancel_order(orderid):
-    try:
-        kite.cancel_order(
-                        variety=kite.VARIETY_REGULAR,
-                        order_id=orderid
-                        )
-    except Exception as e: 
-        log(f"Stoploss cancel error {e}")
+# def cancel_order(orderid):
+#     try:
+#         kite.cancel_order(
+#                         variety=kite.VARIETY_REGULAR,
+#                         order_id=orderid
+#                         )
+#     except Exception as e: 
+#         log(f"Stoploss cancel error {e}")
 # order_id = kite.place_order(
 #                 variety=kite.VARIETY_REGULAR,
 #                 exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
@@ -169,13 +169,58 @@ def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val, kite_inst
 
     return order_id
 
+def modify_sl_order(sl_orderid, stoploss_val, kite_instance=None):
+    global kite
 
-def modify_sl_order(sl_orderid, stoploss_val):
-    kite.modify_order(
-            variety=kite.VARIETY_REGULAR,
-            order_id=sl_orderid,
-            trigger_price=stoploss_val                         # new SL trigger
+    kite_obj = kite_instance if kite_instance is not None else kite
+
+    if not kite_obj:
+        raise Exception("❌ Kite instance not available")
+
+    return kite_obj.modify_order(
+        variety=kite_obj.VARIETY_REGULAR,
+        order_id=sl_orderid,
+        trigger_price=stoploss_val
+    )
+
+def cancel_order(orderid, kite_instance=None):
+    global kite
+
+    kite_obj = kite_instance if kite_instance is not None else kite
+
+    if not kite_obj:
+        raise Exception("❌ Kite instance not available")
+
+    try:
+        return kite_obj.cancel_order(
+            variety=kite_obj.VARIETY_REGULAR,
+            order_id=orderid
         )
+    except Exception as e:
+        log(f"❌ Stoploss cancel error: {e}")
+
+def kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity, kite_instance=None):
+    global kite
+
+    kite_obj = kite_instance if kite_instance is not None else kite
+
+    if not kite_obj:
+        raise Exception("❌ Kite instance not available")
+
+    order_id = kite_obj.place_order(
+        variety=kite_obj.VARIETY_REGULAR,
+        exchange=exchange,
+        tradingsymbol=tradingsymbol,
+        transaction_type=buy_sell,
+        quantity=quantity,
+        order_type=kite_obj.ORDER_TYPE_MARKET,
+        product=kite_obj.PRODUCT_NRML,
+        validity=kite_obj.VALIDITY_DAY
+    )
+
+    log(f"✅ {buy_sell} ORDER | {tradingsymbol} | Qty={quantity} | OrderID={order_id}")
+
+    return order_id
     
 def backtest_with_capital(p):
     # ==============================

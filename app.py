@@ -422,7 +422,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 sl_orderid == None
                 if sl_orderid != None:
                     try:
-                        cancel_order(sl_orderid)
+                        cancel_order(sl_orderid, kite)
                     except Exception as e: 
                         log(f"Stoploss cancel error {e}")
                 stop_task(task_id, "No Position")
@@ -434,15 +434,15 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 if (sl_orderid != None):
                     try:
                         log1(f"MSL placed: {sl_orderid} {stoploss_val}")
-                        modify_sl_order(sl_orderid, stoploss_val)
+                        modify_sl_order(sl_orderid, stoploss_val, kite)
                     except Exception as e: 
                         log1(f"MSL order error {e}")
                         if "Trigger price" in e:
-                            cancel_order(sl_orderid)
+                            cancel_order(sl_orderid, kite)
                             sl_orderid = None
                             buy_sell = "SELL"
                             quantity = qty
-                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity)
+                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity, kite)
                             log1(f"Error occured so MSL order canceled and exit long position")
                 elif(sl_orderid == None) and (price > stoploss_val):
                     quantity = qty
@@ -451,7 +451,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                     log1("SL Placed")
                 elif (sl_orderid != None) and (stoploss_val == 0):
                     try:
-                        cancel_order(sl_orderid)
+                        cancel_order(sl_orderid, kite)
                     except Exception as e: 
                         log1(f"Stoploss cancel error {e}")
                     log1("SL Canceled")
@@ -462,7 +462,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 if (sl_orderid != None) and (stoploss_val != 0):
                     try:
                         log1(f"MSL placed: {sl_orderid} {stoploss_val} start")
-                        modify_sl_order(sl_orderid, stoploss_val)
+                        modify_sl_order(sl_orderid, stoploss_val, kite)
                         log1(f"SLM placed: {sl_orderid} {stoploss_val}")
                     except Exception as e:
                         log1(f"Error - {e}")
@@ -471,7 +471,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                             sl_orderid = None
                             buy_sell = "BUY"
                             quantity = qty
-                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity)
+                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity, kite)
                             log1(f"Error occured so SL order canceled and exit from short position")
                     
                 elif (sl_orderid == None) and (stoploss_val != 0):
@@ -481,7 +481,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
 
                 elif (sl_orderid != None) and (stoploss_val == 0):
                     try:
-                        cancel_order(sl_orderid)
+                        cancel_order(sl_orderid, kite)
                     except Exception as e: 
                         log1(f"Stoploss cancel error {e}")
                     sl_orderid = None

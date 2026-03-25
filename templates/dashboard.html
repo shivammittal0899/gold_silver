@@ -469,8 +469,9 @@
             if (!res.ok) throw new Error("Server error");
             return res.json();
         })
-        .then(() => {
-            loadRows(); // 🔥 reload from backend
+        .then(res => {
+            row.setAttribute("data-id", res.id);   // ✅ IMPORTANT FIX
+            loadRows();
         })
         .catch(err => {
             console.error(err);

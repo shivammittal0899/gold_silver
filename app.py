@@ -427,7 +427,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                         log(f"Stoploss cancel error {e}")
                 stop_task(task_id, "No Position")
                 break
-            
+            log1(f"Stoploss value is {stoploss_val}")
             price = df['Close'].iat[-1]
             # if stoploss_value 
             if (position == 1):

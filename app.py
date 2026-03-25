@@ -514,7 +514,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
 @app.route('/start_trailing_row', methods=['POST'])
 def start_trailing_row():
     data = request.json
-
+    task_id = data.get("id")
     instrument = data.get('instrument')
     indicator = data['indicator']
     timeframe = data.get('timeframe', '5m')
@@ -525,30 +525,25 @@ def start_trailing_row():
 
     conn = sqlite3.connect("trailing.db", check_same_thread=False)
     c = conn.cursor()
+    # 🔥 ✅ 1. IF ID EXISTS → UPDATE SAME ROW
+    if task_id:
+        log1(f"🔄 Updating existing row {task_id}")
 
-    # 🔍 CHECK IF SAME CONFIG EXISTS
-    existing = c.execute("""
-        SELECT id FROM trailing 
-        WHERE instrument=? AND indicator=? AND timeframe=? AND qty=? AND min=? AND multiplier=? AND max=?
-    """, (instrument, indicator, timeframe, qty, min_val, multiplier, max_val)).fetchone()
+        c.execute("""
+            UPDATE trailing 
+            SET instrument=?, indicator=?, timeframe=?, qty=?, min=?, multiplier=?, max=?, running=1
+            WHERE id=?
+        """, (instrument, indicator, timeframe, qty, min_val, multiplier, max_val, task_id))
 
-    # 🔁 RESTART EXISTING
-    if existing:
-        task_id = existing[0]
-
-        # 🛑 Prevent duplicate thread
-        if task_id in TRAILING_THREADS and TRAILING_THREADS[task_id].is_alive():
-            log1(f"Thread already running {task_id}")
-            conn.close()
-            return jsonify({"id": task_id})
-
-        # 🔄 Restart
-        c.execute("UPDATE trailing SET running=1 WHERE id=?", (task_id,))
         conn.commit()
         conn.close()
 
-        log1(f"Restarting Trailing {indicator} | ID: {task_id}")
+        # 🛑 Prevent duplicate thread
+        if task_id in TRAILING_THREADS and TRAILING_THREADS[task_id].is_alive():
+            log1(f"⚠️ Thread already running {task_id}")
+            return jsonify({"id": task_id})
 
+        # 🚀 Restart thread
         thread = threading.Thread(
             target=trailing_worker,
             args=(task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val)
@@ -559,21 +554,22 @@ def start_trailing_row():
         TRAILING_THREADS[task_id] = thread
 
         return jsonify({"id": task_id})
-
-    # 🆕 NEW TASK
+    
+    
+    
     task_id = str(uuid.uuid4())
 
-    log1(f"Going to start Trailing {indicator} | ID: {task_id}")
+    log1(f"🆕 Creating new row {task_id}")
 
     c.execute("""
-    INSERT INTO trailing (id, instrument, indicator, timeframe, qty, min, multiplier, max, running)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO trailing (id, instrument, indicator, timeframe, qty, min, multiplier, max, running)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val, 1))
+
     conn.commit()
     conn.close()
 
-    log1(f"Trailing STARTED {task_id}")
-
+    # 🚀 Start thread
     thread = threading.Thread(
         target=trailing_worker,
         args=(task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val)
@@ -582,8 +578,6 @@ def start_trailing_row():
     thread.start()
 
     TRAILING_THREADS[task_id] = thread
-
-    return jsonify({"id": task_id})
 
 
 @app.route('/stop_trailing_row', methods=['POST'])

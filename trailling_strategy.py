@@ -53,7 +53,7 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
     # Calculate RSI (14-period default)
     df['RSI'] = RSIIndicator(close=df['Close'], window=14).rsi()
     
-    
+    exchange = "MCX"
     if indicator == "highlow":
         if position == 1:
             df['refline'] = df['Low']
@@ -77,5 +77,65 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
     elif position == -1:
         stoploss_value = stoploss_value + margin_val
     log(stoploss_value)
-    
+    price = df['Close'].iat[-1]
+            # if stoploss_value 
+    if (position == 1):
+        if (sl_orderid != None):
+            try:
+                log(f"MSL placed: {sl_orderid} {stoploss_value}")
+                modify_sl_order(sl_orderid, stoploss_value)
+            except Exception as e: 
+                log(f"MSL order error {e}")
+                if "Trigger price" in e:
+                    cancel_order(sl_orderid)
+                    sl_orderid = None
+                    buy_sell = "SELL"
+                    quantity = qty
+                    kite_app_buy_sell(exchange, symbol, buy_sell, quantity)
+                    log(f"Error occured so MSL order canceled and exit long position")
+        elif(sl_orderid == None) and (price > stoploss_value):
+            quantity = qty
+            log(f"SL placed: {sl_orderid} {stoploss_value}")
+            sl_orderid = place_sl_order(symbol, "SELL", quantity, stoploss_value)
+            log("SL Placed")
+        elif (sl_orderid != None) and (stoploss_value == 0):
+            try:
+                cancel_order(sl_orderid)
+            except Exception as e: 
+                log(f"Stoploss cancel error {e}")
+            log("SL Canceled")
+            sl_orderid = None
+        else:
+            sl_orderid = None
+    if position == -1:
+        if (sl_orderid != None) and (stoploss_value != 0):
+            try:
+                log(f"MSL placed: {sl_orderid} {stoploss_value} start")
+                modify_sl_order(sl_orderid, stoploss_value)
+                log(f"SLM placed: {sl_orderid} {stoploss_value}")
+            except Exception as e:
+                log(f"Error - {e}")
+                if "Trigger price" in e:
+                    cancel_order(sl_orderid)
+                    sl_orderid = None
+                    buy_sell = "BUY"
+                    quantity = qty
+                    kite_app_buy_sell(exchange, symbol, buy_sell, quantity)
+                    log(f"Error occured so SL order canceled and exit from short position")
+            
+        elif (sl_orderid == None) and (stoploss_value != 0):
+            quantity = qty
+            sl_orderid = place_sl_order(symbol , "BUY", quantity, stoploss_value)
+            log(f"SL placed: {sl_orderid} {stoploss_value}")
+
+        elif (sl_orderid != None) and (stoploss_value == 0):
+            try:
+                cancel_order(sl_orderid)
+            except Exception as e: 
+                log(f"Stoploss cancel error {e}")
+            sl_orderid = None
+        else:
+            sl_orderid = None
+    if position == 0:
+        log("No positions")
     return stoploss_value

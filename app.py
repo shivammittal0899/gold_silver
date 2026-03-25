@@ -218,6 +218,8 @@ import time
 
 import json
 
+SL_ORDERS = {}   # task_id → order_id
+
 @app.route('/download_instruments')
 def download_instruments():
     try:
@@ -398,10 +400,10 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 wait_until_next_time(timeframe)
                 # time.sleep(600)
                 continue
-            log1("Fetching data")
+            # log1("Fetching data")
             df = fetch_with_retry_token(instrument, instrument_token, kite_interval)
-            log1("Fetching data complete")
-            log1(df.tail(3))
+            # log1("Fetching data complete")
+            # log1(df.tail(3))
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             log1(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
             log1("Fetching position")
@@ -492,7 +494,11 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 log1("No positions")
             # time.sleep(sleeptime)
             wait_until_next_time(timeframe)
-
+        sl_orderid_c = sl_orderid = SL_ORDERS.get(task_id)
+        if (sl_orderid != None) and (sl_orderid_c != sl_orderid):
+            SL_ORDERS[task_id] = sl_orderid
+        elif (sl_orderid_c is not None) and sl_orderid == None:
+            SL_ORDERS.pop(task_id, None)
     except Exception as e:
         log1(f"[{task_id}] ERROR: {str(e)}")
 
@@ -507,7 +513,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
         # 🧹 CLEAN THREAD FROM MEMORY
         TRAILING_THREADS.pop(task_id, None)
         log1(f"[{task_id}] Thread cleaned up")
-
+    
 
 # import uuid
 # from flask import request
@@ -588,6 +594,16 @@ def stop_trailing_row():
 
     conn = sqlite3.connect("trailing.db", check_same_thread=False)
     c = conn.cursor()
+    sl_orderid = SL_ORDERS.get(task_id)
+
+    if sl_orderid:
+        try:
+            cancel_order(sl_orderid, kite)
+            log1(f"✅ SL canceled before stop: {sl_orderid}")
+        except Exception as e:
+            log1(f"❌ SL cancel error: {e}")
+
+        SL_ORDERS.pop(task_id, None)
     log1(f"Trailling stop button {task_id}")
     c.execute("UPDATE trailing SET running=0 WHERE id=?", (task_id,))
 
@@ -629,7 +645,16 @@ def delete_trailing_row():
 
     conn = sqlite3.connect("trailing.db", check_same_thread=False)
     c = conn.cursor()
+    sl_orderid = SL_ORDERS.get(task_id)
 
+    if sl_orderid:
+        try:
+            cancel_order(sl_orderid, kite)
+            log1(f"✅ SL canceled before delete: {sl_orderid}")
+        except Exception as e:
+            log1(f"❌ SL cancel error: {e}")
+
+        SL_ORDERS.pop(task_id, None)
     c.execute("DELETE FROM trailing WHERE id = ?", (task_id,))
     conn.commit()
     conn.close()

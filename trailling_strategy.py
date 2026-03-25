@@ -46,7 +46,7 @@ def wait_until_next_time(tf):
     time.sleep(wait_seconds)
 
 
-def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, position):
+def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, position, qty, kite):
     df = compute_adx(df)
     df = compute_ichimoku(df, 9, 26, 52)
     df['ATR'] = ATR(df, 14)
@@ -96,7 +96,7 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
         elif(sl_orderid == None) and (price > stoploss_value):
             quantity = qty
             log(f"SL placed: {sl_orderid} {stoploss_value}")
-            sl_orderid = place_sl_order(symbol, "SELL", quantity, stoploss_value)
+            sl_orderid = place_sl_order(symbol, "SELL", quantity, stoploss_value, kite)
             log("SL Placed")
         elif (sl_orderid != None) and (stoploss_value == 0):
             try:
@@ -125,7 +125,7 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
             
         elif (sl_orderid == None) and (stoploss_value != 0):
             quantity = qty
-            sl_orderid = place_sl_order(symbol , "BUY", quantity, stoploss_value)
+            sl_orderid = place_sl_order(symbol , "BUY", quantity, stoploss_value, kite)
             log(f"SL placed: {sl_orderid} {stoploss_value}")
 
         elif (sl_orderid != None) and (stoploss_value == 0):

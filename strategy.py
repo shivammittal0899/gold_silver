@@ -102,32 +102,73 @@ def cancel_order(orderid):
 #                 trigger_price=stoploss_val,                        # initial SL trigger
 #                 validity=kite.VALIDITY_DAY
 #             )
-def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val):
+# def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val):
+#     if transaction == "SELL":
+#         order_id = kite.place_order(
+#                     variety=kite.VARIETY_REGULAR,
+#                     exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+#                     tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+#                     transaction_type=kite.TRANSACTION_TYPE_SELL,
+#                     quantity=quantity,                                # MCX lot size
+#                     product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+#                     order_type=kite.ORDER_TYPE_SLM,
+#                     trigger_price=stoploss_val,                        # initial SL trigger
+#                     validity=kite.VALIDITY_DAY
+#                 )
+#     elif transaction == "BUY":
+#         order_id = kite.place_order(
+#                     variety=kite.VARIETY_REGULAR,
+#                     exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+#                     tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+#                     transaction_type=kite.TRANSACTION_TYPE_BUY,
+#                     quantity=quantity,                                # MCX lot size
+#                     product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+#                     order_type=kite.ORDER_TYPE_SLM,
+#                     trigger_price=stoploss_val,                        # initial SL trigger
+#                     validity=kite.VALIDITY_DAY
+#                 )
+#     return order_id
+
+
+def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val, kite_instance=None):
+    global kite
+
+    # ✅ Use passed kite OR fallback to global
+    kite_obj = kite_instance if kite_instance is not None else kite
+
+    if not kite_obj:
+        raise Exception("❌ Kite instance not available")
+
     if transaction == "SELL":
-        order_id = kite.place_order(
-                    variety=kite.VARIETY_REGULAR,
-                    exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
-                    tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
-                    transaction_type=kite.TRANSACTION_TYPE_SELL,
-                    quantity=quantity,                                # MCX lot size
-                    product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
-                    order_type=kite.ORDER_TYPE_SLM,
-                    trigger_price=stoploss_val,                        # initial SL trigger
-                    validity=kite.VALIDITY_DAY
-                )
+        order_id = kite_obj.place_order(
+            variety=kite_obj.VARIETY_REGULAR,
+            exchange=kite_obj.EXCHANGE_MCX,
+            tradingsymbol=tradingsymbol,
+            transaction_type=kite_obj.TRANSACTION_TYPE_SELL,
+            quantity=quantity,
+            product=kite_obj.PRODUCT_NRML,
+            order_type=kite_obj.ORDER_TYPE_SLM,
+            trigger_price=stoploss_val,
+            validity=kite_obj.VALIDITY_DAY
+        )
+
     elif transaction == "BUY":
-        order_id = kite.place_order(
-                    variety=kite.VARIETY_REGULAR,
-                    exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
-                    tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
-                    transaction_type=kite.TRANSACTION_TYPE_BUY,
-                    quantity=quantity,                                # MCX lot size
-                    product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
-                    order_type=kite.ORDER_TYPE_SLM,
-                    trigger_price=stoploss_val,                        # initial SL trigger
-                    validity=kite.VALIDITY_DAY
-                )
+        order_id = kite_obj.place_order(
+            variety=kite_obj.VARIETY_REGULAR,
+            exchange=kite_obj.EXCHANGE_MCX,
+            tradingsymbol=tradingsymbol,
+            transaction_type=kite_obj.TRANSACTION_TYPE_BUY,
+            quantity=quantity,
+            product=kite_obj.PRODUCT_NRML,
+            order_type=kite_obj.ORDER_TYPE_SLM,
+            trigger_price=stoploss_val,
+            validity=kite_obj.VALIDITY_DAY
+        )
+    else:
+        raise ValueError("❌ Invalid transaction type (BUY/SELL expected)")
+
     return order_id
+
 
 def modify_sl_order(sl_orderid, stoploss_val):
     kite.modify_order(

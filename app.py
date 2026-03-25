@@ -296,8 +296,7 @@ def stop_task(task_id, reason):
     conn.close()
     log1(f"[{task_id}] STOPPED: {reason}")
 
-def fetch_with_retry_token(symbol, token, interval, retries=3, delay=5):
-    log1(token)
+def fetch_with_retry_token(symbol, token, interval, kite, retries=3, delay=5):
     for attempt in range(retries):
         try:
             time_correction = timedelta(hours=5, minutes=30)
@@ -327,6 +326,7 @@ TRAILING_THREADS = {}
 def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val):
     
     try:
+        
         # 🚀 YOUR STRATEGY LOGIC
         log1(f"[{task_id}] | {instrument} | Running {indicator} | min={min_val} max={max_val} | Quantity= {qty}")
         # log1(f"{timeframe} -- {sleeptime}")
@@ -352,12 +352,11 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
         }
         
         kite_interval = interval_map.get(timeframe, "5minute")
-        access_token = read_access_token()
         log1(f"[{task_id}] Worker started")
-        global kite    
+        access_token = read_access_token()
 
-        kite = KiteConnect(api_key=API_KEY)
-        kite.set_access_token(access_token)
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
         
         exchange = "MCX"
         sl_orderid = None
@@ -401,14 +400,14 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 # time.sleep(600)
                 continue
             # log1("Fetching data")
-            df = fetch_with_retry_token(instrument, instrument_token, kite_interval)
+            df = fetch_with_retry_token(instrument, instrument_token, kite_interval, kite_local)
             # log1("Fetching data complete")
             # log1(df.tail(3))
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             log1(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
             log1("Fetching position")
             position = 0
-            positions = kite.positions()
+            positions = kite_local.positions()
             pos = next((p for p in positions["net"] if p["tradingsymbol"] == instrument), None)
             if pos:
                 log1(f"🟢 Symbol: {pos['tradingsymbol']} | 📊 Quantity: {pos['quantity']} | 💰 Avg Price: {pos['average_price']} | 📈 P&L: {pos['pnl']}")
@@ -422,14 +421,35 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 stoploss_val = get_stoploss_value(df, instrument, indicator, min_val, multiplier, max_val, position)
                 stoploss_val = int(stoploss_val)
             else:
-                sl_orderid == None
+                
                 if sl_orderid != None:
                     try:
-                        cancel_order(sl_orderid, kite)
+                        cancel_order(sl_orderid, kite_local)
                     except Exception as e: 
                         log(f"Stoploss cancel error {e}")
+                SL_ORDERS.pop(task_id, None)
+                sl_orderid = None
                 stop_task(task_id, "No Position")
                 break
+            if sl_orderid:
+                try:
+                    orders = kite_local.orders()
+                    sl_order = next((o for o in orders if o["order_id"] == sl_orderid), None)
+
+                    if (sl_order is None) or (sl_order["status"] == "COMPLETE") or (sl_order["status"] in ["CANCELLED", "REJECTED"]):
+                        log1(f"✅ SL ORDER NOT FOUND for {task_id}")
+
+                        SL_ORDERS.pop(task_id, None)
+                        sl_orderid = None
+
+                        # 🔥 VERY IMPORTANT
+                        stop_task(task_id, "SL Hit")
+
+                        break
+
+                except Exception as e:
+                    log1(f"SL check error: {e}")
+            
             log1(f"Stoploss value is {stoploss_val}")
             price = df['Close'].iat[-1]
             # if stoploss_value 
@@ -437,24 +457,25 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 if (sl_orderid != None):
                     try:
                         log1(f"MSL placed: {sl_orderid} {stoploss_val}")
-                        modify_sl_order(sl_orderid, stoploss_val, kite)
+                        modify_sl_order(sl_orderid, stoploss_val, kite_local)
                     except Exception as e: 
                         log1(f"MSL order error {e}")
                         if "Trigger price" in e:
-                            cancel_order(sl_orderid, kite)
+                            cancel_order(sl_orderid, kite_local)
                             sl_orderid = None
                             buy_sell = "SELL"
                             quantity = qty
-                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity, kite)
+                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity, kite_local)
                             log1(f"Error occured so MSL order canceled and exit long position")
                 elif(sl_orderid == None) and (price > stoploss_val):
                     quantity = qty
                     log1(f"SL placed: {sl_orderid} {stoploss_val}")
-                    sl_orderid = place_sl_order(instrument, "SELL", quantity, stoploss_val, kite)
+                    sl_orderid = place_sl_order(instrument, "SELL", quantity, stoploss_val, kite_local)
+                    SL_ORDERS[task_id] = sl_orderid
                     log1("SL Placed")
                 elif (sl_orderid != None) and (stoploss_val == 0):
                     try:
-                        cancel_order(sl_orderid, kite)
+                        cancel_order(sl_orderid, kite_local)
                     except Exception as e: 
                         log1(f"Stoploss cancel error {e}")
                     log1("SL Canceled")
@@ -465,26 +486,27 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 if (sl_orderid != None) and (stoploss_val != 0):
                     try:
                         log1(f"MSL placed: {sl_orderid} {stoploss_val} start")
-                        modify_sl_order(sl_orderid, stoploss_val, kite)
+                        modify_sl_order(sl_orderid, stoploss_val, kite_local)
                         log1(f"SLM placed: {sl_orderid} {stoploss_val}")
                     except Exception as e:
                         log1(f"Error - {e}")
                         if "Trigger price" in e:
-                            cancel_order(sl_orderid)
+                            cancel_order(sl_orderid, kite_local)
                             sl_orderid = None
                             buy_sell = "BUY"
                             quantity = qty
-                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity, kite)
+                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity, kite_local)
                             log1(f"Error occured so SL order canceled and exit from short position")
                     
                 elif (sl_orderid == None) and (stoploss_val != 0):
                     quantity = qty
-                    sl_orderid = place_sl_order(instrument , "BUY", quantity, stoploss_val, kite)
+                    sl_orderid = place_sl_order(instrument , "BUY", quantity, stoploss_val, kite_local)
+                    SL_ORDERS[task_id] = sl_orderid
                     log1(f"SL placed: {sl_orderid} {stoploss_val}")
 
                 elif (sl_orderid != None) and (stoploss_val == 0):
                     try:
-                        cancel_order(sl_orderid, kite)
+                        cancel_order(sl_orderid, kite_local)
                     except Exception as e: 
                         log1(f"Stoploss cancel error {e}")
                     sl_orderid = None
@@ -494,7 +516,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 log1("No positions")
             # time.sleep(sleeptime)
             wait_until_next_time(timeframe)
-        sl_orderid_c = sl_orderid = SL_ORDERS.get(task_id)
+        sl_orderid_c = SL_ORDERS.get(task_id)
         if (sl_orderid != None) and (sl_orderid_c != sl_orderid):
             SL_ORDERS[task_id] = sl_orderid
         elif (sl_orderid_c is not None) and sl_orderid == None:
@@ -585,10 +607,15 @@ def start_trailing_row():
     thread.start()
 
     TRAILING_THREADS[task_id] = thread
+    return jsonify({"id": task_id})
 
 
 @app.route('/stop_trailing_row', methods=['POST'])
 def stop_trailing_row():
+    access_token = read_access_token()
+
+    kite_local = KiteConnect(api_key=API_KEY)
+    kite_local.set_access_token(access_token)
     data = request.json
     task_id = data['id']
 
@@ -598,7 +625,7 @@ def stop_trailing_row():
 
     if sl_orderid:
         try:
-            cancel_order(sl_orderid, kite)
+            cancel_order(sl_orderid, kite_local)
             log1(f"✅ SL canceled before stop: {sl_orderid}")
         except Exception as e:
             log1(f"❌ SL cancel error: {e}")
@@ -642,14 +669,17 @@ def get_trailing():
 def delete_trailing_row():
     data = request.json
     task_id = data.get('id')
+    access_token = read_access_token()
 
+    kite_local = KiteConnect(api_key=API_KEY)
+    kite_local.set_access_token(access_token)
     conn = sqlite3.connect("trailing.db", check_same_thread=False)
     c = conn.cursor()
     sl_orderid = SL_ORDERS.get(task_id)
 
     if sl_orderid:
         try:
-            cancel_order(sl_orderid, kite)
+            cancel_order(sl_orderid, kite_local)
             log1(f"✅ SL canceled before delete: {sl_orderid}")
         except Exception as e:
             log1(f"❌ SL cancel error: {e}")

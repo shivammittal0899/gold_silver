@@ -441,9 +441,11 @@
     // ▶ START (save + run)
     function startRow(btn) {
         let row = btn.closest(".trailingRow");
-        
+        // ✅ Disable button immediately
+        btn.disabled = true;
         
         let data = {
+            id: row.getAttribute("data-id"),   // ✅ (explained below)
             instrument: row.querySelector('[name="instrument"]').value,  // ✅ NEW
             indicator: row.querySelector('[name="indicator"]').value,
             timeframe: row.querySelector('[name="timeframe"]').value,
@@ -454,6 +456,7 @@
         };
         if (!data.instrument || !data.min || !data.multiplier) {
             alert("Fill all fields");
+            btn.disabled = false;   // ✅ re-enable if validation fails
             return;
         }
         let badge = row.querySelector(".statusBadge");
@@ -476,6 +479,9 @@
         .catch(err => {
             console.error(err);
             alert("Error: " + err.message);
+        })
+        .finally(() => {
+            btn.disabled = false;   // ✅ ALWAYS re-enable
         });
         // .then(res => {
         //     row.setAttribute("data-id", res.id);

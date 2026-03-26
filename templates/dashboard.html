@@ -584,23 +584,55 @@
         }
     }
 
+    // function updateAnalysis(data) {
+    //     // Example data structure:
+    //     // data = {
+    //     //   "5m": {trend:"Bullish", rsi:65, ...},
+    //     //   "15m": {...},
+    //     //   "30m": {...}
+    //     // }
+
+    //     ["5m", "15m", "30m"].forEach(tf => {
+    //         document.getElementById(`trend_${tf}`).innerText = data[tf].trend;
+    //         document.getElementById(`vwap_${tf}`).innerText = data[tf].vwap;
+    //         document.getElementById(`rsi_${tf}`).innerText = data[tf].rsi;
+    //         document.getElementById(`adx_${tf}`).innerText = data[tf].adx;
+    //         document.getElementById(`vol_${tf}`).innerText = data[tf].volume;
+    //         document.getElementById(`signal_${tf}`).innerText = data[tf].signal;
+    //     });
+    // }
+
     function updateAnalysis(data) {
-        // Example data structure:
-        // data = {
-        //   "5m": {trend:"Bullish", rsi:65, ...},
-        //   "15m": {...},
-        //   "30m": {...}
-        // }
 
         ["5m", "15m", "30m"].forEach(tf => {
-            document.getElementById(`trend_${tf}`).innerText = data[tf].trend;
+
+            // Trend
+            let trendCell = document.getElementById(`trend_${tf}`);
+            trendCell.innerText = data[tf].trend;
+
+            // VWAP
             document.getElementById(`vwap_${tf}`).innerText = data[tf].vwap;
+
+            // RSI
             document.getElementById(`rsi_${tf}`).innerText = data[tf].rsi;
+
+            // ADX
             document.getElementById(`adx_${tf}`).innerText = data[tf].adx;
+
+            // Volume
             document.getElementById(`vol_${tf}`).innerText = data[tf].volume;
-            document.getElementById(`signal_${tf}`).innerText = data[tf].signal;
+
+            // 🔥 SIGNAL (IMPORTANT)
+            let signalCell = document.getElementById(`signal_${tf}`);
+            let signalValue = data[tf].signal;
+
+            signalCell.innerText = signalValue;
+
+            // ✅ APPLY COLOR HERE
+            colorSignal(signalCell, signalValue);
         });
     }
+
     function colorSignal(cell, value) {
         if (value === "BUY") cell.style.color = "green";
         else if (value === "SELL") cell.style.color = "red";
@@ -616,7 +648,7 @@
     }
 
     // refresh every 5 sec
-    setInterval(loadAnalysis, 5000);
+    setInterval(loadAnalysis, 290000);
     loadAnalysis();
 
     // 🔄 Load on page open

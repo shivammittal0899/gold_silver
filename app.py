@@ -760,3 +760,40 @@ log.disabled = True
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
     app.run(port=8000, debug=True)
+
+
+
+
+
+@app.route('/get_analysis')
+def get_analysis():
+
+    # 🔥 Replace this with real calculation
+    data = {
+        "5m": {
+            "trend": "Bullish",
+            "vwap": "Above",
+            "rsi": 62,
+            "adx": 28,
+            "volume": "High",
+            "signal": "BUY"
+        },
+        "15m": {
+            "trend": "Bullish",
+            "vwap": "Above",
+            "rsi": 58,
+            "adx": 25,
+            "volume": "Medium",
+            "signal": "BUY"
+        },
+        "30m": {
+            "trend": "Sideways",
+            "vwap": "Near",
+            "rsi": 50,
+            "adx": 18,
+            "volume": "Low",
+            "signal": "WAIT"
+        }
+    }
+
+    return jsonify(data)

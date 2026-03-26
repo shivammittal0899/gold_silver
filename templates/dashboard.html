@@ -121,6 +121,7 @@
             border: 4px;
             border-radius: 10px;
             background: #ddd;
+            box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
         }
         @media screen and (min-width: 560px) {
             input[type="number"] {
@@ -238,6 +239,56 @@
         Loading...
     </div>
 
+    <h3>📊 Multi-Timeframe Analysis</h3>
+
+    <table id="analysisTable" border="1" width="100%">
+        <thead>
+            <tr>
+                <th>Analysis</th>
+                <th>5 Min</th>
+                <th>15 Min</th>
+                <th>30 Min</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Trend</td>
+                <td id="trend_5m"></td>
+                <td id="trend_15m"></td>
+                <td id="trend_30m"></td>
+            </tr>
+            <tr>
+                <td>VWAP</td>
+                <td id="vwap_5m"></td>
+                <td id="vwap_15m"></td>
+                <td id="vwap_30m"></td>
+            </tr>
+            <tr>
+                <td>RSI</td>
+                <td id="rsi_5m"></td>
+                <td id="rsi_15m"></td>
+                <td id="rsi_30m"></td>
+            </tr>
+            <tr>
+                <td>ADX</td>
+                <td id="adx_5m"></td>
+                <td id="adx_15m"></td>
+                <td id="adx_30m"></td>
+            </tr>
+            <tr>
+                <td>Volume</td>
+                <td id="vol_5m"></td>
+                <td id="vol_15m"></td>
+                <td id="vol_30m"></td>
+            </tr>
+            <tr>
+                <td>Signal</td>
+                <td id="signal_5m"></td>
+                <td id="signal_15m"></td>
+                <td id="signal_30m"></td>
+            </tr>
+        </tbody>
+    </table>
     <script>
     function loadRecentLogs() {
         fetch('/recent_logs')
@@ -533,6 +584,40 @@
         }
     }
 
+    function updateAnalysis(data) {
+        // Example data structure:
+        // data = {
+        //   "5m": {trend:"Bullish", rsi:65, ...},
+        //   "15m": {...},
+        //   "30m": {...}
+        // }
+
+        ["5m", "15m", "30m"].forEach(tf => {
+            document.getElementById(`trend_${tf}`).innerText = data[tf].trend;
+            document.getElementById(`vwap_${tf}`).innerText = data[tf].vwap;
+            document.getElementById(`rsi_${tf}`).innerText = data[tf].rsi;
+            document.getElementById(`adx_${tf}`).innerText = data[tf].adx;
+            document.getElementById(`vol_${tf}`).innerText = data[tf].volume;
+            document.getElementById(`signal_${tf}`).innerText = data[tf].signal;
+        });
+    }
+    function colorSignal(cell, value) {
+        if (value === "BUY") cell.style.color = "green";
+        else if (value === "SELL") cell.style.color = "red";
+        else cell.style.color = "gray";
+    }
+
+    function loadAnalysis() {
+        fetch('/get_analysis')
+        .then(res => res.json())
+        .then(data => {
+            updateAnalysis(data);
+        });
+    }
+
+    // refresh every 5 sec
+    setInterval(loadAnalysis, 5000);
+    loadAnalysis();
 
     // 🔄 Load on page open
     // loadRows();
@@ -540,6 +625,7 @@
         await loadSavedInstruments();
         loadRows();
     };
+    
     </script>
 
 

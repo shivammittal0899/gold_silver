@@ -824,18 +824,18 @@ def analysis_worker(tf):
             # log1(df.tail(3))
             # df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             # data_fetch = data_analysis(df)
-            # # 🔥 Replace with your real logic
-            # data = {
-            #     "trend": data_fetch,
-            #     "vwap": "Above",
-            #     "rsi": 60,
-            #     "adx": 25,
-            #     "volume": "High",
-            #     "signal": "BUY"
-            # }
+            # 🔥 Replace with your real logic
+            data = {
+                "trend": "data_fetch",
+                "vwap": "Above",
+                "rsi": 60,
+                "adx": 25,
+                "volume": "High",
+                "signal": "BUY"
+            }
 
-            # ANALYSIS_DATA[tf] = data
-            # log1(f"{tf} updated")
+            ANALYSIS_DATA[tf] = data
+            log1(f"{tf} updated")
             # wait_until_next_time(tf)
         except Exception as e:
             log1(f"{tf} error: {e}")

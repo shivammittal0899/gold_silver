@@ -797,10 +797,31 @@ def analysis_worker(tf):
     kite_local.set_access_token(access_token)
     
     exchange = "MCX"
-
+    instrument = "GOLDM26MAYFUT"
+    instrument_token = "124881671"
     while ANALYSIS_RUNNING:
 
         try:
+            now = datetime.now() + timedelta(hours=5, minutes=30)
+            # now = datetime.now() 
+            log1(f'Present Time: {now}')
+
+            market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
+            # market_open  = (now.hour >= 8)
+            market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 30)
+            time23 = (now.hour >= 23)
+
+            if not (market_open and not market_close):
+                print("🕘 MCX Market Closed — sleeping...")
+                log1("🕘 MCX Market Closed — sleeping...")
+                wait_until_next_time(tf)
+                # time.sleep(600)
+                continue
+            # log1("Fetching data")
+            df = fetch_with_retry_token(instrument, instrument_token, kite_interval, kite_local)
+            # log1("Fetching data complete")
+            # log1(df.tail(3))
+            df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             # 🔥 Replace with your real logic
             data = {
                 "trend": "Bullish",

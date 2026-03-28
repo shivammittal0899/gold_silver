@@ -1,5 +1,6 @@
 from ta.momentum import RSIIndicator
-from ta.trend import IchimokuIndicator, volatility
+from ta.trend import IchimokuIndicator
+from ta import volatility
 from ta.volume import VolumeWeightedAveragePrice
 import pandas as pd
 

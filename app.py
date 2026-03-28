@@ -9,6 +9,7 @@ from trailling_strategy import run_trailling_strategy, stop_trailling_strategy
 import uuid
 from datetime import datetime, timedelta
 from trailling_strategy import *
+from technical_analysis import *
 
 
 app = Flask(__name__)
@@ -822,6 +823,7 @@ def analysis_worker(tf):
             log1("Fetching data complete")
             log1(df.tail(3))
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
+            cur_price = data_analysis(df)
             # 🔥 Replace with your real logic
             data = {
                 "trend": "Bullish",

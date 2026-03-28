@@ -819,8 +819,8 @@ def analysis_worker(tf):
                 continue
             # log1("Fetching data")
             df = fetch_with_retry_token(instrument, instrument_token, kite_interval, kite_local)
-            # log1("Fetching data complete")
-            # log1(df.tail(3))
+            log1("Fetching data complete")
+            log1(df.tail(3))
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             # 🔥 Replace with your real logic
             data = {

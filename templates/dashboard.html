@@ -175,6 +175,18 @@
             background: #ffd4d4;
             color: red;
         }
+        #analysisTable {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        #analysisTable th, #analysisTable td {
+            padding: 10px;
+            text-align: center;
+        }
+        #analysisTable th {
+            background: #222;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -240,7 +252,10 @@
     </div>
 
     <h3>📊 Multi-Timeframe Analysis</h3>
-
+    <div style="margin-bottom:10px;">
+        <button id="startAnalysisBtn" onclick="startAnalysis()">▶ Start Analysis</button>
+        <button id="stopAnalysisBtn" onclick="stopAnalysis()">⛔ Stop Analysis</button>
+    </div>
     <table id="analysisTable" border="1" width="100%">
         <thead>
             <tr>
@@ -602,43 +617,115 @@
     //     });
     // }
 
-    function updateAnalysis(data) {
+    // function updateAnalysis(data) {
 
+    //     ["5m", "15m", "30m"].forEach(tf => {
+
+    //         // Trend
+    //         let trendCell = document.getElementById(`trend_${tf}`);
+    //         trendCell.innerText = data[tf].trend;
+
+    //         // VWAP
+    //         document.getElementById(`vwap_${tf}`).innerText = data[tf].vwap;
+
+    //         // RSI
+    //         document.getElementById(`rsi_${tf}`).innerText = data[tf].rsi;
+
+    //         // ADX
+    //         document.getElementById(`adx_${tf}`).innerText = data[tf].adx;
+
+    //         // Volume
+    //         document.getElementById(`vol_${tf}`).innerText = data[tf].volume;
+
+    //         // 🔥 SIGNAL (IMPORTANT)
+    //         let signalCell = document.getElementById(`signal_${tf}`);
+    //         let signalValue = data[tf].signal;
+
+    //         signalCell.innerText = signalValue;
+
+    //         // ✅ APPLY COLOR HERE
+    //         colorSignal(signalCell, signalValue);
+    //     });
+    // }
+
+    // function colorSignal(cell, value) {
+    //     if (value === "BUY") cell.style.color = "green";
+    //     else if (value === "SELL") cell.style.color = "red";
+    //     else cell.style.color = "gray";
+    // }
+
+    // function loadAnalysis() {
+    //     fetch('/get_analysis')
+    //     .then(res => res.json())
+    //     .then(data => {
+    //         updateAnalysis(data);
+    //     });
+    // }
+
+    // refresh every 5 sec
+    // setInterval(loadAnalysis, 290000);
+    // loadAnalysis();
+
+
+    // 🔥 Start
+    function startAnalysis() {
+        fetch('/start_analysis')
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            document.getElementById("startAnalysisBtn").disabled = true;
+            document.getElementById("stopAnalysisBtn").disabled = false;
+        });
+    }
+
+    // 🔥 Stop
+    function stopAnalysis() {
+        fetch('/stop_analysis')
+        .then(res => res.json())
+        .then(data => {
+            console.log(data);
+            document.getElementById("startAnalysisBtn").disabled = false;
+            document.getElementById("stopAnalysisBtn").disabled = true;
+        });
+    }
+
+    // 🔥 Color Signal
+    function colorSignal(cell, value) {
+        cell.style.fontWeight = "bold";
+
+        if (value === "BUY") {
+            cell.style.color = "green";
+            cell.style.background = "#e6ffe6";
+        }
+        else if (value === "SELL") {
+            cell.style.color = "red";
+            cell.style.background = "#ffe6e6";
+        }
+        else {
+            cell.style.color = "gray";
+            cell.style.background = "#f0f0f0";
+        }
+    }
+
+    // 🔥 Update Table
+    function updateAnalysis(data) {
         ["5m", "15m", "30m"].forEach(tf => {
 
-            // Trend
-            let trendCell = document.getElementById(`trend_${tf}`);
-            trendCell.innerText = data[tf].trend;
+            document.getElementById(`trend_${tf}`).innerText = data[tf]?.trend || "";
+            document.getElementById(`vwap_${tf}`).innerText = data[tf]?.vwap || "";
+            document.getElementById(`rsi_${tf}`).innerText = data[tf]?.rsi || "";
+            document.getElementById(`adx_${tf}`).innerText = data[tf]?.adx || "";
+            document.getElementById(`vol_${tf}`).innerText = data[tf]?.volume || "";
 
-            // VWAP
-            document.getElementById(`vwap_${tf}`).innerText = data[tf].vwap;
-
-            // RSI
-            document.getElementById(`rsi_${tf}`).innerText = data[tf].rsi;
-
-            // ADX
-            document.getElementById(`adx_${tf}`).innerText = data[tf].adx;
-
-            // Volume
-            document.getElementById(`vol_${tf}`).innerText = data[tf].volume;
-
-            // 🔥 SIGNAL (IMPORTANT)
             let signalCell = document.getElementById(`signal_${tf}`);
-            let signalValue = data[tf].signal;
+            let signalValue = data[tf]?.signal || "";
 
             signalCell.innerText = signalValue;
-
-            // ✅ APPLY COLOR HERE
             colorSignal(signalCell, signalValue);
         });
     }
 
-    function colorSignal(cell, value) {
-        if (value === "BUY") cell.style.color = "green";
-        else if (value === "SELL") cell.style.color = "red";
-        else cell.style.color = "gray";
-    }
-
+    // 🔥 Fetch Data
     function loadAnalysis() {
         fetch('/get_analysis')
         .then(res => res.json())
@@ -647,9 +734,8 @@
         });
     }
 
-    // refresh every 5 sec
-    setInterval(loadAnalysis, 290000);
-    loadAnalysis();
+    // 🔥 Auto refresh UI (lightweight)
+    setInterval(loadAnalysis, 2000);
 
     // 🔄 Load on page open
     // loadRows();

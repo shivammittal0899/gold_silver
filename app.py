@@ -762,38 +762,82 @@ if __name__ == "__main__":
     app.run(port=8000, debug=True)
 
 
+# -------------------- GLOBAL STATE --------------------
+ANALYSIS_RUNNING = False
+ANALYSIS_THREADS = []
 
+ANALYSIS_DATA = {
+    "5m": {},
+    "15m": {},
+    "30m": {}
+}
 
+# -------------------- WORKER --------------------
+def analysis_worker(tf):
+    global ANALYSIS_RUNNING
 
-@app.route('/get_analysis')
-def get_analysis():
-
-    # 🔥 Replace this with real calculation
-    data = {
-        "5m": {
-            "trend": "Bullish",
-            "vwap": "Above",
-            "rsi": 62,
-            "adx": 28,
-            "volume": "High",
-            "signal": "BUY"
-        },
-        "15m": {
-            "trend": "Bullish",
-            "vwap": "Above",
-            "rsi": 58,
-            "adx": 25,
-            "volume": "Medium",
-            "signal": "BUY"
-        },
-        "30m": {
-            "trend": "Sideways",
-            "vwap": "Near",
-            "rsi": 50,
-            "adx": 18,
-            "volume": "Low",
-            "signal": "WAIT"
-        }
+    sleep_map = {
+        "5m": 300,
+        "15m": 900,
+        "30m": 1800
     }
 
-    return jsonify(data)
+    while ANALYSIS_RUNNING:
+        try:
+            # 🔥 Replace with your real logic
+            data = {
+                "trend": "Bullish",
+                "vwap": "Above",
+                "rsi": 60,
+                "adx": 25,
+                "volume": "High",
+                "signal": "BUY"
+            }
+
+            ANALYSIS_DATA[tf] = data
+            log1(f"{tf} updated")
+
+        except Exception as e:
+            log1(f"{tf} error: {e}")
+
+        # ✅ Smart sleep (instant stop support)
+        for _ in range(sleep_map[tf]):
+            if not ANALYSIS_RUNNING:
+                break
+            time.sleep(1)
+
+# -------------------- START --------------------
+@app.route('/start_analysis')
+def start_analysis():
+    global ANALYSIS_RUNNING, ANALYSIS_THREADS
+
+    if ANALYSIS_RUNNING:
+        return jsonify({"status": "already running"})
+
+    ANALYSIS_RUNNING = True
+    ANALYSIS_THREADS = []
+
+    for tf in ["5m", "15m", "30m"]:
+        t = threading.Thread(target=analysis_worker, args=(tf,))
+        t.daemon = True
+        t.start()
+        ANALYSIS_THREADS.append(t)
+
+    log1("✅ Analysis started")
+
+    return jsonify({"status": "started"})
+
+# -------------------- STOP --------------------
+@app.route('/stop_analysis')
+def stop_analysis():
+    global ANALYSIS_RUNNING
+
+    ANALYSIS_RUNNING = False
+    log1("⛔ Analysis stopped")
+
+    return jsonify({"status": "stopped"})
+
+# -------------------- GET DATA --------------------
+@app.route('/get_analysis')
+def get_analysis():
+    return jsonify(ANALYSIS_DATA)

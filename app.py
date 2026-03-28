@@ -9,7 +9,6 @@ from trailling_strategy import run_trailling_strategy, stop_trailling_strategy
 import uuid
 from datetime import datetime, timedelta
 from trailling_strategy import *
-from technical_analysis import *
 
 
 app = Flask(__name__)
@@ -345,15 +344,6 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             conn.close()
 
             return
-        sleeptime = 0
-        sleep_map = {
-            "5m": 300,
-            "15m": 900,
-            "30m": 1800,
-            "1h": 3600
-        }
-
-        sleeptime = sleep_map.get(timeframe, 300)
         interval_map = {
             "5m": "5minute",
             "15m": "15minute",
@@ -384,7 +374,15 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             if not status or status[0] == 0:
                 log1(f"[{task_id}] Stopped normally")
                 break
-            
+            sleeptime = 0
+            sleep_map = {
+                "5m": 300,
+                "15m": 900,
+                "30m": 1800,
+                "1h": 3600
+            }
+
+            sleeptime = sleep_map.get(timeframe, 300)
             
             now = datetime.now() + timedelta(hours=5, minutes=30)
             # now = datetime.now() 
@@ -783,50 +781,12 @@ def analysis_worker(tf):
         "15m": 900,
         "30m": 1800
     }
-    interval_map = {
-        "5m": "5minute",
-        "15m": "15minute",
-        "30m": "30minute",
-        "1h": "60minute"
-    }
-    
-    kite_interval = interval_map.get(tf, "5minute")
-    # log1(f"[{task_id}] Worker started")
-    access_token = read_access_token()
 
-    kite_local = KiteConnect(api_key=API_KEY)
-    kite_local.set_access_token(access_token)
-    
-    exchange = "MCX"
-    instrument = "GOLDM26MAYFUT"
-    instrument_token = "124881671"
     while ANALYSIS_RUNNING:
-
         try:
-            now = datetime.now() + timedelta(hours=5, minutes=30)
-            # now = datetime.now() 
-            log1(f'Present Time: {now}')
-
-            # market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
-            # # market_open  = (now.hour >= 8)
-            # market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 30)
-            # time23 = (now.hour >= 23)
-
-            # if not (market_open and not market_close):
-            #     print("🕘 MCX Market Closed — sleeping...")
-            #     log1("🕘 MCX Market Closed — sleeping...")
-            #     wait_until_next_time(tf)
-            #     # time.sleep(600)
-            #     continue
-            # # log1("Fetching data")
-            # df = fetch_with_retry_token(instrument, instrument_token, kite_interval, kite_local)
-            # log1("Fetching data complete")
-            # log1(df.tail(3))
-            # df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
-            # data_fetch = data_analysis(df)
             # 🔥 Replace with your real logic
             data = {
-                "trend": "data_fetch",
+                "trend": "Bullish",
                 "vwap": "Above",
                 "rsi": 60,
                 "adx": 25,
@@ -836,7 +796,7 @@ def analysis_worker(tf):
 
             ANALYSIS_DATA[tf] = data
             log1(f"{tf} updated")
-            # wait_until_next_time(tf)
+
         except Exception as e:
             log1(f"{tf} error: {e}")
 

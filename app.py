@@ -344,6 +344,15 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             conn.close()
 
             return
+        sleeptime = 0
+        sleep_map = {
+            "5m": 300,
+            "15m": 900,
+            "30m": 1800,
+            "1h": 3600
+        }
+
+        sleeptime = sleep_map.get(timeframe, 300)
         interval_map = {
             "5m": "5minute",
             "15m": "15minute",
@@ -374,15 +383,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             if not status or status[0] == 0:
                 log1(f"[{task_id}] Stopped normally")
                 break
-            sleeptime = 0
-            sleep_map = {
-                "5m": 300,
-                "15m": 900,
-                "30m": 1800,
-                "1h": 3600
-            }
-
-            sleeptime = sleep_map.get(timeframe, 300)
+            
             
             now = datetime.now() + timedelta(hours=5, minutes=30)
             # now = datetime.now() 
@@ -781,8 +782,24 @@ def analysis_worker(tf):
         "15m": 900,
         "30m": 1800
     }
+    interval_map = {
+        "5m": "5minute",
+        "15m": "15minute",
+        "30m": "30minute",
+        "1h": "60minute"
+    }
+    
+    kite_interval = interval_map.get(tf, "5minute")
+    # log1(f"[{task_id}] Worker started")
+    access_token = read_access_token()
+
+    kite_local = KiteConnect(api_key=API_KEY)
+    kite_local.set_access_token(access_token)
+    
+    exchange = "MCX"
 
     while ANALYSIS_RUNNING:
+
         try:
             # 🔥 Replace with your real logic
             data = {

@@ -36,7 +36,7 @@ def indicator_values(df):
 
 
 
-def find_swings(df, window=5):
+def find_swings(df, window=7):
     df['swing_high'] = df['High'][
         df['High'] == df['High'].rolling(window, center=True).max()
     ]
@@ -46,11 +46,6 @@ def find_swings(df, window=5):
     ]
 
     return df
-# def get_swing_points(df):
-#     highs = df[df['swing_high'].notna()][['date','High']]
-#     lows  = df[df['swing_low'].notna()][['date','Low']]
-
-#     return highs, lows
 
 def highlow_data(df):
     df = find_swings(df)
@@ -72,7 +67,7 @@ def highlow_data(df):
     structure = []
 
     # only process last 4 swings → gives last 3 structure points
-    recent_swings = swings[-4:]
+    recent_swings = swings[-10:]
 
     for i in range(1, len(recent_swings)):
         prev_type, prev_price = recent_swings[i-1]
@@ -200,6 +195,7 @@ def data_analysis(df):
 
     df = indicator_values(df)
     df = df[-50:]
+    # log()
     # print(df.tail())
     timeframe = "5m"
     price = df['Close'].iat[-1]

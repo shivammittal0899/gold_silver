@@ -192,7 +192,8 @@ def volatility_per_analysis(df, timeframe):
 
     return {
         "volatility_per": float(current_vol),
-        "avg_volatility": avg_vol
+        # "avg_volatility": avg_vol
+        "avg_volatility": "None"
     }
 
 def data_analysis(df):

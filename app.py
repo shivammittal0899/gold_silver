@@ -824,6 +824,7 @@ def analysis_worker(tf):
             log1(df.tail(3))
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             cur_price = data_analysis(df)
+            log1(cur_price)
             # 🔥 Replace with your real logic
             data = {
                 "trend": cur_price,

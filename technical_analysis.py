@@ -209,6 +209,15 @@ def data_analysis(df):
     support, resistance, breakout = sr_breakout(df)
     atr_val, volatility_regime, volatility_exp = volatility_analysis(df)
     volatility_per, avg_vol = volatility_per_analysis(df, timeframe)
+    data = {
+        "price": price,
+        "ret6": ret6,
+        "ret12": ret12,
+        "trend": trend,
+        "last_high": last_high,
+        "last_low": last_low,
+        "highlow": highlow
+    }
 
     return price
 

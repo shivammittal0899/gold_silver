@@ -805,7 +805,7 @@ def analysis_worker(tf):
         try:
             now = datetime.now() + timedelta(hours=5, minutes=30)
             # now = datetime.now() 
-            log1(f'Present Time: {now}')
+            log1(f'Present Time: {now} --- {datetime.now()}')
 
             market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
             # market_open  = (now.hour >= 8)

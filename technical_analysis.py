@@ -36,7 +36,7 @@ def indicator_values(df):
 
 
 
-def find_swings(df, window=7):
+def find_swings(df, window=6):
     df['swing_high'] = df['High'][
         df['High'] == df['High'].rolling(window, center=True).max()
     ]

@@ -199,6 +199,7 @@ def volatility_per_analysis(df, timeframe):
 def data_analysis(df):
 
     df = indicator_values(df)
+    df = df[-50:]
     # print(df.tail())
     timeframe = "5m"
     price = df['Close'].iat[-1]

@@ -202,8 +202,8 @@ def data_analysis(df):
     # print(df.tail())
     timeframe = "5m"
     price = df['Close'].iat[-1]
-    ret6 = round(((price / df['Open'].iat[-6]) - 1),2)
-    ret12 = round(((price / df['Open'].iat[-12]) - 1),2)
+    ret6 = round((((price / df['Open'].iat[-6]) - 1)*100),2)
+    ret12 = round((((price / df['Open'].iat[-12]) - 1)*100),2)
     trend, last_high, last_low = highlow_trend(df)
     highlow = highlow_data(df)
     support, resistance, breakout = sr_breakout(df)

@@ -681,7 +681,7 @@
         ["5m", "15m", "30m"].forEach(tf => {
             
 
-            document.getElementById(`price_${tf}`).innerText = data[tf]?.trend || "";
+            document.getElementById(`price_${tf}`).innerText = data[tf]?.price || "";
             let ret6Cell = document.getElementById(`ret6_${tf}`);
             let ret6Value = data[tf]?.ret6 || "";
             ret6Cell.innerText = ret6Value;

@@ -134,7 +134,7 @@ def sr_breakout(df, lookback=20):
     return {
         "support": float(support),
         "resistance": float(resistance),
-        "breakout": float(breakout_type)
+        "breakout": breakout_type
     }
 
 def pullback(df):

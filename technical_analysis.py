@@ -132,9 +132,9 @@ def sr_breakout(df, lookback=20):
         breakout_type = "DOWN"
 
     return {
-        "support": support,
-        "resistance": resistance,
-        "breakout": breakout_type
+        "support": float(support),
+        "resistance": float(resistance),
+        "breakout": float(breakout_type)
     }
 
 def pullback(df):
@@ -207,9 +207,9 @@ def data_analysis(df):
     ret12 = round((((price / df['Open'].iat[-12]) - 1)*100),2)
     trend, last_high, last_low = highlow_trend(df)
     highlow = highlow_data(df)
-    support, resistance, breakout = sr_breakout(df)
-    atr_val, volatility_regime, volatility_exp = volatility_analysis(df)
-    volatility_per, avg_volatility = volatility_per_analysis(df, timeframe)
+    srb = sr_breakout(df)
+    volatility = volatility_analysis(df)
+    volatility_per = volatility_per_analysis(df, timeframe)
     data = {
         "price": float(price),
         "ret6": float(ret6),
@@ -218,20 +218,23 @@ def data_analysis(df):
         "l_high": float(last_high),
         "l_low": float(last_low),
         "highlow": highlow,
-        "support": float(support),
-        "resistance": float(resistance),
-        "breakout": float(breakout),
-        "atr_val": float(atr_val),
-        "volatility_regime": volatility_regime,
-        "volatility_exp": volatility_exp,
-        "volatility_per": volatility_per,
-        "avg_volatility": avg_volatility,
+        # "support": float(srb["support"]),
+        # "resistance": float(resistance),
+        # "breakout": float(breakout),
+        # "atr_val": float(atr_val),
+        # "volatility_regime": volatility_regime,
+        # "volatility_exp": volatility_exp,
+        # "volatility_per": volatility_per,
+        # "avg_volatility": avg_volatility,
         "vwap": "Above",
         "rsi": 60,
         "adx": 25,
         "volume": "High",
         "signal": "BUY"
     }
+    data = data | srb
+    data = data | volatility
+    data = data | volatility_per
 
     return data
 

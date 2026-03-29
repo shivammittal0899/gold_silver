@@ -826,7 +826,7 @@ def analysis_worker(tf):
             cur_price = data_analysis(df)
             # 🔥 Replace with your real logic
             data = {
-                "trend": "Bullish",
+                "trend": cur_price,
                 "vwap": "Above",
                 "rsi": 60,
                 "adx": 25,

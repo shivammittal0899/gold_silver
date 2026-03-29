@@ -209,7 +209,7 @@ def data_analysis(df):
     highlow = highlow_data(df)
     support, resistance, breakout = sr_breakout(df)
     atr_val, volatility_regime, volatility_exp = volatility_analysis(df)
-    volatility_per, avg_vol = volatility_per_analysis(df, timeframe)
+    volatility_per, avg_volatility = volatility_per_analysis(df, timeframe)
     data = {
         "price": float(price),
         "ret6": float(ret6),
@@ -218,6 +218,14 @@ def data_analysis(df):
         "l_high": float(last_high),
         "l_low": float(last_low),
         "highlow": highlow,
+        "support": float(support),
+        "resistance": float(resistance),
+        "breakout": float(breakout),
+        "atr_val": float(atr_val),
+        "volatility_regime": volatility_regime,
+        "volatility_exp": volatility_exp,
+        "volatility_per": volatility_per,
+        "avg_volatility": avg_volatility,
         "vwap": "Above",
         "rsi": 60,
         "adx": 25,

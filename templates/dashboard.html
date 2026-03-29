@@ -309,6 +309,54 @@
                 <td id="highlow_30m"></td>
             </tr>
             <tr>
+                <td>Support</td>
+                <td id="support_5m"></td>
+                <td id="support_15m"></td>
+                <td id="support_30m"></td>
+            </tr>
+            <tr>
+                <td>Resistance</td>
+                <td id="resistance_5m"></td>
+                <td id="resistance_15m"></td>
+                <td id="resistance_30m"></td>
+            </tr>
+            <tr>
+                <td>Breakout</td>
+                <td id="breakout_5m"></td>
+                <td id="breakout_15m"></td>
+                <td id="breakout_30m"></td>
+            </tr>
+            <tr>
+                <td>ATR</td>
+                <td id="atr_val_5m"></td>
+                <td id="atr_val_15m"></td>
+                <td id="atr_val_30m"></td>
+            </tr>
+            <tr>
+                <td>Volatility Regime</td>
+                <td id="volatility_regime_5m"></td>
+                <td id="volatility_regime_15m"></td>
+                <td id="volatility_regime_30m"></td>
+            </tr>
+            <tr>
+                <td>Volatility Expansion</td>
+                <td id="volatility_exp_5m"></td>
+                <td id="volatility_exp_15m"></td>
+                <td id="volatility_exp_30m"></td>
+            </tr>
+            <tr>
+                <td>Volatility Per</td>
+                <td id="volatility_per_5m"></td>
+                <td id="volatility_per_15m"></td>
+                <td id="volatility_per_30m"></td>
+            </tr>
+            <tr>
+                <td>Avg Volatility</td>
+                <td id="avg_volatility_5m"></td>
+                <td id="avg_volatility_15m"></td>
+                <td id="avg_volatility_30m"></td>
+            </tr>
+            <tr>
                 <td>VWAP</td>
                 <td id="vwap_5m"></td>
                 <td id="vwap_15m"></td>
@@ -692,6 +740,15 @@
             document.getElementById(`l_high_${tf}`).innerText = data[tf]?.l_high || "";
             document.getElementById(`l_low_${tf}`).innerText = data[tf]?.l_low || "";
             document.getElementById(`highlow_${tf}`).innerText = data[tf]?.highlow || "";
+            
+            document.getElementById(`support_${tf}`).innerText = data[tf]?.support || "";
+            document.getElementById(`resistance_${tf}`).innerText = data[tf]?.resistance || "";
+            document.getElementById(`breakout_${tf}`).innerText = data[tf]?.breakout || "";
+            document.getElementById(`atr_val_${tf}`).innerText = data[tf]?.atr_val || "";
+            document.getElementById(`volatility_regime_${tf}`).innerText = data[tf]?.volatility_regime || "";
+            document.getElementById(`volatility_exp_${tf}`).innerText = data[tf]?.volatility_exp || "";
+            document.getElementById(`volatility_per_${tf}`).innerText = data[tf]?.volatility_per || "";
+            document.getElementById(`avg_volatility_${tf}`).innerText = data[tf]?.avg_volatility || "";
             document.getElementById(`vwap_${tf}`).innerText = data[tf]?.vwap || "";
             document.getElementById(`rsi_${tf}`).innerText = data[tf]?.rsi || "";
             document.getElementById(`adx_${tf}`).innerText = data[tf]?.adx || "";

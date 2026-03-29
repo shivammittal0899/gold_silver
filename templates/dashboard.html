@@ -267,10 +267,46 @@
         </thead>
         <tbody>
             <tr>
+                <td>Price</td>
+                <td id="price_5m"></td>
+                <td id="price_15m"></td>
+                <td id="price_30m"></td>
+            </tr>
+            <tr>
+                <td>Return 6</td>
+                <td id="ret6_5m"></td>
+                <td id="ret6_15m"></td>
+                <td id="ret6_30m"></td>
+            </tr>
+            <tr>
+                <td>Return 12</td>
+                <td id="ret12_5m"></td>
+                <td id="ret12_15m"></td>
+                <td id="ret12_30m"></td>
+            </tr>
+            <tr>
                 <td>Trend</td>
                 <td id="trend_5m"></td>
                 <td id="trend_15m"></td>
                 <td id="trend_30m"></td>
+            </tr>
+            <tr>
+                <td>Last High</td>
+                <td id="l_high_5m"></td>
+                <td id="l_high_15m"></td>
+                <td id="l_high_30m"></td>
+            </tr>
+            <tr>
+                <td>Last Low</td>
+                <td id="l_low_5m"></td>
+                <td id="l_low_15m"></td>
+                <td id="l_low_30m"></td>
+            </tr>
+            <tr>
+                <td>HighLow</td>
+                <td id="highlow_5m"></td>
+                <td id="highlow_15m"></td>
+                <td id="highlow_30m"></td>
             </tr>
             <tr>
                 <td>VWAP</td>
@@ -599,73 +635,6 @@
         }
     }
 
-    // function updateAnalysis(data) {
-    //     // Example data structure:
-    //     // data = {
-    //     //   "5m": {trend:"Bullish", rsi:65, ...},
-    //     //   "15m": {...},
-    //     //   "30m": {...}
-    //     // }
-
-    //     ["5m", "15m", "30m"].forEach(tf => {
-    //         document.getElementById(`trend_${tf}`).innerText = data[tf].trend;
-    //         document.getElementById(`vwap_${tf}`).innerText = data[tf].vwap;
-    //         document.getElementById(`rsi_${tf}`).innerText = data[tf].rsi;
-    //         document.getElementById(`adx_${tf}`).innerText = data[tf].adx;
-    //         document.getElementById(`vol_${tf}`).innerText = data[tf].volume;
-    //         document.getElementById(`signal_${tf}`).innerText = data[tf].signal;
-    //     });
-    // }
-
-    // function updateAnalysis(data) {
-
-    //     ["5m", "15m", "30m"].forEach(tf => {
-
-    //         // Trend
-    //         let trendCell = document.getElementById(`trend_${tf}`);
-    //         trendCell.innerText = data[tf].trend;
-
-    //         // VWAP
-    //         document.getElementById(`vwap_${tf}`).innerText = data[tf].vwap;
-
-    //         // RSI
-    //         document.getElementById(`rsi_${tf}`).innerText = data[tf].rsi;
-
-    //         // ADX
-    //         document.getElementById(`adx_${tf}`).innerText = data[tf].adx;
-
-    //         // Volume
-    //         document.getElementById(`vol_${tf}`).innerText = data[tf].volume;
-
-    //         // 🔥 SIGNAL (IMPORTANT)
-    //         let signalCell = document.getElementById(`signal_${tf}`);
-    //         let signalValue = data[tf].signal;
-
-    //         signalCell.innerText = signalValue;
-
-    //         // ✅ APPLY COLOR HERE
-    //         colorSignal(signalCell, signalValue);
-    //     });
-    // }
-
-    // function colorSignal(cell, value) {
-    //     if (value === "BUY") cell.style.color = "green";
-    //     else if (value === "SELL") cell.style.color = "red";
-    //     else cell.style.color = "gray";
-    // }
-
-    // function loadAnalysis() {
-    //     fetch('/get_analysis')
-    //     .then(res => res.json())
-    //     .then(data => {
-    //         updateAnalysis(data);
-    //     });
-    // }
-
-    // refresh every 5 sec
-    // setInterval(loadAnalysis, 290000);
-    // loadAnalysis();
-
 
     // 🔥 Start
     function startAnalysis() {
@@ -710,8 +679,19 @@
     // 🔥 Update Table
     function updateAnalysis(data) {
         ["5m", "15m", "30m"].forEach(tf => {
+            
 
+            document.getElementById(`price_${tf}`).innerText = data[tf]?.trend || "";
+            let ret6Cell = document.getElementById(`ret6_${tf}`);
+            let ret6Value = data[tf]?.ret6 || "";
+            ret6Cell.innerText = ret6Value;
+            let ret12Cell = document.getElementById(`ret12_${tf}`);
+            let ret12Value = data[tf]?.ret12 || "";
+            ret12Cell.innerText = ret12Value;
             document.getElementById(`trend_${tf}`).innerText = data[tf]?.trend || "";
+            document.getElementById(`l_high_${tf}`).innerText = data[tf]?.l_high || "";
+            document.getElementById(`l_low_${tf}`).innerText = data[tf]?.l_low || "";
+            document.getElementById(`highlow_${tf}`).innerText = data[tf]?.highlow || "";
             document.getElementById(`vwap_${tf}`).innerText = data[tf]?.vwap || "";
             document.getElementById(`rsi_${tf}`).innerText = data[tf]?.rsi || "";
             document.getElementById(`adx_${tf}`).innerText = data[tf]?.adx || "";

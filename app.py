@@ -823,18 +823,18 @@ def analysis_worker(tf):
             log1("Fetching data complete")
             log1(df.tail(3))
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
-            cur_price = data_analysis(df)
-            log1(cur_price)
-            log1(f"cur_price: {cur_price}, type: {type(cur_price)}")
+            data = data_analysis(df)
+            log1(data)
+            # log1(f"cur_price: {cur_price}, type: {type(cur_price)}")
             # 🔥 Replace with your real logic
-            data = {
-                "trend": float(cur_price),
-                "vwap": "Above",
-                "rsi": 60,
-                "adx": 25,
-                "volume": "High",
-                "signal": "BUY"
-            }
+            # data = {
+            #     "trend": float(cur_price),
+            #     "vwap": "Above",
+            #     "rsi": 60,
+            #     "adx": 25,
+            #     "volume": "High",
+            #     "signal": "BUY"
+            # }
 
             ANALYSIS_DATA[tf] = data
             log1(f"{tf} updated")

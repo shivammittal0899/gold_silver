@@ -159,12 +159,12 @@ def volatility_analysis(df):
     elif atr < 0.7 * atr_avg:
         regime = "LOW_VOL"
 
-    expansion = atr > df['atr'].rolling(20).mean().iloc[-1]
+    expansion = atr > float(df['atr'].rolling(20).mean().iloc[-1])
 
     return {
-        "atr": atr,
-        "regime": regime,
-        "expansion": expansion
+        "atr_val": float(atr),
+        "volatility_regime": regime,
+        "volatility_exp": expansion
     }
 
 def volatility_per_analysis(df, timeframe):
@@ -188,11 +188,11 @@ def volatility_per_analysis(df, timeframe):
     current_vol = df['vol_20'].iloc[-1]
 
     # Dynamic thresholds (better than fixed)
-    avg_vol = df['vol_20'].rolling(50).mean().iloc[-1]
+    avg_vol = float(df['vol_20'].rolling(50).mean().iloc[-1])
 
     return {
-        "volatility": current_vol,
-        "avg_vol": avg_vol
+        "volatility_per": float(current_vol),
+        "avg_volatility": avg_vol
     }
 
 def data_analysis(df):

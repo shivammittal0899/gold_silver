@@ -164,7 +164,8 @@ def volatility_analysis(df):
     return {
         "atr_val": float(atr),
         "volatility_regime": regime,
-        "volatility_exp": expansion
+        # "volatility_exp": expansion
+        "volatility_exp": "expansion"
     }
 
 def volatility_per_analysis(df, timeframe):

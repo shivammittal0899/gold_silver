@@ -827,7 +827,7 @@ def analysis_worker(tf):
             log1(cur_price)
             # 🔥 Replace with your real logic
             data = {
-                "trend": cur_price,
+                "trend": "cur_price",
                 "vwap": "Above",
                 "rsi": 60,
                 "adx": 25,

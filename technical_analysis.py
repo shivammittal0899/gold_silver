@@ -37,14 +37,18 @@ def indicator_values(df):
 
 
 def find_swings(df, window=6):
-    df['swing_high'] = df['High'][
-        df['High'] == df['High'].rolling(window, center=True).max()
-    ]
+    # df['swing_high'] = df['High'][
+    #     df['High'] == df['High'].rolling(window, center=True).max()
+    # ]
 
-    df['swing_low'] = df['Low'][
-        df['Low'] == df['Low'].rolling(window, center=True).min()
-    ]
+    # df['swing_low'] = df['Low'][
+    #     df['Low'] == df['Low'].rolling(window, center=True).min()
+    # ]
+    df['rolling_max'] = df['High'].rolling(window).max()
+    df['rolling_min'] = df['Low'].rolling(window).min()
 
+    df['swing_high'] = df['High'].where(df['High'] == df['rolling_max'])
+    df['swing_low'] = df['Low'].where(df['Low'] == df['rolling_min'])
     return df
 
 def highlow_data(df):

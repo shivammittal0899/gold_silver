@@ -211,11 +211,11 @@ def data_analysis(df):
     volatility_per, avg_vol = volatility_per_analysis(df, timeframe)
     data = {
         "price": float(price),
-        "ret6": ret6,
-        "ret12": ret12,
+        "ret6": float(ret6),
+        "ret12": float(ret12),
         "trend": trend,
-        "l_high": last_high,
-        "l_low": last_low,
+        "l_high": float(last_high),
+        "l_low": float(last_low),
         "highlow": highlow,
         "vwap": "Above",
         "rsi": 60,
@@ -224,7 +224,7 @@ def data_analysis(df):
         "signal": "BUY"
     }
 
-    return price
+    return data
 
 
 # data_analysis(df)

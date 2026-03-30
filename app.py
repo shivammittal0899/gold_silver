@@ -390,7 +390,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             # now = datetime.now() 
             log1(f'Present Time: {now}')
 
-            market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
+            market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 10)
             # market_open  = (now.hour >= 8)
             market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 30)
             time23 = (now.hour >= 23)
@@ -807,7 +807,7 @@ def analysis_worker(tf):
             # now = datetime.now() 
             log1(f'Present Time: {now} --- {datetime.now()}')
 
-            market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
+            market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 10)
             # market_open  = (now.hour >= 8)
             market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 30)
             time23 = (now.hour >= 23)

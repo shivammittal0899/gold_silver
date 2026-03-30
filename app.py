@@ -803,7 +803,7 @@ def analysis_worker(tf):
     while ANALYSIS_RUNNING:
 
         try:
-            now = datetime.now() #+ timedelta(hours=5, minutes=30)
+            now = datetime.now() + timedelta(hours=5, minutes=30)
             # now = datetime.now() 
             log1(f'Present Time: {now} --- {datetime.now()}')
 

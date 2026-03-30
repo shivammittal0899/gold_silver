@@ -56,9 +56,19 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
     
     if indicator == "highlow":
         if position == 1:
-            df['refline'] = df['Low']
+            df['refline'] = df['Low'].shift(1)
         elif position == -1:
-            df['refline'] = df['High']
+            df['refline'] = df['High'].shift(1)
+    elif indicator == "price":
+        if position == 1:
+            df['refline'] = df[['Close','Open']].min(axis=1).shift(1)
+        elif position == -1:
+            df['refline'] = df[['Close','Open']].max(axis=1).shift(1)
+    elif indicator == "minmax":
+        if position == 1:
+            df['refline'] = df['Close'].rolling(window=5).min().shift(1)
+        elif position == -1:
+            df['refline'] = df['Close'].rolling(window=5).max().shift(1)
     else:
         df['refline'] = df[indicator]
 

@@ -116,7 +116,7 @@ def highlow_trend(df):
         trend = "SIDEWAYS"
     return trend, last_high, last_low
 
-def sr_breakout(df, lookback=20):
+def sr_breakout(df, lookback=10):
     # Support & Resistance
     resistance = df['High'].rolling(lookback).max().iloc[-2]
     support    = df['Low'].rolling(lookback).min().iloc[-2]
@@ -220,14 +220,6 @@ def data_analysis(df):
         "l_high": float(last_high),
         "l_low": float(last_low),
         "highlow": highlow,
-        # "support": float(srb["support"]),
-        # "resistance": float(resistance),
-        # "breakout": float(breakout),
-        # "atr_val": float(atr_val),
-        # "volatility_regime": volatility_regime,
-        # "volatility_exp": volatility_exp,
-        # "volatility_per": volatility_per,
-        # "avg_volatility": avg_volatility,
         "vwap": "Above",
         "rsi": 60,
         "adx": 25,

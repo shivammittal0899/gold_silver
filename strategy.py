@@ -147,8 +147,9 @@ def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val, kite_inst
             transaction_type=kite_obj.TRANSACTION_TYPE_SELL,
             quantity=quantity,
             product=kite_obj.PRODUCT_NRML,
-            order_type=kite_obj.ORDER_TYPE_SLM,
+            order_type=kite_obj.ORDER_TYPE_SL,
             trigger_price=stoploss_val,
+            price=stoploss_val - 5,   # 👈 buffer lagao
             validity=kite_obj.VALIDITY_DAY
         )
 
@@ -160,8 +161,9 @@ def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val, kite_inst
             transaction_type=kite_obj.TRANSACTION_TYPE_BUY,
             quantity=quantity,
             product=kite_obj.PRODUCT_NRML,
-            order_type=kite_obj.ORDER_TYPE_SLM,
+            order_type=kite_obj.ORDER_TYPE_SL,
             trigger_price=stoploss_val,
+            price=stoploss_val + 5,   # 👈 buffer
             validity=kite_obj.VALIDITY_DAY
         )
     else:
@@ -169,19 +171,36 @@ def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val, kite_inst
 
     return order_id
 
-def modify_sl_order(sl_orderid, stoploss_val, kite_instance=None):
+def modify_sl_order(sl_orderid, stoploss_val, transaction, kite_instance=None):
     global kite
 
     kite_obj = kite_instance if kite_instance is not None else kite
 
     if not kite_obj:
         raise Exception("❌ Kite instance not available")
+    if transaction == "BUY":
+        buffer = 5
 
-    return kite_obj.modify_order(
-        variety=kite_obj.VARIETY_REGULAR,
-        order_id=sl_orderid,
-        trigger_price=stoploss_val
-    )
+        return kite_obj.modify_order(
+            variety=kite_obj.VARIETY_REGULAR,
+            order_id=sl_orderid,
+            trigger_price=stoploss_val,
+            price=stoploss_val + buffer   # 🔥 MUST ADD
+        )
+    elif transaction == "SELL":
+        buffer = 5
+
+        return kite_obj.modify_order(
+            variety=kite_obj.VARIETY_REGULAR,
+            order_id=sl_orderid,
+            trigger_price=stoploss_val,
+            price=stoploss_val - buffer   # 🔥 MUST ADD
+        )
+    # return kite_obj.modify_order(
+    #     variety=kite_obj.VARIETY_REGULAR,
+    #     order_id=sl_orderid,
+    #     trigger_price=stoploss_val
+    # )
 
 def cancel_order(orderid, kite_instance=None):
     global kite
@@ -533,7 +552,7 @@ def backtest_with_capital(p):
                 if (sl_orderid != None) and (stoploss_val != 0):
                     log(f"MSL placed: {sl_orderid} {stoploss_val}")
                     try:
-                        modify_sl_order(sl_orderid, stoploss_val)
+                        modify_sl_order(sl_orderid, stoploss_val, "SELL")
                     except Exception as e: 
                         log(f"MSL order error {e}")
                         if "Trigger price" in e:
@@ -563,7 +582,7 @@ def backtest_with_capital(p):
                 if (rsl_orderid != None) and (reverse_sl_val != 0):
                     log(f"MRSL placed: {rsl_orderid} {reverse_sl_val}")
                     try:
-                        modify_sl_order(rsl_orderid, reverse_sl_val)
+                        modify_sl_order(rsl_orderid, reverse_sl_val, "SELL")
                     except Exception as e: 
                         log(f"Modify stoploss error {e}")
                         if "Trigger price" in e:
@@ -596,7 +615,7 @@ def backtest_with_capital(p):
                 if (sl_orderid != None) and (stoploss_val != 0):
                     log(f"MSL placed: {sl_orderid} {stoploss_val} start")
                     try:
-                        modify_sl_order(sl_orderid, stoploss_val)
+                        modify_sl_order(sl_orderid, stoploss_val, "BUY")
                     except Exception as e:
                         log(f"Error - {e}")
                         if "Trigger price" in e:
@@ -621,7 +640,7 @@ def backtest_with_capital(p):
                 if (rsl_orderid != None) and (reverse_sl_val != 0):
                     log(f"MRSL placed: {rsl_orderid} {reverse_sl_val}")
                     try:
-                        modify_sl_order(rsl_orderid, reverse_sl_val)
+                        modify_sl_order(rsl_orderid, reverse_sl_val, "BUY")
                     except Exception as e:
                         log(f"Error - {e}")
                         if "Trigger price" in e:
@@ -672,7 +691,7 @@ def backtest_with_capital(p):
                         
                     elif (el_sl_orderid != None) and (entry_sl_val != 0):
                         try:
-                            modify_sl_order(el_sl_orderid, entry_sl_val)
+                            modify_sl_order(el_sl_orderid, entry_sl_val, "BUY")
                         except Exception as e:
                             if "Trigger price" in e:
                                 cancel_order(el_sl_orderid)

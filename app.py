@@ -459,7 +459,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 if (sl_orderid != None):
                     try:
                         log1(f"MSL placed: {sl_orderid} {stoploss_val}")
-                        modify_sl_order(sl_orderid, stoploss_val, kite_local)
+                        modify_sl_order(sl_orderid, stoploss_val, "SELL", kite_local)
                     except Exception as e: 
                         log1(f"MSL order error {e}")
                         if "Trigger price" in e:
@@ -488,7 +488,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 if (sl_orderid != None) and (stoploss_val != 0):
                     try:
                         log1(f"MSL placed: {sl_orderid} {stoploss_val} start")
-                        modify_sl_order(sl_orderid, stoploss_val, kite_local)
+                        modify_sl_order(sl_orderid, stoploss_val, "BUY", kite_local)
                         log1(f"SLM placed: {sl_orderid} {stoploss_val}")
                     except Exception as e:
                         log1(f"Error - {e}")

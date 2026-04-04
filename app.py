@@ -929,11 +929,23 @@ def start_analysis():
     conn = sqlite3.connect("analysis.db", check_same_thread=False)
     c = conn.cursor()
 
+    # 🔥 Ensure table exists
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS analysis_state (
+        id INTEGER PRIMARY KEY,
+        running INTEGER
+    )
+    """)
+
+    c.execute("INSERT OR IGNORE INTO analysis_state (id, running) VALUES (1, 0)")
+
+    # 🔥 Now update safely
     c.execute("UPDATE analysis_state SET running=1 WHERE id=1")
 
     conn.commit()
     conn.close()
     start_analysis_internal()
+    log1("✅ Analysis started")
     # global ANALYSIS_RUNNING, ANALYSIS_THREADS
     # instrument = "GOLDM26MAYFUT"
     # instrument_token = "124881671"
@@ -960,17 +972,22 @@ def stop_analysis():
     conn = sqlite3.connect("analysis.db", check_same_thread=False)
     c = conn.cursor()
 
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS analysis_state (
+        id INTEGER PRIMARY KEY,
+        running INTEGER
+    )
+    """)
+
+    c.execute("INSERT OR IGNORE INTO analysis_state (id, running) VALUES (1, 0)")
+
     c.execute("UPDATE analysis_state SET running=0 WHERE id=1")
 
     conn.commit()
     conn.close()
-    
-    # global ANALYSIS_RUNNING
 
-    # ANALYSIS_RUNNING = False
-    # log1("⛔ Analysis stopped")
+    log1("⛔ Analysis stopped")
 
-    # return jsonify({"status": "stopped"})
     return jsonify({"status": "stopped"})
 
 # -------------------- GET DATA --------------------
@@ -997,22 +1014,30 @@ def get_analysis():
     return jsonify(result)
 
 @app.route('/analysis_status')
-@app.route('/analysis_status')
 def analysis_status():
     try:
         conn = sqlite3.connect("analysis.db", check_same_thread=False)
         c = conn.cursor()
 
+        # 🔥 Ensure table exists
+        c.execute("""
+        CREATE TABLE IF NOT EXISTS analysis_state (
+            id INTEGER PRIMARY KEY,
+            running INTEGER
+        )
+        """)
+
+        # 🔥 Ensure row exists
+        c.execute("INSERT OR IGNORE INTO analysis_state (id, running) VALUES (1, 0)")
+
         row = c.execute(
             "SELECT running FROM analysis_state WHERE id=1"
         ).fetchone()
 
+        conn.commit()
         conn.close()
 
-        if row is None:
-            return jsonify({"running": 0})
-
-        return jsonify({"running": row[0]})
+        return jsonify({"running": row[0] if row else 0})
 
     except Exception as e:
         log1(f"analysis_status error: {str(e)}")

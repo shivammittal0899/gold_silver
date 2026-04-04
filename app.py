@@ -386,7 +386,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 break
             
             
-            now = datetime.now()# + timedelta(hours=5, minutes=30)
+            now = datetime.now() + timedelta(hours=5, minutes=30)
             # now = datetime.now() 
             log1(f'Present Time: {now}')
 
@@ -826,7 +826,7 @@ def analysis_worker(tf, instrument, instrument_token):
 
 
         try:
-            now = datetime.now() + timedelta(hours=5, minutes=30)
+            now = datetime.now()# + timedelta(hours=5, minutes=30)
             # now = datetime.now() 
             log1(f'Present Time: {now} --- {datetime.now()}')
 

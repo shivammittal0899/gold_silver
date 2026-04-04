@@ -202,7 +202,7 @@ def ichimoku_analysis(df):
     senkou_a = df['senkou_a'].iloc[-2]
     senkou_b = df['senkou_b'].iloc[-2]
     close = df['Close'].iloc[-2]
-    open = df['open'].iloc[-2]
+    open = df['Open'].iloc[-2]
     cloud = "green" if senkou_a >= senkou_b else "red"
     cloud_max = max(senkou_a, senkou_b)
     cloud_min = min(senkou_a, senkou_b)

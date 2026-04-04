@@ -766,6 +766,19 @@
         });
     }
 
+    function checkAnalysisStatus() {
+        fetch('/analysis_status')
+        .then(res => res.json())
+        .then(data => {
+            if (data.running == 1) {
+                startAnalysisBtn.disabled = true;
+                stopAnalysisBtn.disabled = false;
+            } else {
+                startAnalysisBtn.disabled = false;
+                stopAnalysisBtn.disabled = true;
+            }
+        });
+    }
     // 🔥 Fetch Data
     function loadAnalysis() {
         fetch('/get_analysis')
@@ -783,6 +796,7 @@
     window.onload = async function () {
         await loadSavedInstruments();
         loadRows();
+        checkAnalysisStatus();   // 🔥 ADD THIS
     };
     
     </script>

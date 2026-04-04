@@ -891,16 +891,20 @@ def analysis_worker(tf, instrument, instrument_token):
 # -------------------- START --------------------
 
 def start_analysis_internal():
+    global ANALYSIS_THREADS
     instrument = "GOLDM26MAYFUT"
     instrument_token = 124881671   # ✅ FIXED (int)
 
     for tf in ["5m", "15m", "30m"]:
+        if tf in ANALYSIS_THREADS and ANALYSIS_THREADS[tf].is_alive():
+            continue  # already running
         t = threading.Thread(
             target=analysis_worker,
             args=(tf, instrument, instrument_token)
         )
         t.daemon = True
         t.start()
+        ANALYSIS_THREADS[tf] = t
 
 def is_analysis_running():
     conn = sqlite3.connect("analysis.db")

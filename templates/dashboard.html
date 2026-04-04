@@ -309,22 +309,22 @@
                 <td id="highlow_30m"></td>
             </tr>
             <tr>
-                <td>Support</td>
-                <td id="support_5m"></td>
-                <td id="support_15m"></td>
-                <td id="support_30m"></td>
+                <td>Tenkan Kijun</td>
+                <td id="tenkan_kijun_5m"></td>
+                <td id="tenkan_kijun_15m"></td>
+                <td id="tenkan_kijun_30m"></td>
             </tr>
             <tr>
-                <td>Resistance</td>
-                <td id="resistance_5m"></td>
-                <td id="resistance_15m"></td>
-                <td id="resistance_30m"></td>
+                <td>Price Tenkan</td>
+                <td id="price_tenkan_5m"></td>
+                <td id="price_tenkan_15m"></td>
+                <td id="price_tenkan_30m"></td>
             </tr>
             <tr>
-                <td>Breakout</td>
-                <td id="breakout_5m"></td>
-                <td id="breakout_15m"></td>
-                <td id="breakout_30m"></td>
+                <td>Cloud Trend</td>
+                <td id="cloud_trend_5m"></td>
+                <td id="cloud_trend_15m"></td>
+                <td id="cloud_trend_30m"></td>
             </tr>
             <tr>
                 <td>ATR</td>
@@ -529,6 +529,7 @@
                         <option value="highlow" ${data.indicator=="highlow"?"selected":""}>HighLow</option>
                         <option value="highlow" ${data.indicator=="price"?"selected":""}>Price</option>
                         <option value="highlow" ${data.indicator=="minmax"?"selected":""}>MinMax</option>
+                        <option value="highlow" ${data.indicator=="tenkankijun"?"selected":""}>Tenkan Kijun</option>
                     </select>
                 </div>
                 <div class="select_box">
@@ -743,9 +744,10 @@
             document.getElementById(`l_low_${tf}`).innerText = data[tf]?.l_low || "";
             document.getElementById(`highlow_${tf}`).innerText = data[tf]?.highlow || "";
             
-            document.getElementById(`support_${tf}`).innerText = data[tf]?.support || "";
-            document.getElementById(`resistance_${tf}`).innerText = data[tf]?.resistance || "";
-            document.getElementById(`breakout_${tf}`).innerText = data[tf]?.breakout || "";
+            document.getElementById(`tenkan_kijun_${tf}`).innerText = data[tf]?.tenkan_kijun || "";
+            document.getElementById(`price_tenkan_${tf}`).innerText = data[tf]?.price_tenkan || "";
+            document.getElementById(`cloud_trend_${tf}`).innerText = data[tf]?.cloud_trend || "";
+            
             document.getElementById(`atr_val_${tf}`).innerText = data[tf]?.atr_val || "";
             document.getElementById(`volatility_regime_${tf}`).innerText = data[tf]?.volatility_regime || "";
             document.getElementById(`volatility_exp_${tf}`).innerText = data[tf]?.volatility_exp || "";

@@ -52,7 +52,11 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
     df['ATR'] = ATR(df, 14)
     # Calculate RSI (14-period default)
     df['RSI'] = RSIIndicator(close=df['Close'], window=14).rsi()
-    
+    df['tenkan_kijun_diff'] = (df['tenkan'] - df['kijun'])
+    tenkan_kijun_diff = df['tenkan'].iloc[-1] - df['kijun'].iloc[-1]
+    kijun_senkoua_diff = df['kijun'].iloc[-1] - df['senkou_a'].iloc[-1]
+    atr = df['ATR'].iloc[-1]
+    cloud_size = abs(df['senkou_a'].iloc[-1] - df['senkou_b'].iloc[-1])
     
     if indicator == "highlow":
         if position == 1:
@@ -82,11 +86,30 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
         margin_val = atr
     else:
         margin_val = min_val
+    
     if position == 1:
         stoploss_value = stoploss_value - margin_val
     elif position == -1:
         stoploss_value = stoploss_value + margin_val
     log(stoploss_value)
+
+
+    if indicator == "tenkankijun":
+        if position == 1:
+            if abs(tenkan_kijun_diff) > atr*1.5:
+                stoploss_value = df['tenkan'].iloc[-1] - margin_val
+            elif abs(tenkan_kijun_diff) <= atr*1.5:
+                stoploss_value = df['kijun'].iloc[-1] - margin_val
+            if abs(kijun_senkoua_diff) < atr*1:
+                stoploss_value = df['senkou_b'].iloc[-1] - margin_val
+        if position == -1:
+            if abs(tenkan_kijun_diff) > atr*1.5:
+                stoploss_value = df['tenkan'].iloc[-1] + margin_val
+            elif abs(tenkan_kijun_diff) <= atr*1.5:
+                stoploss_value = df['kijun'].iloc[-1] + margin_val
+            if abs(kijun_senkoua_diff) < atr*1:
+                stoploss_value = df['senkou_b'].iloc[-1] + 100
+                
     
     return stoploss_value
     

@@ -196,6 +196,58 @@ def volatility_per_analysis(df, timeframe):
         # "avg_volatility": avg_vol
         "avg_volatility": "None"
     }
+def ichimoku_analysis(df):
+    tenkan = df['tenkan'].iloc[-2]
+    kijun = df['kijun'].iloc[-2]
+    senkou_a = df['senkou_a'].iloc[-2]
+    senkou_b = df['senkou_b'].iloc[-2]
+    close = df['Close'].iloc[-2]
+    open = df['open'].iloc[-2]
+    cloud = "green" if senkou_a >= senkou_b else "red"
+    cloud_max = max(senkou_a, senkou_b)
+    cloud_min = min(senkou_a, senkou_b)
+    if (tenkan > kijun) and (tenkan > cloud_max):
+        tenkan_kijun = "Strong Uptrend"
+    elif (tenkan >= kijun):
+        tenkan_kijun = "Uptrend"
+    elif (tenkan < kijun) and (tenkan < cloud_min):
+        tenkan_kijun = "Strong Downtrend"
+    elif (tenkan <= kijun):
+        tenkan_kijun = "Downtrend"
+    else:
+        tenkan_kijun = "Neutral"
+    
+    if (tenkan_kijun == "Strong Uptrend") and (close > tenkan):
+        price_tenkan = "Strong Uptrend"
+    elif (tenkan_kijun == "Uptrend") and (close > tenkan):
+        price_tenkan = "Uptrend"
+    elif (tenkan_kijun == "Strong Downtrend") and (close < tenkan):
+        price_tenkan = "Strong Downtrend"
+    elif (tenkan_kijun == "Downtrend") and (close < tenkan):
+        price_tenkan = "Downtrend"
+    else:
+        price_tenkan = "Sideways"
+    if (close > cloud_max) and (cloud == 'green'):
+        cloud_trend = "Strong Uptrend"
+    elif (close > cloud_max):
+        cloud_trend = "Uptrend"
+    elif (close < cloud_min) and (cloud == 'red'):
+        cloud_trend = "Strong Downtrend"
+    elif (close < cloud_min):
+        cloud_trend = "Downtrend"
+    else:
+        cloud_trend = "Sideways"
+
+    
+    ichimoku_t = {
+        "tenkan_kijun": tenkan_kijun,
+        "price_tenkan": price_tenkan,
+        "cloud_trend": cloud_trend
+    }
+    return ichimoku_t
+
+
+        
 
 def data_analysis(df):
 
@@ -212,6 +264,7 @@ def data_analysis(df):
     srb = sr_breakout(df)
     volatility = volatility_analysis(df)
     volatility_per = volatility_per_analysis(df, timeframe)
+    ichimoku_d = ichimoku_analysis(df)
     data = {
         "price": float(price),
         "ret6": float(ret6),
@@ -226,9 +279,10 @@ def data_analysis(df):
         "volume": "High",
         "signal": "BUY"
     }
-    data = data | srb
+    # data = data | srb
     data = data | volatility
     data = data | volatility_per
+    data = data | ichimoku_d
 
     return data
 

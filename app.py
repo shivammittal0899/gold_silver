@@ -912,12 +912,15 @@ def is_analysis_running():
     conn = sqlite3.connect("analysis.db")
     c = conn.cursor()
 
-    running = c.execute(
+    # running = c.execute(
+    #     "SELECT running FROM analysis_state WHERE id=1"
+    # ).fetchone()[0]
+    row = c.execute(
         "SELECT running FROM analysis_state WHERE id=1"
-    ).fetchone()[0]
+    ).fetchone()
 
     conn.close()
-    return running
+    return row[0] if row else 0
 
 @app.route('/start_analysis')
 def start_analysis():
@@ -994,17 +997,26 @@ def get_analysis():
     return jsonify(result)
 
 @app.route('/analysis_status')
+@app.route('/analysis_status')
 def analysis_status():
-    conn = sqlite3.connect("analysis.db", check_same_thread=False)
-    c = conn.cursor()
+    try:
+        conn = sqlite3.connect("analysis.db", check_same_thread=False)
+        c = conn.cursor()
 
-    running = c.execute(
-        "SELECT running FROM analysis_state WHERE id=1"
-    ).fetchone()[0]
+        row = c.execute(
+            "SELECT running FROM analysis_state WHERE id=1"
+        ).fetchone()
 
-    conn.close()
+        conn.close()
 
-    return {"running": running}
+        if row is None:
+            return jsonify({"running": 0})
+
+        return jsonify({"running": row[0]})
+
+    except Exception as e:
+        log1(f"analysis_status error: {str(e)}")
+        return jsonify({"running": 0})
 
 def restart_analysis():
     conn = sqlite3.connect("analysis.db", check_same_thread=False)

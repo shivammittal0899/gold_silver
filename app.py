@@ -792,7 +792,7 @@ ANALYSIS_DATA = {
 def analysis_worker(tf, instrument, instrument_token):
     # global ANALYSIS_RUNNING
 
-    
+    ensure_analysis_db() 
     interval_map = {
         "5m": "5minute",
         "15m": "15minute",
@@ -850,7 +850,7 @@ def analysis_worker(tf, instrument, instrument_token):
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             data = data_analysis(df, tf)
             log1(data)
-
+            ensure_analysis_db() 
             #  ✅ STORE IN DB (VERY IMPORTANT)
             conn = sqlite3.connect("analysis.db", check_same_thread=False)
             c = conn.cursor()
@@ -871,7 +871,7 @@ def analysis_worker(tf, instrument, instrument_token):
 
             conn.commit()
             conn.close()
-
+            
             log1(f"{tf} stored in DB")
 
             # ANALYSIS_DATA[tf] = data
@@ -889,7 +889,35 @@ def analysis_worker(tf, instrument, instrument_token):
         #     time.sleep(1)
 
 # -------------------- START --------------------
+def ensure_analysis_db():
+    conn = sqlite3.connect("analysis.db", check_same_thread=False)
+    c = conn.cursor()
 
+    # Create table if not exists
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS analysis_state (
+        id INTEGER PRIMARY KEY,
+        running INTEGER
+    )
+    """)
+    # 🔥 DATA TABLE (MISSING ONE)
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS analysis_data (
+        timeframe TEXT PRIMARY KEY,
+        price REAL,
+        ret6 REAL,
+        ret12 REAL,
+        trend TEXT,
+        signal TEXT,
+        updated_at TEXT
+    )
+    """)
+    # Ensure row exists
+    c.execute("INSERT OR IGNORE INTO analysis_state (id, running) VALUES (1, 0)")
+
+    conn.commit()
+    conn.close()
+    
 def start_analysis_internal():
     log1("🚀 Starting analysis internal")
     global ANALYSIS_THREADS
@@ -926,18 +954,10 @@ def is_analysis_running():
 def start_analysis():
     if is_analysis_running() == 1:
         return {"status": "already running"}
+    
+    ensure_analysis_db()   # 🔥 ADD THIS
     conn = sqlite3.connect("analysis.db", check_same_thread=False)
     c = conn.cursor()
-
-    # 🔥 Ensure table exists
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS analysis_state (
-        id INTEGER PRIMARY KEY,
-        running INTEGER
-    )
-    """)
-
-    c.execute("INSERT OR IGNORE INTO analysis_state (id, running) VALUES (1, 0)")
 
     # 🔥 Now update safely
     c.execute("UPDATE analysis_state SET running=1 WHERE id=1")
@@ -946,24 +966,6 @@ def start_analysis():
     conn.close()
     start_analysis_internal()
     log1("✅ Analysis started")
-    # global ANALYSIS_RUNNING, ANALYSIS_THREADS
-    # instrument = "GOLDM26MAYFUT"
-    # instrument_token = "124881671"
-    # if ANALYSIS_RUNNING:
-    #     return jsonify({"status": "already running"})
-
-    # ANALYSIS_RUNNING = True
-    # ANALYSIS_THREADS = []
-
-    # for tf in ["5m", "15m", "30m"]:
-    #     t = threading.Thread(target=analysis_worker, args=(tf, instrument, instrument_token))
-    #     t.daemon = True
-    #     t.start()
-    #     ANALYSIS_THREADS.append(t)
-
-    # log1("✅ Analysis started")
-
-    # return jsonify({"status": "started"})
     return jsonify({"status": "started"})
 
 # -------------------- STOP --------------------

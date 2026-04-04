@@ -775,7 +775,7 @@ def init_analysis_db():
 
 # -------------------- GLOBAL STATE --------------------
 # ANALYSIS_RUNNING = False
-ANALYSIS_THREADS = []
+ANALYSIS_THREADS = {}
 
 # ANALYSIS_DATA = {
 #     "5m": {},
@@ -819,7 +819,7 @@ def analysis_worker(tf, instrument, instrument_token):
         ).fetchone()[0]
 
         conn.close()
-
+        log1(f"{tf} DB running = {running}")
         if running == 0:
             log1(f"{tf} stopped")
             break
@@ -891,6 +891,7 @@ def analysis_worker(tf, instrument, instrument_token):
 # -------------------- START --------------------
 
 def start_analysis_internal():
+    log1("🚀 Starting analysis internal")
     global ANALYSIS_THREADS
     instrument = "GOLDM26MAYFUT"
     instrument_token = 124881671   # ✅ FIXED (int)

@@ -842,6 +842,7 @@ def analysis_worker(tf, instrument, instrument_token):
 
             ANALYSIS_DATA[tf] = data
             log1(f"{tf} updated")
+            wait_until_next_time(tf)
 
         except Exception as e:
             log1(f"{tf} error: {e}")

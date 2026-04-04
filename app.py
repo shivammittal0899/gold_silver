@@ -768,14 +768,19 @@ if __name__ == "__main__":
 ANALYSIS_RUNNING = False
 ANALYSIS_THREADS = []
 
+# ANALYSIS_DATA = {
+#     "5m": {},
+#     "15m": {},
+#     "30m": {}
+# }
 ANALYSIS_DATA = {
-    "5m": {},
-    "15m": {},
-    "30m": {}
+    "5m": {"price": "", "ret6": "", "ret12": ""},
+    "15m": {"price": "", "ret6": "", "ret12": ""},
+    "30m": {"price": "", "ret6": "", "ret12": ""}
 }
 
 # -------------------- WORKER --------------------
-def analysis_worker(tf):
+def analysis_worker(tf, instrument, instrument_token):
     global ANALYSIS_RUNNING
 
     sleep_map = {
@@ -798,8 +803,7 @@ def analysis_worker(tf):
     kite_local.set_access_token(access_token)
     
     exchange = "MCX"
-    instrument = "GOLDM26MAYFUT"
-    instrument_token = "124881671"
+    
     while ANALYSIS_RUNNING:
 
         try:
@@ -823,7 +827,7 @@ def analysis_worker(tf):
             log1("Fetching data complete")
             log1(df.tail(3))
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
-            data = data_analysis(df)
+            data = data_analysis(df, tf)
             log1(data)
             # log1(f"cur_price: {cur_price}, type: {type(cur_price)}")
             # 🔥 Replace with your real logic
@@ -852,7 +856,8 @@ def analysis_worker(tf):
 @app.route('/start_analysis')
 def start_analysis():
     global ANALYSIS_RUNNING, ANALYSIS_THREADS
-
+    instrument = "GOLDM26MAYFUT"
+    instrument_token = "124881671"
     if ANALYSIS_RUNNING:
         return jsonify({"status": "already running"})
 
@@ -860,7 +865,7 @@ def start_analysis():
     ANALYSIS_THREADS = []
 
     for tf in ["5m", "15m", "30m"]:
-        t = threading.Thread(target=analysis_worker, args=(tf,))
+        t = threading.Thread(target=analysis_worker, args=(tf, instrument, instrument_token))
         t.daemon = True
         t.start()
         ANALYSIS_THREADS.append(t)

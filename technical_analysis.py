@@ -249,13 +249,13 @@ def ichimoku_analysis(df):
 
         
 
-def data_analysis(df):
+def data_analysis(df, timeframe):
 
     df = indicator_values(df)
     df = df[-50:]
     # log()
     # print(df.tail())
-    timeframe = "5m"
+    
     price = df['Close'].iat[-1]
     ret6 = round((((price / df['Open'].iat[-6]) - 1)*100),2)
     ret12 = round((((price / df['Open'].iat[-12]) - 1)*100),2)

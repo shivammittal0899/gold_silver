@@ -896,6 +896,7 @@ def start_analysis_internal():
     instrument_token = 124881671   # ✅ FIXED (int)
 
     for tf in ["5m", "15m", "30m"]:
+        log1(f"Starting thread {tf}")
         if tf in ANALYSIS_THREADS and ANALYSIS_THREADS[tf].is_alive():
             continue  # already running
         t = threading.Thread(
@@ -947,7 +948,7 @@ def start_analysis():
     # log1("✅ Analysis started")
 
     # return jsonify({"status": "started"})
-    return ({"status": "started"})
+    return jsonify({"status": "started"})
 
 # -------------------- STOP --------------------
 @app.route('/stop_analysis')
@@ -966,7 +967,7 @@ def stop_analysis():
     # log1("⛔ Analysis stopped")
 
     # return jsonify({"status": "stopped"})
-    return ({"status": "stopped"})
+    return jsonify({"status": "stopped"})
 
 # -------------------- GET DATA --------------------
 @app.route('/get_analysis')

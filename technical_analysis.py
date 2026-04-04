@@ -16,8 +16,8 @@ def indicator_values(df):
         window3=52
     )
 
-    df['ichimoku_conversion_line'] = ichi.ichimoku_conversion_line()
-    df['ichimoku_base_line'] = ichi.ichimoku_base_line()
+    df['tenkan'] = ichi.ichimoku_conversion_line()
+    df['kijun'] = ichi.ichimoku_base_line()
     df['senkou_af'] = ichi.ichimoku_a()
     df['senkou_bf'] = ichi.ichimoku_b()
     df['senkou_a'] = df['senkou_af'].shift(26)

@@ -847,10 +847,10 @@ def analysis_worker(tf, instrument, instrument_token):
             log1(f"{tf} error: {e}")
 
         # ✅ Smart sleep (instant stop support)
-        for _ in range(sleep_map[tf]):
-            if not ANALYSIS_RUNNING:
-                break
-            time.sleep(1)
+        # for _ in range(sleep_map[tf]):
+        #     if not ANALYSIS_RUNNING:
+        #         break
+        #     time.sleep(1)
 
 # -------------------- START --------------------
 @app.route('/start_analysis')

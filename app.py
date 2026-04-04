@@ -743,29 +743,38 @@ def read_quantity(file):
         return default
 
 
-# ----------------------------
-# Live Logs Page
-# ----------------------------
-@app.route("/logs")
-def logs():
-    return render_template("logs.html")
-@app.route("/get_logs")
-def get_logs():
-    try:
-        with open("static/logs.txt") as f:
-            return "<br>".join(f.readlines()[-300:])
-    except:
-        return "No logs yet"
-import logging
-log = logging.getLogger('werkzeug')
-log.disabled = True
-# ---------------------- MAIN ----------------------
-if __name__ == "__main__":
-    app.run(port=8000, debug=True)
+def init_analysis_db():
+    conn = sqlite3.connect("analysis.db", check_same_thread=False)
+    c = conn.cursor()
 
+    # 🔥 State table
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS analysis_state (
+        id INTEGER PRIMARY KEY,
+        running INTEGER
+    )
+    """)
+
+    # 🔥 Data table (IMPORTANT)
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS analysis_data (
+        timeframe TEXT PRIMARY KEY,
+        price REAL,
+        ret6 REAL,
+        ret12 REAL,
+        trend TEXT,
+        signal TEXT,
+        updated_at TEXT
+    )
+    """)
+
+    c.execute("INSERT OR IGNORE INTO analysis_state (id, running) VALUES (1, 0)")
+
+    conn.commit()
+    conn.close()
 
 # -------------------- GLOBAL STATE --------------------
-ANALYSIS_RUNNING = False
+# ANALYSIS_RUNNING = False
 ANALYSIS_THREADS = []
 
 # ANALYSIS_DATA = {
@@ -781,13 +790,9 @@ ANALYSIS_DATA = {
 
 # -------------------- WORKER --------------------
 def analysis_worker(tf, instrument, instrument_token):
-    global ANALYSIS_RUNNING
+    # global ANALYSIS_RUNNING
 
-    sleep_map = {
-        "5m": 300,
-        "15m": 900,
-        "30m": 1800
-    }
+    
     interval_map = {
         "5m": "5minute",
         "15m": "15minute",
@@ -796,7 +801,7 @@ def analysis_worker(tf, instrument, instrument_token):
     }
     
     kite_interval = interval_map.get(tf, "5minute")
-    # log1(f"[{task_id}] Worker started")
+    
     access_token = read_access_token()
 
     kite_local = KiteConnect(api_key=API_KEY)
@@ -804,7 +809,21 @@ def analysis_worker(tf, instrument, instrument_token):
     
     exchange = "MCX"
     
-    while ANALYSIS_RUNNING:
+    while True:
+        # ✅ CHECK DB STATE (IMPORTANT)
+        conn = sqlite3.connect("analysis.db", check_same_thread=False)
+        c = conn.cursor()
+
+        running = c.execute(
+            "SELECT running FROM analysis_state WHERE id=1"
+        ).fetchone()[0]
+
+        conn.close()
+
+        if running == 0:
+            log1(f"{tf} stopped")
+            break
+
 
         try:
             now = datetime.now() + timedelta(hours=5, minutes=30)
@@ -824,28 +843,44 @@ def analysis_worker(tf, instrument, instrument_token):
                 continue
             # log1("Fetching data")
             df = fetch_with_retry_token(instrument, instrument_token, kite_interval, kite_local)
-            log1("Fetching data complete")
-            log1(df.tail(3))
+            if len(df) < 20:
+                log1("Not enough data")
+                continue
+            log1(df.tail(2))
             df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
             data = data_analysis(df, tf)
             log1(data)
-            # log1(f"cur_price: {cur_price}, type: {type(cur_price)}")
-            # 🔥 Replace with your real logic
-            # data = {
-            #     "trend": float(cur_price),
-            #     "vwap": "Above",
-            #     "rsi": 60,
-            #     "adx": 25,
-            #     "volume": "High",
-            #     "signal": "BUY"
-            # }
 
-            ANALYSIS_DATA[tf] = data
-            log1(f"{tf} updated")
+            #  ✅ STORE IN DB (VERY IMPORTANT)
+            conn = sqlite3.connect("analysis.db", check_same_thread=False)
+            c = conn.cursor()
+
+            c.execute("""
+                INSERT OR REPLACE INTO analysis_data
+                (timeframe, price, ret6, ret12, trend, signal, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                tf,
+                data.get("price"),
+                data.get("ret6"),
+                data.get("ret12"),
+                data.get("trend"),
+                data.get("signal"),
+                datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ))
+
+            conn.commit()
+            conn.close()
+
+            log1(f"{tf} stored in DB")
+
+            # ANALYSIS_DATA[tf] = data
+            # log1(f"{tf} updated")
             wait_until_next_time(tf)
 
         except Exception as e:
             log1(f"{tf} error: {e}")
+            time.sleep(5)
 
         # ✅ Smart sleep (instant stop support)
         # for _ in range(sleep_map[tf]):
@@ -854,38 +889,156 @@ def analysis_worker(tf, instrument, instrument_token):
         #     time.sleep(1)
 
 # -------------------- START --------------------
-@app.route('/start_analysis')
-def start_analysis():
-    global ANALYSIS_RUNNING, ANALYSIS_THREADS
-    instrument = "GOLDM26MAYFUT"
-    instrument_token = "124881671"
-    if ANALYSIS_RUNNING:
-        return jsonify({"status": "already running"})
 
-    ANALYSIS_RUNNING = True
-    ANALYSIS_THREADS = []
+def start_analysis_internal():
+    instrument = "GOLDM26MAYFUT"
+    instrument_token = 124881671   # ✅ FIXED (int)
 
     for tf in ["5m", "15m", "30m"]:
-        t = threading.Thread(target=analysis_worker, args=(tf, instrument, instrument_token))
+        t = threading.Thread(
+            target=analysis_worker,
+            args=(tf, instrument, instrument_token)
+        )
         t.daemon = True
         t.start()
-        ANALYSIS_THREADS.append(t)
 
-    log1("✅ Analysis started")
+def is_analysis_running():
+    conn = sqlite3.connect("analysis.db")
+    c = conn.cursor()
 
-    return jsonify({"status": "started"})
+    running = c.execute(
+        "SELECT running FROM analysis_state WHERE id=1"
+    ).fetchone()[0]
+
+    conn.close()
+    return running
+
+@app.route('/start_analysis')
+def start_analysis():
+    if is_analysis_running() == 1:
+        return {"status": "already running"}
+    conn = sqlite3.connect("analysis.db", check_same_thread=False)
+    c = conn.cursor()
+
+    c.execute("UPDATE analysis_state SET running=1 WHERE id=1")
+
+    conn.commit()
+    conn.close()
+    start_analysis_internal()
+    # global ANALYSIS_RUNNING, ANALYSIS_THREADS
+    # instrument = "GOLDM26MAYFUT"
+    # instrument_token = "124881671"
+    # if ANALYSIS_RUNNING:
+    #     return jsonify({"status": "already running"})
+
+    # ANALYSIS_RUNNING = True
+    # ANALYSIS_THREADS = []
+
+    # for tf in ["5m", "15m", "30m"]:
+    #     t = threading.Thread(target=analysis_worker, args=(tf, instrument, instrument_token))
+    #     t.daemon = True
+    #     t.start()
+    #     ANALYSIS_THREADS.append(t)
+
+    # log1("✅ Analysis started")
+
+    # return jsonify({"status": "started"})
+    return ({"status": "started"})
 
 # -------------------- STOP --------------------
 @app.route('/stop_analysis')
 def stop_analysis():
-    global ANALYSIS_RUNNING
+    conn = sqlite3.connect("analysis.db", check_same_thread=False)
+    c = conn.cursor()
 
-    ANALYSIS_RUNNING = False
-    log1("⛔ Analysis stopped")
+    c.execute("UPDATE analysis_state SET running=0 WHERE id=1")
 
-    return jsonify({"status": "stopped"})
+    conn.commit()
+    conn.close()
+    
+    # global ANALYSIS_RUNNING
+
+    # ANALYSIS_RUNNING = False
+    # log1("⛔ Analysis stopped")
+
+    # return jsonify({"status": "stopped"})
+    return ({"status": "stopped"})
 
 # -------------------- GET DATA --------------------
 @app.route('/get_analysis')
 def get_analysis():
-    return jsonify(ANALYSIS_DATA)
+    conn = sqlite3.connect("analysis.db", check_same_thread=False)
+    c = conn.cursor()
+
+    rows = c.execute("SELECT * FROM analysis_data").fetchall()
+    conn.close()
+
+    result = {}
+
+    for r in rows:
+        tf = r[0]
+        result[tf] = {
+            "price": r[1],
+            "ret6": r[2],
+            "ret12": r[3],
+            "trend": r[4],
+            "signal": r[5]
+        }
+
+    return jsonify(result)
+
+@app.route('/analysis_status')
+def analysis_status():
+    conn = sqlite3.connect("analysis.db", check_same_thread=False)
+    c = conn.cursor()
+
+    running = c.execute(
+        "SELECT running FROM analysis_state WHERE id=1"
+    ).fetchone()[0]
+
+    conn.close()
+
+    return {"running": running}
+
+def restart_analysis():
+    conn = sqlite3.connect("analysis.db", check_same_thread=False)
+    c = conn.cursor()
+
+    running = c.execute(
+        "SELECT running FROM analysis_state WHERE id=1"
+    ).fetchone()[0]
+
+    conn.close()
+
+    if running == 1:
+        log1("🔄 Restarting analysis...")
+        start_analysis_internal()
+
+# ----------------------------
+# Live Logs Page
+# ----------------------------
+@app.route("/logs")
+def logs():
+    return render_template("logs.html")
+@app.route("/get_logs")
+def get_logs():
+    try:
+        with open("static/logs.txt") as f:
+            return "<br>".join(f.readlines()[-300:])
+    except:
+        return "No logs yet"
+
+import logging
+log = logging.getLogger('werkzeug')
+log.disabled = True
+
+
+
+# ---------------------- MAIN ----------------------
+if __name__ == "__main__":
+    init_analysis_db()
+    restart_analysis()   # 🔥 MUST
+    app.run(port=8000, debug=True)
+
+
+

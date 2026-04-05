@@ -766,6 +766,12 @@ def init_analysis_db():
         l_high REAL,
         l_low REAL,
         highlow TEXT,
+        atr_val REAL,
+        volatility_regime TEXT,
+        volatility_per REAL,   
+        tenkan_kijun TEXT,   
+        price_tenkan TEXT,
+        cloud_trend TEXT,      
         signal TEXT,
         updated_at TEXT
     )
@@ -860,8 +866,8 @@ def analysis_worker(tf, instrument, instrument_token):
 
             c.execute("""
                 INSERT OR REPLACE INTO analysis_data
-                (timeframe, price, ret6, ret12, trend, l_high, l_low, highlow, signal, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (timeframe, price, ret6, ret12, trend, l_high, l_low, highlow, atr_val, volatility_regime, volatility_per, tenkan_kijun, price_tenkan, cloud_trend, signal, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 tf,
                 data.get("price"),
@@ -871,12 +877,12 @@ def analysis_worker(tf, instrument, instrument_token):
                 data.get("l_high"),
                 data.get("l_low"),
                 data.get("highlow"),
-                # data.get("atr_val"),
-                # data.get("volatility_regime"),
-                # data.get("volatility_per"),
-                # data.get("tenkan_kijun"),
-                # data.get("price_tenkan"),
-                # data.get("cloud_trend"),
+                data.get("atr_val"),
+                data.get("volatility_regime"),
+                data.get("volatility_per"),
+                data.get("tenkan_kijun"),
+                data.get("price_tenkan"),
+                data.get("cloud_trend"),
                 data.get("signal"),
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             ))
@@ -923,6 +929,12 @@ def ensure_analysis_db():
         l_high REAL,
         l_low REAL,
         highlow TEXT,
+        atr_val REAL,
+        volatility_regime TEXT,
+        volatility_per REAL,   
+        tenkan_kijun TEXT,   
+        price_tenkan TEXT,
+        cloud_trend TEXT,
         signal TEXT,
         updated_at TEXT
     )
@@ -1028,7 +1040,13 @@ def get_analysis():
             "l_high": r[5],
             "l_low": r[6],
             "highlow": r[7],
-            "signal": r[8]
+            "atr_val": r[8],
+            "volatility_regime": r[9],
+            "volatility_per": r[10],
+            "tenkan_kijun": r[11],
+            "price_tenkan": r[12],
+            "cloud_trend": r[13],
+            "signal": r[14]
         }
 
     return jsonify(result)

@@ -861,7 +861,7 @@ def analysis_worker(tf, instrument, instrument_token):
             c.execute("""
                 INSERT OR REPLACE INTO analysis_data
                 (timeframe, price, ret6, ret12, trend, signal, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 tf,
                 data.get("price"),

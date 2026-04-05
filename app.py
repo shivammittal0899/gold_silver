@@ -772,6 +772,8 @@ def init_analysis_db():
         tenkan_kijun TEXT,   
         price_tenkan TEXT,
         cloud_trend TEXT,      
+        rsi REAL,      
+        vwap TEXT,      
         signal TEXT,
         updated_at TEXT
     )
@@ -866,8 +868,8 @@ def analysis_worker(tf, instrument, instrument_token):
 
             c.execute("""
                 INSERT OR REPLACE INTO analysis_data
-                (timeframe, price, ret6, ret12, trend, l_high, l_low, highlow, atr_val, volatility_regime, volatility_per, tenkan_kijun, price_tenkan, cloud_trend, signal, updated_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (timeframe, price, ret6, ret12, trend, l_high, l_low, highlow, atr_val, volatility_regime, volatility_per, tenkan_kijun, price_tenkan, cloud_trend, rsi, vwap, signal, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 tf,
                 data.get("price"),
@@ -883,6 +885,8 @@ def analysis_worker(tf, instrument, instrument_token):
                 data.get("tenkan_kijun"),
                 data.get("price_tenkan"),
                 data.get("cloud_trend"),
+                data.get("rsi"),
+                data.get("vwap"),
                 data.get("signal"),
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             ))
@@ -934,7 +938,9 @@ def ensure_analysis_db():
         volatility_per REAL,   
         tenkan_kijun TEXT,   
         price_tenkan TEXT,
-        cloud_trend TEXT,
+        cloud_trend TEXT,    
+        rsi REAL,      
+        vwap TEXT,  
         signal TEXT,
         updated_at TEXT
     )
@@ -1046,7 +1052,9 @@ def get_analysis():
             "tenkan_kijun": r[11],
             "price_tenkan": r[12],
             "cloud_trend": r[13],
-            "signal": r[14]
+            "rsi": r[14],
+            "vwap": r[15],
+            "signal": r[16]
         }
 
     return jsonify(result)

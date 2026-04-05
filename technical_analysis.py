@@ -162,7 +162,7 @@ def volatility_analysis(df):
     expansion = atr > float(df['atr'].rolling(20).mean().iloc[-1])
 
     return {
-        "atr_val": float(atr),
+        "atr_val": float(round(atr,2)),
         "volatility_regime": regime,
         # "volatility_exp": expansion
         "volatility_exp": "expansion"
@@ -261,6 +261,7 @@ def data_analysis(df, timeframe):
     # print(df.tail())
     
     price = df['Close'].iat[-1]
+    vwap_v = df['vwap'].iat[-1]
     # ret6 = round((((price / df['Open'].iat[-6]) - 1)*100),2)
     ret6 = (price - df['Open'].iat[-6])
     # ret12 = round((((price / df['Open'].iat[-12]) - 1)*100),2)
@@ -273,6 +274,11 @@ def data_analysis(df, timeframe):
     volatility = volatility_analysis(df)
     volatility_per = volatility_per_analysis(df, timeframe)
     ichimoku_d = ichimoku_analysis(df)
+    if price > vwap_v:
+        vwap_a = "Above"
+    else:
+        vwap_a = "Below"
+
     data = {
         "price": float(price),
         "ret6": float(ret6),
@@ -281,8 +287,8 @@ def data_analysis(df, timeframe):
         "l_high": float(last_high),
         "l_low": float(last_low),
         "highlow": highlow,
-        "vwap": "Above",
-        "rsi": 60,
+        "vwap": vwap_a,
+        "rsi": float(df['RSI'].iloc[-1]),
         "adx": 25,
         "volume": "High",
         "signal": "BUY"

@@ -261,7 +261,7 @@ def data_analysis(df, timeframe):
     # print(df.tail())
     
     price = df['Close'].iat[-1]
-    vwap_v = df['vwap'].iat[-1]
+    vwap_v = df['VWAP'].iat[-1]
     # ret6 = round((((price / df['Open'].iat[-6]) - 1)*100),2)
     ret6 = (price - df['Open'].iat[-6])
     # ret12 = round((((price / df['Open'].iat[-12]) - 1)*100),2)

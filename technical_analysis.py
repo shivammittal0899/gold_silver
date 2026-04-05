@@ -3,7 +3,7 @@ from ta.trend import IchimokuIndicator
 from ta import volatility
 from ta.volume import VolumeWeightedAveragePrice
 import pandas as pd
-
+import json
 def indicator_values(df):
     rsi = RSIIndicator(close=df['Close'], window=14)
     df['RSI'] = rsi.rsi()
@@ -265,6 +265,8 @@ def data_analysis(df, timeframe):
     ret12 = round((((price / df['Open'].iat[-12]) - 1)*100),2)
     trend, last_high, last_low = highlow_trend(df)
     highlow = highlow_data(df)
+    if isinstance(highlow, list):
+        highlow = json.dumps(highlow)
     srb = sr_breakout(df)
     volatility = volatility_analysis(df)
     volatility_per = volatility_per_analysis(df, timeframe)

@@ -763,6 +763,9 @@ def init_analysis_db():
         ret6 REAL,
         ret12 REAL,
         trend TEXT,
+        l_high REAL,
+        l_low REAL,
+        highlow TEXT,
         signal TEXT,
         updated_at TEXT
     )
@@ -865,6 +868,15 @@ def analysis_worker(tf, instrument, instrument_token):
                 data.get("ret6"),
                 data.get("ret12"),
                 data.get("trend"),
+                data.get("l_high"),
+                data.get("l_low"),
+                data.get("highlow"),
+                # data.get("atr_val"),
+                # data.get("volatility_regime"),
+                # data.get("volatility_per"),
+                # data.get("tenkan_kijun"),
+                # data.get("price_tenkan"),
+                # data.get("cloud_trend"),
                 data.get("signal"),
                 datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             ))

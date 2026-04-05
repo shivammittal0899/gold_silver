@@ -920,6 +920,9 @@ def ensure_analysis_db():
         ret6 REAL,
         ret12 REAL,
         trend TEXT,
+        l_high REAL,
+        l_low REAL,
+        highlow TEXT,
         signal TEXT,
         updated_at TEXT
     )
@@ -1022,7 +1025,10 @@ def get_analysis():
             "ret6": r[2],
             "ret12": r[3],
             "trend": r[4],
-            "signal": r[5]
+            "l_high": r[5],
+            "l_low": r[6],
+            "highlow": r[7],
+            "signal": r[8]
         }
 
     return jsonify(result)

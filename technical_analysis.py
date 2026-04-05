@@ -284,9 +284,12 @@ def data_analysis(df, timeframe):
         "signal": "BUY"
     }
     # data = data | srb
-    data = data | volatility
-    data = data | volatility_per
-    data = data | ichimoku_d
+    # data = data | volatility
+    # data = data | volatility_per
+    # data = data | ichimoku_d
+    data.update(volatility if isinstance(volatility, dict) else {})
+    data.update(volatility_per if isinstance(volatility_per, dict) else {})
+    data.update(ichimoku_d if isinstance(ichimoku_d, dict) else {})
 
     return data
 

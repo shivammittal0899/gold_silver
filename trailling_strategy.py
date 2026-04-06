@@ -92,6 +92,7 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
     elif position == -1:
         stoploss_value = stoploss_value + margin_val
     log(stoploss_value)
+    log(indicator)
 
 
     if indicator == "tenkankijun":

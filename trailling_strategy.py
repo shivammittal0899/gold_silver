@@ -58,6 +58,13 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
     atr = df['ATR'].iloc[-1]
     cloud_size = abs(df['senkou_a'].iloc[-1] - df['senkou_b'].iloc[-1])
     log(indicator)
+    atr = df['ATR'].iat[-1]*multiplier
+    if (atr > min_val) and (atr > max_val):
+        margin_val = max_val
+    elif (atr > min_val):
+        margin_val = atr
+    else:
+        margin_val = min_val
     
     if indicator == "tenkankijun":
         if position == 1:
@@ -96,13 +103,6 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
         
         stoploss_value = df['refline'].iat[-1]
         
-        atr = df['ATR'].iat[-1]*multiplier
-        if (atr > min_val) and (atr > max_val):
-            margin_val = max_val
-        elif (atr > min_val):
-            margin_val = atr
-        else:
-            margin_val = min_val
         
         if position == 1:
             stoploss_value = stoploss_value - margin_val

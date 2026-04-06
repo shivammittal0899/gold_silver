@@ -57,44 +57,8 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
     kijun_senkoua_diff = df['kijun'].iloc[-1] - df['senkou_a'].iloc[-1]
     atr = df['ATR'].iloc[-1]
     cloud_size = abs(df['senkou_a'].iloc[-1] - df['senkou_b'].iloc[-1])
-    
-    if indicator == "highlow":
-        if position == 1:
-            df['refline'] = df['Low'].shift(1)
-        elif position == -1:
-            df['refline'] = df['High'].shift(1)
-    elif indicator == "price":
-        if position == 1:
-            df['refline'] = df[['Close','Open']].min(axis=1).shift(1)
-        elif position == -1:
-            df['refline'] = df[['Close','Open']].max(axis=1).shift(1)
-    elif indicator == "minmax":
-        if position == 1:
-            df['refline'] = df['Close'].rolling(window=5).max().shift(1)
-        elif position == -1:
-            df['refline'] = df['Close'].rolling(window=5).min().shift(1)
-    else:
-        df['refline'] = df[indicator]
-
-    
-    stoploss_value = df['refline'].iat[-1]
-    
-    atr = df['ATR'].iat[-1]*multiplier
-    if (atr > min_val) and (atr > max_val):
-        margin_val = max_val
-    elif (atr > min_val):
-        margin_val = atr
-    else:
-        margin_val = min_val
-    
-    if position == 1:
-        stoploss_value = stoploss_value - margin_val
-    elif position == -1:
-        stoploss_value = stoploss_value + margin_val
-    log(stoploss_value)
     log(indicator)
-
-
+    
     if indicator == "tenkankijun":
         if position == 1:
             if abs(tenkan_kijun_diff) > atr*1.5:
@@ -109,7 +73,46 @@ def get_stoploss_value(df, symbol, indicator, min_val, multiplier, max_val, posi
             elif abs(tenkan_kijun_diff) <= atr*1.5:
                 stoploss_value = df['kijun'].iloc[-1] + margin_val
             if abs(kijun_senkoua_diff) < atr*1:
-                stoploss_value = df['senkou_b'].iloc[-1] + 100
+                stoploss_value = df['senkou_b'].iloc[-1] + margin_val
+    else:            
+        if indicator == "highlow":
+            if position == 1:
+                df['refline'] = df['Low'].shift(1)
+            elif position == -1:
+                df['refline'] = df['High'].shift(1)
+        elif indicator == "price":
+            if position == 1:
+                df['refline'] = df[['Close','Open']].min(axis=1).shift(1)
+            elif position == -1:
+                df['refline'] = df[['Close','Open']].max(axis=1).shift(1)
+        elif indicator == "minmax":
+            if position == 1:
+                df['refline'] = df['Close'].rolling(window=5).max().shift(1)
+            elif position == -1:
+                df['refline'] = df['Close'].rolling(window=5).min().shift(1)
+        else:
+            df['refline'] = df[indicator]
+
+        
+        stoploss_value = df['refline'].iat[-1]
+        
+        atr = df['ATR'].iat[-1]*multiplier
+        if (atr > min_val) and (atr > max_val):
+            margin_val = max_val
+        elif (atr > min_val):
+            margin_val = atr
+        else:
+            margin_val = min_val
+        
+        if position == 1:
+            stoploss_value = stoploss_value - margin_val
+        elif position == -1:
+            stoploss_value = stoploss_value + margin_val
+        log(stoploss_value)
+    
+
+
+    
                 
     
     return stoploss_value

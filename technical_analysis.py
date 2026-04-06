@@ -288,7 +288,7 @@ def data_analysis(df, timeframe):
         "l_low": float(last_low),
         "highlow": highlow,
         "vwap": vwap_a,
-        "rsi": float(df['RSI'].iloc[-1]),
+        "rsi": float(round(df['RSI'].iloc[-1],2)),
         "adx": 25,
         "volume": "High",
         "signal": "BUY"

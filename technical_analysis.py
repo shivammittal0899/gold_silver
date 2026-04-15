@@ -285,6 +285,8 @@ def signal_fun(data, df):
         trend_ = 0
     elif trend == "DOWNTREND":
         trend_ = -1
+    else:
+        trend_ = 0
     
     tenkan_kijun = data['tenkan_kijun']
     if tenkan_kijun == "Strong Uptrend":

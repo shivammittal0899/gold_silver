@@ -31,19 +31,21 @@ def indicator_values(df):
     )
 
     df['VWAP'] = vwap.volume_weighted_average_price()
-    # print(df.tail())
+
+    df['tenkan_kijun_max'] = df[['tenkan','kijun']].max(axis=1)
+    df['tenkan_kijun_min'] = df[['tenkan','kijun']].min(axis=1)
+    df['cloud_max'] = df[['senkou_a','senkou_b']].max(axis=1)
+    df['cloud_min'] = df[['senkou_a','senkou_b']].min(axis=1)
+    df['price_max'] = df[['Close','Open']].max(axis=1)
+    df['price_min'] = df[['Close','Open']].min(axis=1)
+    df['price_line_max'] = (df['tenkan_kijun_max'] >= df['price_max']).rolling(6).sum() >= 4
+    df['price_line_min'] = (df['tenkan_kijun_min'] <= df['price_min']).rolling(6).sum() >= 4
+    df['price_line'] = df['price_line_max'] & df['price_line_min']
     return df
 
 
 
 def find_swings(df, window=5):
-    # df['swing_high'] = df['High'][
-    #     df['High'] == df['High'].rolling(window, center=True).max()
-    # ]
-
-    # df['swing_low'] = df['Low'][
-    #     df['Low'] == df['Low'].rolling(window, center=True).min()
-    # ]
     df['rolling_max'] = df['High'].rolling(window).max()
     df['rolling_min'] = df['Low'].rolling(window).min()
 
@@ -107,9 +109,13 @@ def highlow_trend(df):
     prev_low = swing_lows.iloc[-2]
 
     if last_high > prev_high and last_low > prev_low:
+        trend = "STRONG UPTREND"
+    elif last_high > prev_high:
         trend = "UPTREND"
 
     elif last_high < prev_high and last_low < prev_low:
+        trend = "STRONG DOWNTREND"
+    elif last_high < prev_high:
         trend = "DOWNTREND"
 
     else:
@@ -210,13 +216,16 @@ def ichimoku_analysis(df):
     cloud_min = min(senkou_a, senkou_b)
     cloud_maxf = max(senkou_af, senkou_bf)
     cloud_minf = min(senkou_af, senkou_bf)
-    if (tenkan > kijun) and (tenkan > cloud_max) and (tenkan > cloud_maxf):
+    sideways = df['price_line'].iloc[-2]
+
+    
+    if (tenkan > kijun) and (tenkan > cloud_max) and (tenkan > cloud_maxf) and (close > cloud_max):
         tenkan_kijun = "Strong Uptrend"
-    elif (tenkan >= kijun):
+    elif (tenkan >= kijun) and (close > cloud_max):
         tenkan_kijun = "Uptrend"
-    elif (tenkan < kijun) and (tenkan < cloud_min) and (tenkan < cloud_minf):
+    elif (tenkan < kijun) and (tenkan < cloud_min) and (tenkan < cloud_minf) and (close < cloud_min):
         tenkan_kijun = "Strong Downtrend"
-    elif (tenkan <= kijun):
+    elif (tenkan <= kijun) and (close < cloud_min):
         tenkan_kijun = "Downtrend"
     else:
         tenkan_kijun = "Neutral"
@@ -231,11 +240,12 @@ def ichimoku_analysis(df):
         price_tenkan = "Downtrend"
     else:
         price_tenkan = "Sideways"
-    if (close > cloud_max) and (cloud == 'green'):
+    
+    if (tenkan_kijun == "Uptrend") and (cloud == 'green'):
         cloud_trend = "Strong Uptrend"
     elif (close > cloud_max):
         cloud_trend = "Uptrend"
-    elif (close < cloud_min) and (cloud == 'red'):
+    elif (tenkan_kijun == "Downtrend") and (cloud == 'red'):
         cloud_trend = "Strong Downtrend"
     elif (close < cloud_min):
         cloud_trend = "Downtrend"
@@ -251,7 +261,61 @@ def ichimoku_analysis(df):
     return ichimoku_t
 
 
-        
+def signal_fun(data, df):
+    signal = "Neutral"
+    ret6 = data['ret6']
+    if ret6 > 200:
+        ret6_ = 1
+    elif ret6 > -200:
+        ret6_ = 0
+    else:
+        ret6_ = -1
+    ret12 = data['ret12']
+    if ret12 > 300:
+        ret12_ = 1
+    elif ret12 > -300:
+        ret12_ = 0
+    else:
+        ret12_ = -1
+    
+    trend = data['trend']
+    if trend == "UPTREND":
+        trend_ = 1
+    elif trend == "SIDEWAYS":
+        trend_ = 0
+    elif trend == "DOWNTREND":
+        trend_ = -1
+    
+    tenkan_kijun = data['tenkan_kijun']
+    if tenkan_kijun == "Strong Uptrend":
+        tenkan_kijun_ = 2
+    elif tenkan_kijun == "Uptrend":
+        tenkan_kijun_ = 1
+    elif tenkan_kijun == "Downtrend":
+        tenkan_kijun_ = -1
+    elif tenkan_kijun == "Strong Downtrend":
+        tenkan_kijun_ = -2
+    else:
+        tenkan_kijun_ = 0
+    
+    price_tenkan = data['price_tenkan']
+    if price_tenkan == "Strong Uptrend":
+        price_tenkan_ = 2
+    elif price_tenkan == "Uptrend":
+        price_tenkan_ = 1
+    elif price_tenkan == "Downtrend":
+        price_tenkan_ = -1
+    elif price_tenkan == "Strong Downtrend":
+        price_tenkan_ = -2
+    else:
+        price_tenkan_ = 0
+    
+    signal_sum = ret6_ + ret12_ + trend_ + tenkan_kijun_ + price_tenkan_
+    
+    if signal_sum > 5:
+        signal = "Strong buy"
+    
+    return {"signal": signal}
 
 def data_analysis(df, timeframe):
 
@@ -290,17 +354,13 @@ def data_analysis(df, timeframe):
         "vwap": vwap_a,
         "rsi": float(round(df['RSI'].iloc[-1],2)),
         "adx": 25,
-        "volume": "High",
-        "signal": "BUY"
+        "volume": "High"
     }
-    # data = data | srb
-    # data = data | volatility
-    # data = data | volatility_per
-    # data = data | ichimoku_d
     data.update(volatility if isinstance(volatility, dict) else {})
     data.update(volatility_per if isinstance(volatility_per, dict) else {})
     data.update(ichimoku_d if isinstance(ichimoku_d, dict) else {})
-
+    signal = signal_fun(data, df)
+    data.update(signal if isinstance(signal, dict) else {})
     return data
 
 

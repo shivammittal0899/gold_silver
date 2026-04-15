@@ -147,9 +147,9 @@ def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val, kite_inst
             transaction_type=kite_obj.TRANSACTION_TYPE_SELL,
             quantity=quantity,
             product=kite_obj.PRODUCT_NRML,
-            order_type=kite_obj.ORDER_TYPE_SL,
+            order_type=kite_obj.ORDER_TYPE_SLM,
             trigger_price=stoploss_val,
-            price=stoploss_val - 5,   # 👈 buffer lagao
+            market_protection=2,
             validity=kite_obj.VALIDITY_DAY
         )
 
@@ -161,9 +161,9 @@ def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val, kite_inst
             transaction_type=kite_obj.TRANSACTION_TYPE_BUY,
             quantity=quantity,
             product=kite_obj.PRODUCT_NRML,
-            order_type=kite_obj.ORDER_TYPE_SL,
+            order_type=kite_obj.ORDER_TYPE_SLM,
             trigger_price=stoploss_val,
-            price=stoploss_val + 5,   # 👈 buffer
+            market_protection=2,
             validity=kite_obj.VALIDITY_DAY
         )
     else:
@@ -178,29 +178,13 @@ def modify_sl_order(sl_orderid, stoploss_val, transaction, kite_instance=None):
 
     if not kite_obj:
         raise Exception("❌ Kite instance not available")
-    if transaction == "BUY":
-        buffer = 5
 
-        return kite_obj.modify_order(
-            variety=kite_obj.VARIETY_REGULAR,
-            order_id=sl_orderid,
-            trigger_price=stoploss_val,
-            price=stoploss_val + buffer   # 🔥 MUST ADD
-        )
-    elif transaction == "SELL":
-        buffer = 5
-
-        return kite_obj.modify_order(
-            variety=kite_obj.VARIETY_REGULAR,
-            order_id=sl_orderid,
-            trigger_price=stoploss_val,
-            price=stoploss_val - buffer   # 🔥 MUST ADD
-        )
-    # return kite_obj.modify_order(
-    #     variety=kite_obj.VARIETY_REGULAR,
-    #     order_id=sl_orderid,
-    #     trigger_price=stoploss_val
-    # )
+    return kite_obj.modify_order(
+        variety=kite_obj.VARIETY_REGULAR,
+        order_id=sl_orderid,
+        trigger_price=stoploss_val,
+        market_protection=2
+    )
 
 def cancel_order(orderid, kite_instance=None):
     global kite

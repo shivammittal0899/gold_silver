@@ -370,6 +370,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
         
         exchange = "MCX"
         sl_orderid = None
+        stoploss_valo = 0
         while True:
             conn = sqlite3.connect("trailing.db", check_same_thread=False)
             c = conn.cursor()
@@ -458,8 +459,10 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
             if (position == 1):
                 if (sl_orderid != None):
                     try:
-                        log1(f"MSL placed: {sl_orderid} {stoploss_val}")
-                        modify_sl_order(sl_orderid, stoploss_val, "SELL", kite_local)
+                        # log1(f"MSL placed: {sl_orderid} {stoploss_val}")
+                        if stoploss_val > stoploss_valo:
+                            modify_sl_order(sl_orderid, stoploss_val, "SELL", kite_local)
+                            log1(f"SLM placed: {sl_orderid} {stoploss_val}")
                     except Exception as e: 
                         log1(f"MSL order error {e}")
                         if "Trigger price" in e:
@@ -484,12 +487,14 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                     sl_orderid = None
                 else:
                     sl_orderid = None
+                stoploss_valo = stoploss_val
             if position == -1:
                 if (sl_orderid != None) and (stoploss_val != 0):
                     try:
-                        log1(f"MSL placed: {sl_orderid} {stoploss_val} start")
-                        modify_sl_order(sl_orderid, stoploss_val, "BUY", kite_local)
-                        log1(f"SLM placed: {sl_orderid} {stoploss_val}")
+                        # log1(f"MSL placed: {sl_orderid} {stoploss_val} start")
+                        if stoploss_val > stoploss_valo:
+                            modify_sl_order(sl_orderid, stoploss_val, "BUY", kite_local)
+                            log1(f"SLM placed: {sl_orderid} {stoploss_val}")
                     except Exception as e:
                         log1(f"Error - {e}")
                         if "Trigger price" in e:
@@ -514,6 +519,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                     sl_orderid = None
                 else:
                     sl_orderid = None
+                stoploss_valo = stoploss_val
             if position == 0:
                 log1("No positions")
             # time.sleep(sleeptime)

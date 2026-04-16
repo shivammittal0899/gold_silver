@@ -95,7 +95,7 @@ def highlow_data(df):
 
 def highlow_trend(df):
     df = find_swings(df)
-    lookback=5
+    lookback=4
     # swing_highs = df[df['swing_high'].notna()]['High']
     # swing_lows  = df[df['swing_low'].notna()]['Low']
     swing_highs = df[df['swing_high'].notna()]['High'].tail(lookback).values
@@ -114,9 +114,9 @@ def highlow_trend(df):
     up_score = hh + hl
     down_score = lh + ll
 
-    if up_score >= (lookback - 1) * 1.5:
+    if up_score >= (lookback - 1) * 1.3:
         trend = "STRONG UPTREND"
-    elif down_score >= (lookback - 1) * 1.5:
+    elif down_score >= (lookback - 1) * 1.3:
         trend = "STRONG DOWNTREND"
     elif up_score > down_score:
         trend = "UPTREND"

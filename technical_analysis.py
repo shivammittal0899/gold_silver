@@ -114,9 +114,9 @@ def highlow_trend(df):
     up_score = hh + hl
     down_score = lh + ll
 
-    if up_score >= (lookback - 1) * 1.3:
+    if up_score >= (lookback - 1) * 1.4:
         trend = "STRONG UPTREND"
-    elif down_score >= (lookback - 1) * 1.3:
+    elif down_score >= (lookback - 1) * 1.4:
         trend = "STRONG DOWNTREND"
     elif up_score > down_score:
         trend = "UPTREND"
@@ -125,7 +125,7 @@ def highlow_trend(df):
     else:
         trend = "SIDEWAYS"
     
-    return trend, swing_highs[-1], swing_lows[-1]
+    return trend, [swing_highs[-1], swing_highs[-2]], swing_lows[-1]
 
 def sr_breakout(df, lookback=10):
     # Support & Resistance
@@ -284,12 +284,16 @@ def signal_fun(data, df):
         ret12_ = -1
     
     trend = data['trend']
+    if trend == "STRONG UPTREND":
+        trend_ = 2
     if trend == "UPTREND":
         trend_ = 1
     elif trend == "SIDEWAYS":
         trend_ = 0
     elif trend == "DOWNTREND":
         trend_ = -1
+    elif trend == "STRONG DOWNTREND":
+        trend_ = -2
     else:
         trend_ = 0
     

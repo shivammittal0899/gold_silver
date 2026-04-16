@@ -95,32 +95,37 @@ def highlow_data(df):
 
 def highlow_trend(df):
     df = find_swings(df)
+    lookback=5
+    # swing_highs = df[df['swing_high'].notna()]['High']
+    # swing_lows  = df[df['swing_low'].notna()]['Low']
+    swing_highs = df[df['swing_high'].notna()]['High'].tail(lookback).values
+    swing_lows  = df[df['swing_low'].notna()]['Low'].tail(lookback).values
 
-    swing_highs = df[df['swing_high'].notna()]['High']
-    swing_lows  = df[df['swing_low'].notna()]['Low']
-
-    if len(swing_highs) < 2 or len(swing_lows) < 2:
+    if len(swing_highs) < 3 or len(swing_lows) < 3:
         return "UNKNOWN"
 
-    last_high = swing_highs.iloc[-1]
-    prev_high = swing_highs.iloc[-2]
+    hh = sum(1 for i in range(1, len(swing_highs)) if swing_highs[i] > swing_highs[i-1])
+    lh = sum(1 for i in range(1, len(swing_highs)) if swing_highs[i] < swing_highs[i-1])
 
-    last_low = swing_lows.iloc[-1]
-    prev_low = swing_lows.iloc[-2]
+    hl = sum(1 for i in range(1, len(swing_lows)) if swing_lows[i] > swing_lows[i-1])
+    ll = sum(1 for i in range(1, len(swing_lows)) if swing_lows[i] < swing_lows[i-1])
 
-    if last_high > prev_high and last_low > prev_low:
+    # scoring
+    up_score = hh + hl
+    down_score = lh + ll
+
+    if up_score >= (lookback - 1) * 1.5:
         trend = "STRONG UPTREND"
-    elif last_high > prev_high:
-        trend = "UPTREND"
-
-    elif last_high < prev_high and last_low < prev_low:
+    elif down_score >= (lookback - 1) * 1.5:
         trend = "STRONG DOWNTREND"
-    elif last_high < prev_high:
+    elif up_score > down_score:
+        trend = "UPTREND"
+    elif down_score > up_score:
         trend = "DOWNTREND"
-
     else:
         trend = "SIDEWAYS"
-    return trend, last_high, last_low
+    
+    return trend, swing_highs[-1], swing_lows[-1]
 
 def sr_breakout(df, lookback=10):
     # Support & Resistance
@@ -314,8 +319,17 @@ def signal_fun(data, df):
     
     signal_sum = ret6_ + ret12_ + trend_ + tenkan_kijun_ + price_tenkan_
     
-    if signal_sum > 5:
-        signal = "Strong buy"
+    if signal_sum >= 5:
+        signal = "Strong Buy"
+    elif signal_sum >= 2:
+        signal = "Buy"
+    elif signal_sum <= -5:
+        signal = "Strong Sell"
+    elif signal_sum <= -2:
+        signal = "Sell"
+    else:
+        signal = "Neutral"
+
     
     return {"signal": signal}
 

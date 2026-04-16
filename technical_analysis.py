@@ -124,8 +124,9 @@ def highlow_trend(df):
         trend = "DOWNTREND"
     else:
         trend = "SIDEWAYS"
-    # high_list = [(float(swing_highs[-1])),(float(swing_highs[-2]))]
-    return trend, swing_highs[-1], swing_lows[-1]
+    high_list = [(float(swing_highs[-1])),(float(swing_highs[-2]))]
+    # return trend, swing_highs[-1], swing_lows[-1]
+    return trend, high_list, swing_lows[-1]
 
 def sr_breakout(df, lookback=10):
     # Support & Resistance

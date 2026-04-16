@@ -769,7 +769,7 @@ def init_analysis_db():
         ret6 REAL,
         ret12 REAL,
         trend TEXT,
-        l_high REAL,
+        l_high TEXT,
         l_low REAL,
         highlow TEXT,
         atr_val REAL,
@@ -868,6 +868,8 @@ def analysis_worker(tf, instrument, instrument_token):
             data = data_analysis(df, tf)
             log1(data)
             ensure_analysis_db() 
+            l_high_json = json.dumps(data.get("l_high"))
+# l_low_json  = json.dumps(data.get("l_low"))
             #  ✅ STORE IN DB (VERY IMPORTANT)
             conn = sqlite3.connect("analysis.db", check_same_thread=False)
             c = conn.cursor()
@@ -882,7 +884,8 @@ def analysis_worker(tf, instrument, instrument_token):
                 data.get("ret6"),
                 data.get("ret12"),
                 data.get("trend"),
-                data.get("l_high"),
+                # data.get("l_high"),
+                l_high_json,
                 data.get("l_low"),
                 data.get("highlow"),
                 data.get("atr_val"),
@@ -936,7 +939,7 @@ def ensure_analysis_db():
         ret6 REAL,
         ret12 REAL,
         trend TEXT,
-        l_high REAL,
+        l_high TEXT,
         l_low REAL,
         highlow TEXT,
         atr_val REAL,
@@ -1049,7 +1052,7 @@ def get_analysis():
             "ret6": r[2],
             "ret12": r[3],
             "trend": r[4],
-            "l_high": r[5],
+            "l_high": json.loads(r[5]) if r[5] else [],
             "l_low": r[6],
             "highlow": r[7],
             "atr_val": r[8],

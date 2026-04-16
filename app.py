@@ -769,7 +769,7 @@ def init_analysis_db():
         ret6 REAL,
         ret12 REAL,
         trend TEXT,
-        l_high TEXT,
+        l_high REAL,
         l_low REAL,
         highlow TEXT,
         atr_val REAL,

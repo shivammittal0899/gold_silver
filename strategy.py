@@ -140,6 +140,18 @@ def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val, kite_inst
         raise Exception("❌ Kite instance not available")
 
     if transaction == "SELL":
+        # order_id = kite_obj.place_order(
+        #     variety=kite_obj.VARIETY_REGULAR,
+        #     exchange=kite_obj.EXCHANGE_MCX,
+        #     tradingsymbol=tradingsymbol,
+        #     transaction_type=kite_obj.TRANSACTION_TYPE_SELL,
+        #     quantity=quantity,
+        #     product=kite_obj.PRODUCT_NRML,
+        #     order_type=kite_obj.ORDER_TYPE_SLM,
+        #     trigger_price=stoploss_val,
+        #     # market_protection=2,
+        #     validity=kite_obj.VALIDITY_DAY
+        # )
         order_id = kite_obj.place_order(
             variety=kite_obj.VARIETY_REGULAR,
             exchange=kite_obj.EXCHANGE_MCX,
@@ -147,9 +159,8 @@ def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val, kite_inst
             transaction_type=kite_obj.TRANSACTION_TYPE_SELL,
             quantity=quantity,
             product=kite_obj.PRODUCT_NRML,
-            order_type=kite_obj.ORDER_TYPE_SLM,
+            order_type=kite_obj.ORDER_TYPE_SLM,   # 👈 IMPORTANT
             trigger_price=stoploss_val,
-            market_protection=2,
             validity=kite_obj.VALIDITY_DAY
         )
 

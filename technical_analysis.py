@@ -321,10 +321,20 @@ def signal_fun(data, df):
         price_tenkan_ = -2
     else:
         price_tenkan_ = 0
+    rsi = data['rsi']
+    if rsi > 60:
+        rsi_ = 2
+    elif rsi > 50:
+        rsi_ = 1
+    elif rsi < 40:
+        rsi_ = -2
+    elif rsi < 50:
+        rsi_ = -1
+    else:
+        rsi_ = 0
+    signal_sum = ret6_ + ret12_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_
     
-    signal_sum = ret6_ + ret12_ + trend_ + tenkan_kijun_ + price_tenkan_
-    
-    if signal_sum >= 5:
+    if signal_sum >= 6:
         signal = "Strong Buy"
     elif signal_sum >= 2:
         signal = "Buy"

@@ -493,6 +493,7 @@ def start_ws(api_key, access_token, kite):
                             LIVE_SL.pop(task_id, None)
 
                         delete_live_sl(task_id)
+                        stop_task(task_id, "SL Hit") 
 
                     elif position == -1 and ltp >= sl:
                         log1(f"[{task_id}] 🔥 SL HIT SHORT {symbol} at {ltp}")
@@ -503,6 +504,7 @@ def start_ws(api_key, access_token, kite):
                             LIVE_SL.pop(task_id, None)
 
                         delete_live_sl(task_id)
+                        stop_task(task_id, "SL Hit") 
 
                 except Exception as e:
                     log1(f"[{task_id}] Exit error: {e}")
@@ -663,6 +665,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                             stoploss_val = max(prev_sl, stoploss_val)
                         elif position == -1:  # SHORT
                             stoploss_val = min(prev_sl, stoploss_val)
+                    log1(prev_sl, stoploss_val)
                     LIVE_SL[task_id] = {
                         "symbol": instrument,
                         "stoploss": stoploss_val,

@@ -464,7 +464,7 @@ def start_ws(api_key, access_token, kite):
         ws.set_mode(ws.MODE_LTP, tokens)
 
     def on_ticks(ws, ticks):
-        log1("in on_ticks loop")
+        # log1("in on_ticks loop")
         for tick in ticks:
             token = tick["instrument_token"]
             ltp = tick["last_price"]
@@ -480,7 +480,7 @@ def start_ws(api_key, access_token, kite):
                 position = data["position"]
                 qty = data["qty"]
                 symbol = data["symbol"]
-                log1(f"{data} tick data")
+                # log1(f"{data} tick data ------------- {ltp}")
 
                 try:
                     # 🚨 EXIT LOGIC
@@ -518,6 +518,7 @@ def start_ws(api_key, access_token, kite):
 
     kws.connect(threaded=True)
 def exit_market(kite, symbol, qty, side):
+    log1(f"in exit condition -- {symbol} -- {side} -- {qty}")
     try:
         txn_type = kite.TRANSACTION_TYPE_SELL if side == "SELL" else kite.TRANSACTION_TYPE_BUY
 

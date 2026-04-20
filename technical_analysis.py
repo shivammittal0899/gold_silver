@@ -322,13 +322,13 @@ def signal_fun(data, df):
     else:
         price_tenkan_ = 0
     rsi = data['rsi']
-    if rsi > 60:
+    if rsi > 70:
         rsi_ = 2
-    elif rsi > 50:
+    elif rsi > 55:
         rsi_ = 1
-    elif rsi < 40:
+    elif rsi < 30:
         rsi_ = -2
-    elif rsi < 50:
+    elif rsi < 45:
         rsi_ = -1
     else:
         rsi_ = 0

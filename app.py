@@ -5,12 +5,14 @@ import threading
 import time
 # from strategy import run_strategy, stop_strategy
 from strategy import *
-from trailling_strategy import run_trailling_strategy, stop_trailling_strategy
+# from trailling_strategy import run_trailling_strategy, stop_trailling_strategy
 import uuid
 from datetime import datetime, timedelta
 from trailling_strategy import *
 from technical_analysis import *
+import pandas as pd
 
+from threading import Lock
 
 app = Flask(__name__)
 # api_key = "0qw10pvn638g9jid"
@@ -28,28 +30,6 @@ TRAILING_CONFIGS = []
 
 import sqlite3
 
-def init_db():
-    conn = sqlite3.connect("trailing.db", check_same_thread=False)
-    c = conn.cursor()
-
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS trailing (
-        id TEXT PRIMARY KEY,
-        instrument TEXT,
-        indicator TEXT,
-        timeframe TEXT,
-        qty INTEGER,
-        min INTEGER,
-        multiplier REAL,
-        max INTEGER,
-        running INTEGER
-    )
-    """)
-
-    conn.commit()
-    conn.close()
-
-init_db()
 # ---------------------- SAVE TOKEN ----------------------
 def save_access_token(token):
     with open("access_token.txt", "w") as f:
@@ -219,7 +199,101 @@ import time
 
 import json
 
-SL_ORDERS = {}   # task_id → order_id
+
+def init_db():
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
+    c = conn.cursor()
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS trailing (
+        id TEXT PRIMARY KEY,
+        instrument TEXT,
+        indicator TEXT,
+        timeframe TEXT,
+        qty INTEGER,
+        min INTEGER,
+        multiplier REAL,
+        max INTEGER,
+        running INTEGER
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_db()
+def init_live_sl_db():
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
+    c = conn.cursor()
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS live_sl (
+        task_id TEXT PRIMARY KEY,
+        symbol TEXT,
+        stoploss REAL,
+        position INTEGER,
+        qty INTEGER,
+        updated_at TEXT
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+
+init_live_sl_db()
+
+def save_live_sl(task_id, symbol, stoploss, position, qty):
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
+    c = conn.cursor()
+
+    c.execute("""
+        INSERT OR REPLACE INTO live_sl
+        (task_id, symbol, stoploss, position, qty, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (
+        task_id,
+        symbol,
+        stoploss,
+        position,
+        qty,
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ))
+
+    conn.commit()
+    conn.close()
+
+
+def delete_live_sl(task_id):
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
+    c = conn.cursor()
+
+    c.execute("DELETE FROM live_sl WHERE task_id=?", (task_id,))
+    conn.commit()
+    conn.close()
+
+
+def load_live_sl_from_db():
+    global LIVE_SL
+
+    conn = sqlite3.connect("trailing.db", check_same_thread=False)
+    c = conn.cursor()
+
+    rows = c.execute("SELECT * FROM live_sl").fetchall()
+    conn.close()
+
+    with sl_lock:
+        for r in rows:
+            LIVE_SL[r[0]] = {
+                "symbol": r[1],
+                "stoploss": r[2],
+                "position": r[3],
+                "qty": r[4]
+            }
+
+    log1(f"🔁 Restored {len(rows)} SL from DB")
+
+
+
 
 @app.route('/download_instruments')
 def download_instruments():
@@ -262,17 +336,18 @@ def get_saved_instruments():
 
 import json
 
-# def load_instrument_map():
-#     log1("loading instrument token")
-#     with open("instruments.json") as f:
-#         instruments = json.load(f)
-
-#     return {
-#         i["tradingsymbol"]: i["instrument_token"]
-#         for i in instruments
-#     }
 
 INSTRUMENT_MAP = {}
+TRAILING_THREADS = {}
+SL_ORDERS = {}   # task_id → order_id
+LIVE_SL = {}
+
+WS_RUNNING = False
+WS_THREAD = None
+KWS = None
+ws_lock = Lock()
+threads_lock = Lock()
+orders_lock = Lock()
 
 def load_instruments_once():
     global INSTRUMENT_MAP
@@ -322,7 +397,147 @@ def fetch_with_retry_token(symbol, token, interval, kite, retries=3, delay=5):
                 time.sleep(delay)
             else:
                 raise
-TRAILING_THREADS = {}
+
+from kiteconnect import KiteTicker
+
+def start_ws_if_needed():
+    global WS_RUNNING, WS_THREAD
+
+    with ws_lock:
+        if WS_RUNNING:
+            return
+        WS_RUNNING = True
+        access_token = read_access_token()
+
+        def run_ws():
+            try:
+                kite_local = KiteConnect(api_key=API_KEY)
+                kite_local.set_access_token(access_token)
+
+                start_ws(API_KEY, access_token, kite_local)
+            except Exception as e:
+                log1(f"WS error: {e}")
+            finally:
+                WS_RUNNING = False
+
+        WS_THREAD = threading.Thread(target=run_ws)
+        WS_THREAD.daemon = True
+        WS_THREAD.start()
+
+        log1("🚀 WebSocket started")
+
+
+def stop_ws_if_idle():
+    global WS_RUNNING, KWS
+
+    with ws_lock, threads_lock:
+        active = [
+            t for t in TRAILING_THREADS.values()
+            if t.is_alive()
+        ]
+
+        if len(active) == 0:
+            if KWS:
+                try:
+                    KWS.close()   # ✅ ACTUAL STOP
+                    log1("🛑 WebSocket closed")
+                except Exception as e:
+                    log1(f"WS close error: {e}")
+
+            WS_RUNNING = False
+            KWS = None
+            log1("🛑 WebSocket stopping (no active threads)")
+
+def start_ws(api_key, access_token, kite):
+
+    global KWS
+
+    kws = KiteTicker(api_key, access_token)
+    KWS = kws   # ✅ STORE INSTANCE
+
+    def on_connect(ws, response):
+        print("✅ WebSocket Connected")
+
+        tokens = list(set(INSTRUMENT_MAP.values()))
+        ws.subscribe(tokens)
+        ws.set_mode(ws.MODE_LTP, tokens)
+
+    def on_ticks(ws, ticks):
+        for tick in ticks:
+            token = tick["instrument_token"]
+            ltp = tick["last_price"]
+
+            with sl_lock:
+                items = list(LIVE_SL.items())  # copy for safe iteration
+
+            for task_id, data in items:
+                if INSTRUMENT_MAP.get(data["symbol"]) != token:
+                    continue
+
+                sl = data["stoploss"]
+                position = data["position"]
+                qty = data["qty"]
+                symbol = data["symbol"]
+
+                try:
+                    # 🚨 EXIT LOGIC
+                    if position == 1 and ltp <= sl:
+                        log1(f"[{task_id}] 🔥 SL HIT LONG {symbol} at {ltp}")
+
+                        exit_market(kite, symbol, qty, "SELL")
+
+                        with sl_lock:
+                            LIVE_SL.pop(task_id, None)
+
+                        delete_live_sl(task_id)
+
+                    elif position == -1 and ltp >= sl:
+                        log1(f"[{task_id}] 🔥 SL HIT SHORT {symbol} at {ltp}")
+
+                        exit_market(kite, symbol, qty, "BUY")
+
+                        with sl_lock:
+                            LIVE_SL.pop(task_id, None)
+
+                        delete_live_sl(task_id)
+
+                except Exception as e:
+                    log1(f"[{task_id}] Exit error: {e}")
+    def on_close(ws, code, reason):
+        global WS_RUNNING, KWS
+        log1(f"🔌 WS Closed: {reason}")
+        WS_RUNNING = False
+        KWS = None
+
+    kws.on_close = on_close
+    kws.on_connect = on_connect
+    kws.on_ticks = on_ticks
+
+    kws.connect(threaded=True)
+def exit_market(kite, symbol, qty, side):
+    try:
+        txn_type = kite.TRANSACTION_TYPE_SELL if side == "SELL" else kite.TRANSACTION_TYPE_BUY
+
+        order_id = kite.place_order(
+            variety=kite.VARIETY_REGULAR,
+            exchange=kite.EXCHANGE_MCX,
+            tradingsymbol=symbol,
+            transaction_type=txn_type,
+            quantity=qty,
+            product=kite.PRODUCT_NRML,
+            order_type=kite.ORDER_TYPE_MARKET,
+            market_protection=2,
+            validity=kite.VALIDITY_DAY
+        )
+
+        log1(f"✅ EXITED {symbol}, Order ID: {order_id}")
+
+    except Exception as e:
+        log1(f"Exit error: {e}")
+
+
+
+sl_lock = Lock()
 
 def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, multiplier, max_val):
     
@@ -434,92 +649,39 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                 sl_orderid = None
                 stop_task(task_id, "No Position")
                 break
-            if sl_orderid:
-                try:
-                    orders = kite_local.orders()
-                    sl_order = next((o for o in orders if o["order_id"] == sl_orderid), None)
-
-                    if (sl_order is None) or (sl_order["status"] == "COMPLETE") or (sl_order["status"] in ["CANCELLED", "REJECTED"]):
-                        log1(f"✅ SL ORDER NOT FOUND for {task_id}")
-
-                        SL_ORDERS.pop(task_id, None)
-                        sl_orderid = None
-
-                        # 🔥 VERY IMPORTANT
-                        stop_task(task_id, "SL Hit")
-
-                        break
-
-                except Exception as e:
-                    log1(f"SL check error: {e}")
             
-            log1(f"Stoploss value is {stoploss_val}")
-            price = df['Close'].iat[-1]
-            # if stoploss_value 
-            if (position == 1):
-                if (sl_orderid != None):
-                    try:
-                        # log1(f"MSL placed: {sl_orderid} {stoploss_val}")
-                        if stoploss_val > stoploss_valo:
-                            modify_sl_order(sl_orderid, stoploss_val, "SELL", kite_local)
-                            log1(f"SLM placed: {sl_orderid} {stoploss_val}")
-                    except Exception as e: 
-                        log1(f"MSL order error {e}")
-                        if "Trigger price" in e:
-                            cancel_order(sl_orderid, kite_local)
-                            sl_orderid = None
-                            buy_sell = "SELL"
-                            quantity = qty
-                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity, kite_local)
-                            log1(f"Error occured so MSL order canceled and exit long position")
-                elif(sl_orderid == None) and (price > stoploss_val):
-                    quantity = qty
-                    log1(f"SL placed: {sl_orderid} {stoploss_val}")
-                    sl_orderid = place_sl_order(instrument, "SELL", quantity, stoploss_val, kite_local)
-                    SL_ORDERS[task_id] = sl_orderid
-                    log1("SL Placed")
-                elif (sl_orderid != None) and (stoploss_val == 0):
-                    try:
-                        cancel_order(sl_orderid, kite_local)
-                    except Exception as e: 
-                        log1(f"Stoploss cancel error {e}")
-                    log1("SL Canceled")
-                    sl_orderid = None
-                else:
-                    sl_orderid = None
-                stoploss_valo = stoploss_val
-            if position == -1:
-                if (sl_orderid != None) and (stoploss_val != 0):
-                    try:
-                        # log1(f"MSL placed: {sl_orderid} {stoploss_val} start")
-                        if stoploss_val > stoploss_valo:
-                            modify_sl_order(sl_orderid, stoploss_val, "BUY", kite_local)
-                            log1(f"SLM placed: {sl_orderid} {stoploss_val}")
-                    except Exception as e:
-                        log1(f"Error - {e}")
-                        if "Trigger price" in e:
-                            cancel_order(sl_orderid, kite_local)
-                            sl_orderid = None
-                            buy_sell = "BUY"
-                            quantity = qty
-                            kite_app_buy_sell(exchange, instrument, buy_sell, quantity, kite_local)
-                            log1(f"Error occured so SL order canceled and exit from short position")
-                    
-                elif (sl_orderid == None) and (stoploss_val != 0):
-                    quantity = qty
-                    sl_orderid = place_sl_order(instrument , "BUY", quantity, stoploss_val, kite_local)
-                    SL_ORDERS[task_id] = sl_orderid
-                    log1(f"SL placed: {sl_orderid} {stoploss_val}")
+            # 🔥 STORE SL IN MEMORY INSTEAD OF ORDER
+            if position != 0:
+                with sl_lock:
+                    prev_sl = LIVE_SL.get(task_id, {}).get("stoploss")
+                    if prev_sl:
+                        if position == 1:  # LONG
+                            stoploss_val = max(prev_sl, stoploss_val)
+                        elif position == -1:  # SHORT
+                            stoploss_val = min(prev_sl, stoploss_val)
+                    LIVE_SL[task_id] = {
+                        "symbol": instrument,
+                        "stoploss": stoploss_val,
+                        "position": position,
+                        "qty": qty
+                    }
 
-                elif (sl_orderid != None) and (stoploss_val == 0):
-                    try:
-                        cancel_order(sl_orderid, kite_local)
-                    except Exception as e: 
-                        log1(f"Stoploss cancel error {e}")
-                    sl_orderid = None
-                else:
-                    sl_orderid = None
-                stoploss_valo = stoploss_val
+                if prev_sl != stoploss_val:
+                    save_live_sl(task_id, instrument, stoploss_val, position, qty)
+
+                log1(f"[{task_id}] SL Updated in memory: {stoploss_val}")
+
+            else:
+                # 🚨 No position → remove SL tracking
+                with sl_lock:
+                    LIVE_SL.pop(task_id, None)
+
+                delete_live_sl(task_id)
+
+                stop_task(task_id, "No Position")
+                break
+
+
             if position == 0:
                 log1("No positions")
             # time.sleep(sleeptime)
@@ -542,6 +704,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
     finally:
         # 🧹 CLEAN THREAD FROM MEMORY
         TRAILING_THREADS.pop(task_id, None)
+        stop_ws_if_idle() 
         log1(f"[{task_id}] Thread cleaned up")
     
 
@@ -588,7 +751,9 @@ def start_trailing_row():
         thread.daemon = True
         thread.start()
 
-        TRAILING_THREADS[task_id] = thread
+        with threads_lock:
+            TRAILING_THREADS[task_id] = thread
+        start_ws_if_needed()
 
         return jsonify({"id": task_id})
     
@@ -613,8 +778,9 @@ def start_trailing_row():
     )
     thread.daemon = True
     thread.start()
-
-    TRAILING_THREADS[task_id] = thread
+    with threads_lock:
+        TRAILING_THREADS[task_id] = thread
+    start_ws_if_needed()
     return jsonify({"id": task_id})
 
 
@@ -644,7 +810,7 @@ def stop_trailing_row():
 
     conn.commit()
     conn.close()
-
+    stop_ws_if_idle()
     return {"status": "stopped"}
 
 @app.route('/get_trailing')
@@ -696,6 +862,7 @@ def delete_trailing_row():
     c.execute("DELETE FROM trailing WHERE id = ?", (task_id,))
     conn.commit()
     conn.close()
+    stop_ws_if_idle()
 
     log1(f"Deleted row {task_id}")
 
@@ -1135,6 +1302,7 @@ log.disabled = True
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
     init_analysis_db()
+    load_live_sl_from_db()   # 🔥 ADD THIS
     restart_analysis()   # 🔥 MUST
     app.run(port=8000, debug=True)
 

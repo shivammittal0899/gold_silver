@@ -665,7 +665,7 @@ def trailing_worker(task_id, instrument, indicator, timeframe, qty, min_val, mul
                             stoploss_val = max(prev_sl, stoploss_val)
                         elif position == -1:  # SHORT
                             stoploss_val = min(prev_sl, stoploss_val)
-                    log1(prev_sl, stoploss_val)
+                    log1(f"{prev_sl}, {stoploss_val}")
                     LIVE_SL[task_id] = {
                         "symbol": instrument,
                         "stoploss": stoploss_val,

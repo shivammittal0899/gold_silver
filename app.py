@@ -402,7 +402,7 @@ from kiteconnect import KiteTicker
 
 def start_ws_if_needed():
     global WS_RUNNING, WS_THREAD
-
+    log1("ws will start here")
     with ws_lock:
         if WS_RUNNING:
             return
@@ -415,6 +415,7 @@ def start_ws_if_needed():
                 kite_local.set_access_token(access_token)
 
                 start_ws(API_KEY, access_token, kite_local)
+                log1("ws will started here ------------")
             except Exception as e:
                 log1(f"WS error: {e}")
             finally:
@@ -463,6 +464,7 @@ def start_ws(api_key, access_token, kite):
         ws.set_mode(ws.MODE_LTP, tokens)
 
     def on_ticks(ws, ticks):
+        log1("in on_ticks loop")
         for tick in ticks:
             token = tick["instrument_token"]
             ltp = tick["last_price"]
@@ -478,6 +480,7 @@ def start_ws(api_key, access_token, kite):
                 position = data["position"]
                 qty = data["qty"]
                 symbol = data["symbol"]
+                log1(f"{data} tick data")
 
                 try:
                     # 🚨 EXIT LOGIC

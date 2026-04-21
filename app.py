@@ -1286,6 +1286,37 @@ def restart_analysis():
         log1("🔄 Restarting analysis...")
         start_analysis_internal()
 
+
+
+@app.route('/stocks_analysis')
+def stocks():
+    symbols = ["RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS"]
+
+    data_list = []
+
+    # for symbol in symbols:
+    #     df = yf.download(symbol, period="7d", interval="1d")
+
+    #     if df.empty:
+    #         continue
+
+    #     latest_price = df["Close"].iloc[-1]
+
+    #     # Returns
+    #     ret_1d = ((df["Close"].iloc[-1] / df["Close"].iloc[-2]) - 1) * 100 if len(df) > 1 else 0
+    #     ret_1w = ((df["Close"].iloc[-1] / df["Close"].iloc[0]) - 1) * 100
+
+    #     data_list.append({
+    #         "symbol": symbol.replace(".NS", ""),
+    #         "price": round(latest_price, 2),
+    #         "ret_1d": round(ret_1d, 2),
+    #         "ret_1w": round(ret_1w, 2)
+    #     })
+
+    return "None"
+
+
+
 # ----------------------------
 # Live Logs Page
 # ----------------------------

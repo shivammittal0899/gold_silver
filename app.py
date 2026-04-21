@@ -1315,7 +1315,18 @@ def stocks_analysis():
         log1(data_list)
 
     return render_template("stocks_analysis.html", stocks=data_list)
+from instruments import *
+@app.route('/instruments_dashboard')
+def instruments_dashboard():
+    data = get_stock_with_futures()
+    return render_template("instruments_dashboard.html", data=data)
 
+
+@app.route('/reload_instruments')
+def reload():
+    
+    reload_instruments(kite)
+    return redirect('/instruments_dashboard')
 
 
 # ----------------------------

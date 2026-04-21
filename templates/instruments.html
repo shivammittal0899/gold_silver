@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Instruments Dashboard</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: center; }
+        th { background: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<h2>Instruments Dashboard</h2>
+
+<a href="/reload_instruments">
+    <button>🔄 Reload Instruments</button>
+</a>
+
+<table>
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>EQ Token</th>
+
+            {% for i in range(1,7) %}
+                <th>FUT {{i}}</th>
+                <th>Token</th>
+                <th>Expiry</th>
+                <th>Lot</th>
+            {% endfor %}
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for row in data %}
+        <tr>
+            <td>{{ row.symbol }}</td>
+            <td>{{ row.eq_token }}</td>
+
+            {% for fut in row.futures %}
+                <td>{{ fut[0] }}</td>
+                <td>{{ fut[1] }}</td>
+                <td>{{ fut[2] }}</td>
+                <td>{{ fut[3] }}</td>
+            {% endfor %}
+
+            {% for i in range(6 - row.futures|length) %}
+                <td colspan="4">-</td>
+            {% endfor %}
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

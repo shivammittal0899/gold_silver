@@ -1,5 +1,7 @@
 import sqlite3
-
+def log2(msg):
+    with open("static/logs.txt", "a") as f:
+        f.write(f"{msg}\n")
 def init_db():
     conn = sqlite3.connect("instruments.db")
     cursor = conn.cursor()
@@ -25,7 +27,7 @@ import os
 
 def ensure_instruments_data(kite):
     db_path = "instruments.db"
-
+    log2("checking database")
     # 🔹 Step 1: DB exists?
     db_exists = os.path.exists(db_path)
 
@@ -39,6 +41,7 @@ def ensure_instruments_data(kite):
     """)
     table_exists = cursor.fetchone()
 
+    log2("checking table")
     if not table_exists:
         print("⚠️ Table missing → creating + reloading")
         conn.close()
@@ -55,7 +58,7 @@ def ensure_instruments_data(kite):
         print("⚠️ Empty DB → reloading instruments")
         reload_instruments(kite)
 
-        
+
 def reload_instruments(kite):
     conn = sqlite3.connect("instruments.db")
     cursor = conn.cursor()

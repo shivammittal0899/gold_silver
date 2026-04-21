@@ -1327,7 +1327,7 @@ def instruments_dashboard():
     ensure_instruments_data(kite)   # 🔥 ADD THIS
 
     data = get_stock_with_futures()
-    return render_template("instruments.html", data=data)
+    return render_template("instruments_dashboard.html", data=data)
 
 @app.route('/reload_instruments', methods=['POST'])
 def reload_instruments_route():

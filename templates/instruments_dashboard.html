@@ -22,7 +22,7 @@
             <th>Symbol</th>
             <th>EQ Token</th>
 
-            {% for i in range(1,7) %}
+            {% for i in range(1,4) %}
                 <th>FUT {{i}}</th>
                 <th>Token</th>
                 <th>Expiry</th>
@@ -44,7 +44,7 @@
                 <td>{{ fut[3] }}</td>
             {% endfor %}
 
-            {% for i in range(6 - row.futures|length) %}
+            {% for i in range(3 - row.futures|length) %}
                 <td colspan="4">-</td>
             {% endfor %}
 

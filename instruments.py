@@ -3,6 +3,7 @@ def log2(msg):
     with open("static/logs.txt", "a") as f:
         f.write(f"{msg}\n")
 def init_db():
+    log2("creating db")
     conn = sqlite3.connect("instruments.db")
     cursor = conn.cursor()
 
@@ -43,7 +44,7 @@ def ensure_instruments_data(kite):
 
     log2("checking table")
     if not table_exists:
-        print("⚠️ Table missing → creating + reloading")
+        log2("⚠️ Table missing → creating + reloading")
         conn.close()
         init_db()
         reload_instruments(kite)
@@ -57,6 +58,19 @@ def ensure_instruments_data(kite):
     if count == 0:
         print("⚠️ Empty DB → reloading instruments")
         reload_instruments(kite)
+
+#  {'instrument_token': 864001,
+#   'exchange_token': '3375',
+#   'tradingsymbol': 'SURYAROSNI',
+#   'name': 'SURYA ROSHNI',
+#   'last_price': 0.0,
+#   'expiry': '',
+#   'strike': 0.0,
+#   'tick_size': 0.01,
+#   'lot_size': 1,
+#   'instrument_type': 'EQ',
+#   'segment': 'NSE',
+#   'exchange': 'NSE'},
 
 
 def reload_instruments(kite):
@@ -79,6 +93,7 @@ def reload_instruments(kite):
         ))
 
     # FUTURES ONLY
+    log2("fetching data from kite")
     for item in kite.instruments("NFO"):
         if item["instrument_type"] == "FUT":
             cursor.execute("""
@@ -113,13 +128,20 @@ def get_stock_with_futures():
     for name, symbol, eq_token in equities:
 
         # Get futures sorted by expiry
+        # cursor.execute("""
+        #     SELECT tradingsymbol, instrument_token, expiry, lot_size
+        #     FROM instruments
+        #     WHERE name=? AND segment='FUT'
+        #     ORDER BY expiry ASC
+        #     LIMIT 3
+        # """, (name,))
         cursor.execute("""
             SELECT tradingsymbol, instrument_token, expiry, lot_size
             FROM instruments
             WHERE name=? AND segment='FUT'
             ORDER BY expiry ASC
-            LIMIT 6
-        """, (name,))
+            LIMIT 3
+        """, (symbol,))
 
         futures = cursor.fetchall()
 

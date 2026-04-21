@@ -1313,7 +1313,7 @@ def stocks_analysis():
             "ret_1w": round(ret_1w, 2)
         })
 
-    return render_template("stocks.html", stocks=data_list)
+    return render_template("stocks_analysis.html", stocks=data_list)
 
 
 

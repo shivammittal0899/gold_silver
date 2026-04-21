@@ -1289,7 +1289,7 @@ def restart_analysis():
 
 
 @app.route('/stocks_analysis')
-def stocks():
+def stocks_analysis():
     symbols = ["RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS"]
 
     data_list = []

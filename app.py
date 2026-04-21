@@ -1295,7 +1295,7 @@ def stocks():
     data_list = []
 
     for symbol in symbols:
-        df = yf.download(symbol, period="1mo", interval="1d")
+        df = yf.download(symbol, period="1mo", interval="1d", auto_adjust=True)
 
         if df.empty:
             continue

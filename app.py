@@ -1322,9 +1322,8 @@ def instruments_dashboard():
     return render_template("instruments_dashboard.html", data=data)
 
 
-@app.route('/reload_instruments')
-def reload():
-    
+@app.route('/reload_instruments', methods=['POST'])
+def reload_instruments_route():
     reload_instruments(kite)
     return redirect('/instruments_dashboard')
 

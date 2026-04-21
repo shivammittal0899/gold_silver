@@ -1,9 +1,37 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Stocks Analysis</title>
-    </head>
-    <body>
-        <h2>Stocks Analysis Dashboard</h2>
-    </body>
+<head>
+    <title>Stocks Analysis</title>
+</head>
+<body>
+    <h2>Stocks Analysis Dashboard</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Price</th>
+                <th>1 Day %</th>
+                <th>1 Week %</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for stock in stocks %}
+            <tr>
+                <td>{{ stock.symbol }}</td>
+
+                <td>{{ stock.price }}</td>
+
+                <td style="color: {{ 'green' if stock.ret_1d > 0 else 'red' }}">
+                    {{ stock.ret_1d }}%
+                </td>
+
+                <td style="color: {{ 'green' if stock.ret_1w > 0 else 'red' }}">
+                    {{ stock.ret_1w }}%
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
 </html>

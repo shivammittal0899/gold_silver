@@ -19,6 +19,43 @@ def init_db():
     conn.commit()
     conn.close()
 
+
+import sqlite3
+import os
+
+def ensure_instruments_data(kite):
+    db_path = "instruments.db"
+
+    # 🔹 Step 1: DB exists?
+    db_exists = os.path.exists(db_path)
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # 🔹 Step 2: Table exists?
+    cursor.execute("""
+        SELECT name FROM sqlite_master 
+        WHERE type='table' AND name='instruments'
+    """)
+    table_exists = cursor.fetchone()
+
+    if not table_exists:
+        print("⚠️ Table missing → creating + reloading")
+        conn.close()
+        init_db()
+        reload_instruments(kite)
+        return
+
+    # 🔹 Step 3: Data exists?
+    cursor.execute("SELECT COUNT(*) FROM instruments")
+    count = cursor.fetchone()[0]
+    conn.close()
+
+    if count == 0:
+        print("⚠️ Empty DB → reloading instruments")
+        reload_instruments(kite)
+
+        
 def reload_instruments(kite):
     conn = sqlite3.connect("instruments.db")
     cursor = conn.cursor()

@@ -1316,11 +1316,18 @@ def stocks_analysis():
 
     return render_template("stocks_analysis.html", stocks=data_list)
 from instruments import *
+# @app.route('/instruments_dashboard')
+# def instruments_dashboard():
+#     data = get_stock_with_futures()
+#     return render_template("instruments_dashboard.html", data=data)
+
+
 @app.route('/instruments_dashboard')
 def instruments_dashboard():
-    data = get_stock_with_futures()
-    return render_template("instruments_dashboard.html", data=data)
+    ensure_instruments_data(kite)   # 🔥 ADD THIS
 
+    data = get_stock_with_futures()
+    return render_template("instruments.html", data=data)
 
 @app.route('/reload_instruments', methods=['POST'])
 def reload_instruments_route():
@@ -1353,6 +1360,14 @@ if __name__ == "__main__":
     init_analysis_db()
     load_live_sl_from_db()   # 🔥 ADD THIS
     restart_analysis()   # 🔥 MUST
+    # 🔥 AUTO CHECK
+    try:
+        access_token = read_access_token()
+        if access_token:
+            kite.set_access_token(access_token)
+            ensure_instruments_data(kite)
+    except Exception as e:
+        print(f"Instruments init error: {e}")
     app.run(port=8000, debug=True)
 
 

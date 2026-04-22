@@ -1324,6 +1324,8 @@ from instruments import *
 
 @app.route('/instruments_dashboard')
 def instruments_dashboard():
+    access_token = read_access_token()
+    kite.set_access_token(access_token)
     ensure_instruments_data(kite)   # 🔥 ADD THIS
 
     data = get_stock_with_futures()
@@ -1331,6 +1333,8 @@ def instruments_dashboard():
 
 @app.route('/reload_instruments', methods=['POST'])
 def reload_instruments_route():
+    access_token = read_access_token()
+    kite.set_access_token(access_token)
     reload_instruments(kite)
     return redirect('/instruments_dashboard')
 

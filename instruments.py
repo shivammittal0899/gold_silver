@@ -114,46 +114,47 @@ def get_stock_with_futures():
     conn = sqlite3.connect("instruments.db")
     cursor = conn.cursor()
 
-    # Get all equities
     cursor.execute("""
-        SELECT name, tradingsymbol, instrument_token
-        FROM instruments
-        WHERE segment='EQ'
+        SELECT 
+            eq.tradingsymbol AS eq_symbol,
+            eq.instrument_token AS eq_token,
+            fut.tradingsymbol AS fut_symbol,
+            fut.instrument_token AS fut_token,
+            fut.expiry,
+            fut.lot_size
+        FROM instruments eq
+        LEFT JOIN instruments fut
+            ON eq.tradingsymbol = fut.name   -- ✅ YOUR MATCHING LOGIC
+            AND fut.segment = 'FUT'
+        WHERE eq.segment = 'EQ'
+        ORDER BY eq.tradingsymbol, fut.expiry ASC
     """)
 
-    equities = cursor.fetchall()
-
-    result = []
-
-    for name, symbol, eq_token in equities:
-
-        # Get futures sorted by expiry
-        # cursor.execute("""
-        #     SELECT tradingsymbol, instrument_token, expiry, lot_size
-        #     FROM instruments
-        #     WHERE name=? AND segment='FUT'
-        #     ORDER BY expiry ASC
-        #     LIMIT 3
-        # """, (name,))
-        cursor.execute("""
-            SELECT tradingsymbol, instrument_token, expiry, lot_size
-            FROM instruments
-            WHERE name=? AND segment='FUT'
-            ORDER BY expiry ASC
-            LIMIT 3
-        """, (symbol,))
-
-        futures = cursor.fetchall()
-
-        result.append({
-            "symbol": symbol,
-            "eq_token": eq_token,
-            "futures": futures
-        })
-
+    rows = cursor.fetchall()
     conn.close()
 
-    # 🔥 FUTURES FIRST SORTING
+    # 🔥 Grouping
+    result_map = {}
+
+    for row in rows:
+        eq_symbol, eq_token, fut_symbol, fut_token, expiry, lot = row
+
+        if eq_symbol not in result_map:
+            result_map[eq_symbol] = {
+                "symbol": eq_symbol,
+                "eq_token": eq_token,
+                "futures": []
+            }
+
+        # limit to 3 futures
+        if fut_symbol and len(result_map[eq_symbol]["futures"]) < 3:
+            result_map[eq_symbol]["futures"].append(
+                (fut_symbol, fut_token, expiry, lot)
+            )
+
+    result = list(result_map.values())
+
+    # 🔥 Futures first
     result.sort(key=lambda x: len(x["futures"]) == 0)
 
     return result

@@ -69,20 +69,14 @@
 
     <h3>Select Stocks</h3>
 
-    <div class="dropdown">
-        <button onclick="toggleDropdown()" class="dropbtn" id="dropdownBtn">
-            Select Stocks ▼
-        </button>
+    <select id="stockSelect" multiple style="width:300px;">
+        {% for s in symbols %}
+            <option value="{{ s }}">{{ s }}</option>
+        {% endfor %}
+    </select>
 
-        <div id="dropdownContent" class="dropdown-content">
-            {% for s in symbols %}
-                <label>
-                    <input type="checkbox" value="{{ s }}"> {{ s }}
-                </label>
-            {% endfor %}
-        </div>
-    </div>
-
+    <!-- Selected preview -->
+    <div id="selectedStocks" style="margin-top:10px;"></div>
     <!-- Selected items preview -->
     <div id="selectedStocks" style="margin-top:10px;"></div>
 
@@ -128,9 +122,24 @@
     </table>
 </body>
 <script>
-function toggleDropdown() {
-    document.getElementById("dropdownContent").classList.toggle("show");
-}
+$(document).ready(function() {
+    $('#stockSelect').select2({
+        placeholder: "Search & select stocks",
+        allowClear: true,
+        width: '300px'
+    });
+
+    // 🔥 Update selected preview
+    $('#stockSelect').on('change', function() {
+        updateSelectedDisplay();
+    });
+});
+$('#stockSelect').select2({
+    placeholder: "Type to search stocks...",
+    minimumInputLength: 1
+});
+</script>
+<script>
 
 // Close when clicking outside
 window.onclick = function(event) {
@@ -144,24 +153,34 @@ document.querySelectorAll("#dropdownContent input").forEach(cb => {
     cb.addEventListener("change", updateSelectedDisplay);
 });
 
+// function updateSelectedDisplay() {
+//     let selected = getSelectedStocks();
+
+//     let btn = document.getElementById("dropdownBtn");
+//     let display = document.getElementById("selectedStocks");
+
+//     // ✅ Button text (short summary)
+//     if (selected.length === 0) {
+//         btn.innerText = "Select Stocks ▼";
+//     } 
+//     else if (selected.length <= 2) {
+//         btn.innerText = selected.join(", ") + " ▼";
+//     } 
+//     else {
+//         btn.innerText = `${selected.length} selected ▼`;
+//     }
+
+//     // ✅ Below dropdown → full list (tags)
+//     display.innerHTML = "";
+
+//     selected.forEach(s => {
+//         display.innerHTML += `<span class="tag">${s}</span>`;
+//     });
+// }
 function updateSelectedDisplay() {
     let selected = getSelectedStocks();
-
-    let btn = document.getElementById("dropdownBtn");
     let display = document.getElementById("selectedStocks");
 
-    // ✅ Button text (short summary)
-    if (selected.length === 0) {
-        btn.innerText = "Select Stocks ▼";
-    } 
-    else if (selected.length <= 2) {
-        btn.innerText = selected.join(", ") + " ▼";
-    } 
-    else {
-        btn.innerText = `${selected.length} selected ▼`;
-    }
-
-    // ✅ Below dropdown → full list (tags)
     display.innerHTML = "";
 
     selected.forEach(s => {
@@ -170,9 +189,12 @@ function updateSelectedDisplay() {
 }
 
 // Helper
+// function getSelectedStocks() {
+//     let checkboxes = document.querySelectorAll("#dropdownContent input:checked");
+//     return Array.from(checkboxes).map(cb => cb.value);
+// }
 function getSelectedStocks() {
-    let checkboxes = document.querySelectorAll("#dropdownContent input:checked");
-    return Array.from(checkboxes).map(cb => cb.value);
+    return $('#stockSelect').val() || [];
 }
 </script>
 <script>

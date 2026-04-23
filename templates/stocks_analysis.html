@@ -8,20 +8,21 @@
 
     <div id="watchlists">
         {% for w in watchlists %}
-            <div>
+            <button onclick="toggleWatchlist({{ w[0] }}, this)">
                 {{ w[1] }}
-                <button onclick="deleteWatchlist({{ w[0] }})">❌</button>
-            </div>
+            </button>
         {% endfor %}
     </div>
 
     <h3>Select Stocks</h3>
 
-    <select id="stockSelect" multiple style="width:300px;">
+    <select id="stockSelect" multiple>
         {% for s in symbols %}
             <option value="{{ s }}">{{ s }}</option>
         {% endfor %}
     </select>
+
+    <button onclick="addStocks()">Add to Watchlist</button>
 
     <br><br>
 
@@ -48,8 +49,85 @@
         <button onclick="closePopup()">Cancel</button>
 
     </div>
+
+    <table border="1" style="margin-top:20px; width:100%;">
+        <thead>
+            <tr>
+                <th>Stock Symbol</th>
+            </tr>
+        </thead>
+        <tbody id="stocks_table">
+            <tr><td>Click a watchlist</td></tr>
+        </tbody>
+    </table>
 </body>
 <script>
+
+let activeWatchlist = null;
+
+function toggleWatchlist(id, btn) {
+
+    let table = document.getElementById("stocks_table");
+
+    // ✅ SAME BUTTON CLICKED AGAIN → HIDE
+    if (activeWatchlist === id) {
+        table.innerHTML = "<tr><td>Hidden</td></tr>";
+        btn.classList.remove("active");
+        activeWatchlist = null;
+        return;
+    }
+
+    // ✅ NEW BUTTON CLICKED
+    activeWatchlist = id;
+
+    // Remove active from all buttons
+    document.querySelectorAll("#watchlists button").forEach(b => {
+        b.classList.remove("active");
+    });
+
+    btn.classList.add("active");
+
+    fetch(`/get_watchlist_items?id=${id}`)
+        .then(res => res.json())
+        .then(data => {
+            table.innerHTML = "";
+
+            if (data.length === 0) {
+                table.innerHTML = "<tr><td>No stocks</td></tr>";
+                return;
+            }
+
+            data.forEach(symbol => {
+                table.innerHTML += `<tr><td>${symbol}</td></tr>`;
+            });
+        });
+}
+
+function addStocks() {
+    let selected = Array.from(document.getElementById("stockSelect").selectedOptions)
+                        .map(o => o.value);
+
+    let wid = activeWatchlist;
+
+    if (!wid) {
+        alert("Select a watchlist first");
+        return;
+    }
+
+    fetch('/add_to_watchlist', {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            watchlist_id: wid,
+            stocks: selected
+        })
+    })
+    .then(res => res.json())
+    .then(() => {
+        toggleWatchlist(wid, document.querySelector(".active")); // refresh
+    });
+}
+
 function getSelectedStocks() {
     let selected = [];
     document.querySelectorAll("#stockSelect option:checked").forEach(o => {

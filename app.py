@@ -1302,16 +1302,33 @@ def init_watchlist_db():
 
     # Stocks inside watchlist
     c.execute("""
-    CREATE TABLE IF NOT EXISTS watchlist_items (
+        CREATE TABLE IF NOT EXISTS watchlist_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         watchlist_id INTEGER,
         symbol TEXT,
+        UNIQUE(watchlist_id, symbol),   
         FOREIGN KEY(watchlist_id) REFERENCES watchlists(id)
     )
     """)
 
     conn.commit()
     conn.close()
+
+@app.route('/get_watchlist_items')
+def get_watchlist_items():
+    wid = request.args.get("id")
+
+    conn = sqlite3.connect("stocks_analysis.db")
+    c = conn.cursor()
+
+    rows = c.execute("""
+        SELECT symbol FROM watchlist_items
+        WHERE watchlist_id=?
+    """, (wid,)).fetchall()
+
+    conn.close()
+
+    return jsonify([r[0] for r in rows])
 
 @app.route('/stocks_analysis')
 def stocks_analysis():
@@ -1379,7 +1396,7 @@ def add_to_watchlist():
 
     for s in stocks:
         c.execute("""
-            INSERT INTO watchlist_items (watchlist_id, symbol)
+            INSERT OR IGNORE INTO watchlist_items (watchlist_id, symbol)
             VALUES (?, ?)
         """, (wid, s))
 
@@ -1434,10 +1451,10 @@ log.disabled = True
 
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
+    init_watchlist_db()
     init_analysis_db()
     load_live_sl_from_db()   # 🔥 ADD THIS
     restart_analysis()   # 🔥 MUST
-    init_watchlist_db()
     # 🔥 AUTO CHECK
     try:
         access_token = read_access_token()

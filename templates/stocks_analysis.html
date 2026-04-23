@@ -245,13 +245,13 @@ function toggleWatchlist(id, btn) {
         });
 }
 
-function getSelectedStocks() {
-    let selected = [];
-    document.querySelectorAll("#stockSelect option:checked").forEach(o => {
-        selected.push(o.value);
-    });
-    return selected;
-}
+// function getSelectedStocks() {
+//     let selected = [];
+//     document.querySelectorAll("#stockSelect option:checked").forEach(o => {
+//         selected.push(o.value);
+//     });
+//     return selected;
+// }
 
 function openPopup() {
     document.getElementById("popup").style.display = "block";

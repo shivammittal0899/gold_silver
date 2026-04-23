@@ -29,7 +29,29 @@ TRAILING_CONFIGS = []
 
 
 import sqlite3
+def init_watchlist_db():
+    conn = sqlite3.connect("stocks_analysis.db")
+    c = conn.cursor()
 
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS watchlists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE
+    )
+    """)
+
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS watchlist_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        watchlist_id INTEGER,
+        symbol TEXT,
+        UNIQUE(watchlist_id, symbol),
+        FOREIGN KEY(watchlist_id) REFERENCES watchlists(id)
+    )
+    """)
+
+    conn.commit()
+    conn.close()
 # ---------------------- SAVE TOKEN ----------------------
 def save_access_token(token):
     with open("access_token.txt", "w") as f:
@@ -1288,31 +1310,6 @@ def restart_analysis():
 
 
 
-def init_watchlist_db():
-    conn = sqlite3.connect("stocks_analysis.db")
-    c = conn.cursor()
-
-    # Watchlist names
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS watchlists (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT UNIQUE
-    )
-    """)
-
-    # Stocks inside watchlist
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS watchlist_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        watchlist_id INTEGER,
-        symbol TEXT,
-        UNIQUE(watchlist_id, symbol),   
-        FOREIGN KEY(watchlist_id) REFERENCES watchlists(id)
-    )
-    """)
-
-    conn.commit()
-    conn.close()
 
 @app.route('/get_watchlist_items')
 def get_watchlist_items():
@@ -1332,9 +1329,9 @@ def get_watchlist_items():
 
 @app.route('/stocks_analysis')
 def stocks_analysis():
+    init_watchlist_db()
 
     # 🔥 ENSURE TABLE EXISTS BEFORE QUERY
-    init_watchlist_db()
 
     conn = sqlite3.connect("stocks_analysis.db")
     c = conn.cursor()
@@ -1456,11 +1453,11 @@ log.disabled = True
 
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
-    init_watchlist_db()
+    init_watchlist_db()   # 🔥 MUST BE FIRST
     init_analysis_db()
-    load_live_sl_from_db()   # 🔥 ADD THIS
-    restart_analysis()   # 🔥 MUST
-    # 🔥 AUTO CHECK
+    load_live_sl_from_db()
+    restart_analysis()
+
     try:
         access_token = read_access_token()
         if access_token:
@@ -1468,7 +1465,7 @@ if __name__ == "__main__":
             ensure_instruments_data(kite)
     except Exception as e:
         print(f"Instruments init error: {e}")
-    app.run(port=8000, debug=True)
 
+    app.run(port=8000, debug=True, use_reloader=False)  # 🔥 IMPORTANT
 
 

@@ -1288,33 +1288,83 @@ def restart_analysis():
 
 
 
+
+
 @app.route('/stocks_analysis')
 def stocks_analysis():
-    symbols = ["RELIANCE.NS", "TCS.NS", "INFY.NS", "HDFCBANK.NS"]
+    conn = sqlite3.connect("stocks_analysis.db")
+    c = conn.cursor()
 
-    data_list = []
+    watchlists = c.execute("SELECT * FROM watchlists").fetchall()
+    conn.close()
 
-    for symbol in symbols:
-        df = yf.download(symbol, period="1mo", interval="1d", auto_adjust=True)
+    # fetch symbols from instruments DB
+    conn = sqlite3.connect("instruments.db")
+    c = conn.cursor()
+    symbols = c.execute("""
+        SELECT tradingsymbol FROM instruments 
+        WHERE segment='EQ'
+        ORDER BY tradingsymbol
+    """).fetchall()
+    conn.close()
 
-        if df.empty:
-            continue
+    symbols = [s[0] for s in symbols]
 
-        latest_price = df["Close"].iloc[-1]
+    return render_template(
+        "stocks_analysis.html",
+        watchlists=watchlists,
+        symbols=symbols
+    )
 
-        # Returns
-        ret_1d = ((df["Close"].iloc[-1] / df["Close"].iloc[-2]) - 1) * 100 if len(df) > 1 else 0
-        ret_1w = ((df["Close"].iloc[-1] / df["Close"].iloc[0]) - 1) * 100
+@app.route('/create_watchlist', methods=['POST'])
+def create_watchlist():
+    name = request.json.get("name")
 
-        data_list.append({
-            "symbol": symbol.replace(".NS", ""),
-            "price": round(latest_price, 2),
-            "ret_1d": round(ret_1d, 2),
-            "ret_1w": round(ret_1w, 2)
-        })
-        log1(data_list)
+    conn = sqlite3.connect("stocks_analysis.db")
+    c = conn.cursor()
 
-    return render_template("stocks_analysis.html", stocks=data_list)
+    c.execute("INSERT OR IGNORE INTO watchlists (name) VALUES (?)", (name,))
+    conn.commit()
+    conn.close()
+
+    return {"status": "created"}
+
+
+@app.route('/delete_watchlist', methods=['POST'])
+def delete_watchlist():
+    wid = request.json.get("id")
+
+    conn = sqlite3.connect("stocks_analysis.db")
+    c = conn.cursor()
+
+    c.execute("DELETE FROM watchlists WHERE id=?", (wid,))
+    c.execute("DELETE FROM watchlist_items WHERE watchlist_id=?", (wid,))
+
+    conn.commit()
+    conn.close()
+
+    return {"status": "deleted"}
+
+@app.route('/add_to_watchlist', methods=['POST'])
+def add_to_watchlist():
+    data = request.json
+    wid = data.get("watchlist_id")
+    stocks = data.get("stocks", [])
+
+    conn = sqlite3.connect("stocks_analysis.db")
+    c = conn.cursor()
+
+    for s in stocks:
+        c.execute("""
+            INSERT INTO watchlist_items (watchlist_id, symbol)
+            VALUES (?, ?)
+        """, (wid, s))
+
+    conn.commit()
+    conn.close()
+
+    return {"status": "added"}
+
 from instruments import *
 # @app.route('/instruments_dashboard')
 # def instruments_dashboard():

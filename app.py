@@ -1332,13 +1332,17 @@ def get_watchlist_items():
 
 @app.route('/stocks_analysis')
 def stocks_analysis():
+
+    # 🔥 ENSURE TABLE EXISTS BEFORE QUERY
+    init_watchlist_db()
+
     conn = sqlite3.connect("stocks_analysis.db")
     c = conn.cursor()
 
     watchlists = c.execute("SELECT * FROM watchlists").fetchall()
     conn.close()
 
-    # fetch symbols from instruments DB
+    # fetch symbols
     conn = sqlite3.connect("instruments.db")
     c = conn.cursor()
     symbols = c.execute("""
@@ -1358,6 +1362,7 @@ def stocks_analysis():
 
 @app.route('/create_watchlist', methods=['POST'])
 def create_watchlist():
+    init_watchlist_db()
     name = request.json.get("name")
 
     conn = sqlite3.connect("stocks_analysis.db")

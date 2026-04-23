@@ -1437,6 +1437,7 @@ if __name__ == "__main__":
     init_analysis_db()
     load_live_sl_from_db()   # 🔥 ADD THIS
     restart_analysis()   # 🔥 MUST
+    init_watchlist_db()
     # 🔥 AUTO CHECK
     try:
         access_token = read_access_token()

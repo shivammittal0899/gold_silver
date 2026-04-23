@@ -2,6 +2,45 @@
 <html>
 <head>
     <title>Stocks Analysis</title>
+    <style>
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropbtn {
+        padding: 10px;
+        background: #3498db;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background: white;
+        min-width: 250px;
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        z-index: 1;
+    }
+
+    .dropdown-content label {
+        display: block;
+        padding: 5px;
+        cursor: pointer;
+    }
+
+    .dropdown-content label:hover {
+        background: #f1f1f1;
+    }
+
+    .show {
+        display: block;
+    }
+    </style>
 </head>
 <body>
     <h3>Watchlists</h3>
@@ -16,13 +55,23 @@
 
     <h3>Select Stocks</h3>
 
-    <select id="stockSelect" multiple>
-        {% for s in symbols %}
-            <option value="{{ s }}">{{ s }}</option>
-        {% endfor %}
-    </select>
+    <div class="dropdown">
+        <button onclick="toggleDropdown()" class="dropbtn">
+            Select Stocks ▼
+        </button>
+
+        <div id="dropdownContent" class="dropdown-content">
+            {% for s in symbols %}
+                <label>
+                    <input type="checkbox" value="{{ s }}"> {{ s }}
+                </label>
+            {% endfor %}
+        </div>
+    </div>
 
     <button onclick="addStocks()">Add to Watchlist</button>
+
+    <!-- <button onclick="addStocks()">Add to Watchlist</button> -->
 
     <br><br>
 

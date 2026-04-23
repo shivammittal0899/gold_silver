@@ -2,46 +2,26 @@
 <html>
 <head>
     <title>Stocks Analysis</title>
+
+    <!-- ✅ Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!-- ✅ jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- ✅ Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
+
     <style>
-    .dropdown {
-        position: relative;
-        display: inline-block;
+    body {
+        font-family: Arial;
+        margin: 20px;
     }
 
-    .dropbtn {
-        padding: 10px;
-        background: #3498db;
-        color: white;
-        border: none;
+    button {
+        padding: 8px 12px;
+        margin: 5px;
         cursor: pointer;
-        border-radius: 5px;
-        min-width: 220px;
-        text-align: left;
-    }
-
-    .dropdown-content {
-        display: none;
-        position: absolute;
-        background: white;
-        min-width: 250px;
-        max-height: 300px;
-        overflow-y: auto;
-        border: 1px solid #ccc;
-        z-index: 1;
-    }
-
-    .dropdown-content label {
-        display: block;
-        padding: 6px;
-        cursor: pointer;
-    }
-
-    .dropdown-content label:hover {
-        background: #f1f1f1;
-    }
-
-    .show {
-        display: block;
     }
 
     /* Selected tags */
@@ -54,129 +34,109 @@
         border-radius: 4px;
         font-size: 12px;
     }
+
+    .active {
+        background: #3498db;
+        color: white;
+    }
+
+    /* Improve Select2 */
+    .select2-container--default .select2-selection--multiple {
+        min-height: 45px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .select2-selection__choice {
+        background-color: #3498db !important;
+        color: white !important;
+        border: none !important;
+    }
     </style>
 </head>
+
 <body>
-    <h3>Watchlists</h3>
 
-    <div id="watchlists">
+<h3>Watchlists</h3>
+
+<div id="watchlists">
+    {% for w in watchlists %}
+        <button onclick="toggleWatchlist({{ w[0] }}, this)">
+            {{ w[1] }}
+        </button>
+    {% endfor %}
+</div>
+
+<h3>Select Stocks</h3>
+
+<select id="stockSelect" multiple style="width:350px;">
+    {% for s in symbols %}
+        <option value="{{ s }}">{{ s }}</option>
+    {% endfor %}
+</select>
+
+<!-- Selected preview -->
+<div id="selectedStocks" style="margin-top:10px;"></div>
+
+<br>
+
+<button onclick="addStocks()">Add to Watchlist</button>
+
+<br><br>
+
+<button onclick="analyze()">📊 Analyze</button>
+<button onclick="openPopup()">➕ Add to Watchlist</button>
+
+<!-- Popup -->
+<div id="popup" style="display:none; border:1px solid black; padding:10px; margin-top:10px;">
+    <h4>Select Watchlist</h4>
+
+    <select id="watchlistSelect">
         {% for w in watchlists %}
-            <button onclick="toggleWatchlist({{ w[0] }}, this)">
-                {{ w[1] }}
-            </button>
-        {% endfor %}
-    </div>
-
-    <h3>Select Stocks</h3>
-
-    <select id="stockSelect" multiple style="width:300px;">
-        {% for s in symbols %}
-            <option value="{{ s }}">{{ s }}</option>
+            <option value="{{ w[0] }}">{{ w[1] }}</option>
         {% endfor %}
     </select>
 
-    <!-- Selected preview -->
-    <div id="selectedStocks" style="margin-top:10px;"></div>
-    <!-- Selected items preview -->
-    <div id="selectedStocks" style="margin-top:10px;"></div>
+    <br><br>
 
-    <button onclick="addStocks()">Add to Watchlist</button>
-
-    <!-- <button onclick="addStocks()">Add to Watchlist</button> -->
+    <input type="text" id="newWatchlist" placeholder="New watchlist name">
 
     <br><br>
 
-    <button onclick="analyze()">📊 Analyze</button>
-    <button onclick="openPopup()">➕ Add to Watchlist</button>
+    <button onclick="saveToWatchlist()">Save</button>
+    <button onclick="closePopup()">Cancel</button>
+</div>
 
-    <div id="popup" style="display:none; border:1px solid black; padding:10px;">
-    
-        <h4>Select Watchlist</h4>
+<table border="1" style="margin-top:20px; width:100%;">
+    <thead>
+        <tr>
+            <th>Stock Symbol</th>
+        </tr>
+    </thead>
+    <tbody id="stocks_table">
+        <tr><td>Click a watchlist</td></tr>
+    </tbody>
+</table>
 
-        <select id="watchlistSelect">
-            {% for w in watchlists %}
-                <option value="{{ w[0] }}">{{ w[1] }}</option>
-            {% endfor %}
-        </select>
-
-        <br><br>
-
-        <input type="text" id="newWatchlist" placeholder="New watchlist name">
-
-        <br><br>
-
-        <button onclick="saveToWatchlist()">Save</button>
-        <button onclick="closePopup()">Cancel</button>
-
-    </div>
-
-    <table border="1" style="margin-top:20px; width:100%;">
-        <thead>
-            <tr>
-                <th>Stock Symbol</th>
-            </tr>
-        </thead>
-        <tbody id="stocks_table">
-            <tr><td>Click a watchlist</td></tr>
-        </tbody>
-    </table>
-</body>
 <script>
+let activeWatchlist = null;
+
+// 🔥 INIT SELECT2
 $(document).ready(function() {
     $('#stockSelect').select2({
         placeholder: "Search & select stocks",
-        allowClear: true,
-        width: '300px'
+        width: '350px'
     });
 
-    // 🔥 Update selected preview
-    $('#stockSelect').on('change', function() {
-        updateSelectedDisplay();
-    });
+    $('#stockSelect').on('change', updateSelectedDisplay);
 });
-$('#stockSelect').select2({
-    placeholder: "Type to search stocks...",
-    minimumInputLength: 1
-});
-</script>
-<script>
 
-// Close when clicking outside
-window.onclick = function(event) {
-    if (!event.target.matches('.dropbtn')) {
-        document.getElementById("dropdownContent").classList.remove("show");
-    }
+// 🔥 GET SELECTED
+function getSelectedStocks() {
+    return $('#stockSelect').val() || [];
 }
 
-// 🔥 MAIN FUNCTION: Update selected display
-document.querySelectorAll("#dropdownContent input").forEach(cb => {
-    cb.addEventListener("change", updateSelectedDisplay);
-});
-
-// function updateSelectedDisplay() {
-//     let selected = getSelectedStocks();
-
-//     let btn = document.getElementById("dropdownBtn");
-//     let display = document.getElementById("selectedStocks");
-
-//     // ✅ Button text (short summary)
-//     if (selected.length === 0) {
-//         btn.innerText = "Select Stocks ▼";
-//     } 
-//     else if (selected.length <= 2) {
-//         btn.innerText = selected.join(", ") + " ▼";
-//     } 
-//     else {
-//         btn.innerText = `${selected.length} selected ▼`;
-//     }
-
-//     // ✅ Below dropdown → full list (tags)
-//     display.innerHTML = "";
-
-//     selected.forEach(s => {
-//         display.innerHTML += `<span class="tag">${s}</span>`;
-//     });
-// }
+// 🔥 SHOW TAGS BELOW
 function updateSelectedDisplay() {
     let selected = getSelectedStocks();
     let display = document.getElementById("selectedStocks");
@@ -188,16 +148,7 @@ function updateSelectedDisplay() {
     });
 }
 
-// Helper
-// function getSelectedStocks() {
-//     let checkboxes = document.querySelectorAll("#dropdownContent input:checked");
-//     return Array.from(checkboxes).map(cb => cb.value);
-// }
-function getSelectedStocks() {
-    return $('#stockSelect').val() || [];
-}
-</script>
-<script>
+// 🔥 ADD STOCKS
 function addStocks() {
     let selectedStocks = getSelectedStocks();
 
@@ -224,27 +175,20 @@ function addStocks() {
         alert("Added successfully");
     });
 }
-</script>
-<script>
 
-let activeWatchlist = null;
-
+// 🔥 TOGGLE WATCHLIST
 function toggleWatchlist(id, btn) {
-
     let table = document.getElementById("stocks_table");
 
-    // ✅ SAME BUTTON CLICKED AGAIN → HIDE
     if (activeWatchlist === id) {
-        table.innerHTML = "<tr><td>Hidden</td></tr>";
+        table.innerHTML = "";
         btn.classList.remove("active");
         activeWatchlist = null;
         return;
     }
 
-    // ✅ NEW BUTTON CLICKED
     activeWatchlist = id;
 
-    // Remove active from all buttons
     document.querySelectorAll("#watchlists button").forEach(b => {
         b.classList.remove("active");
     });
@@ -267,14 +211,7 @@ function toggleWatchlist(id, btn) {
         });
 }
 
-// function getSelectedStocks() {
-//     let selected = [];
-//     document.querySelectorAll("#stockSelect option:checked").forEach(o => {
-//         selected.push(o.value);
-//     });
-//     return selected;
-// }
-
+// 🔥 POPUP
 function openPopup() {
     document.getElementById("popup").style.display = "block";
 }
@@ -307,29 +244,12 @@ function saveToWatchlist() {
     }).then(() => alert("Saved"));
 }
 
-function deleteWatchlist(id) {
-    fetch("/delete_watchlist", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({id: id})
-    }).then(() => location.reload());
-}
-
+// 🔥 ANALYZE
 function analyze() {
     let stocks = getSelectedStocks();
     alert("Analyze: " + stocks.join(", "));
-    // later connect with your analysis engine
 }
 </script>
-<!-- <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
 
-<script>
-$(document).ready(function() {
-    $('#stockSelect').select2({
-        placeholder: "Select stocks"
-    });
-}); -->
-</script>
+</body>
 </html>

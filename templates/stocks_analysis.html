@@ -183,23 +183,7 @@ function loadSelectedStocks(stockList) {
 }
 let activeWatchlist = null;
 
-// ✅ INIT SELECT2 SAFELY
-$(document).ready(function () {
-    console.log("Select2:", typeof $.fn.select2);
 
-    if ($.fn.select2) {
-        $('#stockSelect').select2({
-            placeholder: "Search & select stocks",
-            width: '350px'
-        });
-    } else {
-        alert("Select2 not loaded properly");
-    }
-
-    $('#stockSelect').on('change', updateSelectedDisplay);
-
-    updateSelectedDisplay();
-});
 
 // 🔥 GET SELECTED
 function getSelectedStocks() {

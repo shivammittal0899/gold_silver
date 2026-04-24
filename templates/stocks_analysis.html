@@ -119,12 +119,11 @@
 <br><br>
 
 <button onclick="addStocks()">Add to Watchlist</button>
-<button onclick="openPopup()">➕ Add to Watchlist</button>
+<button onclick="toggleWatchlistPanel()">➕ Add to Watchlist</button>
 <button onclick="analyze()">📊 Analyze</button>
+<div id="watchlistPanel" style="display:none; border:1px solid #ddd; padding:12px; margin-top:10px; border-radius:6px; background:#fafafa;">
 
-<!-- Popup -->
-<div id="popup" style="display:none; border:1px solid black; padding:10px; margin-top:10px;">
-    <h4>Select Watchlist</h4>
+    <h4>Add to Watchlist</h4>
 
     <select id="watchlistSelect">
         {% for w in watchlists %}
@@ -134,12 +133,11 @@
 
     <br><br>
 
-    <input type="text" id="newWatchlist" placeholder="New watchlist name">
+    <input type="text" id="newWatchlist" placeholder="Create new watchlist">
 
     <br><br>
 
     <button onclick="saveToWatchlist()">Save</button>
-    <button onclick="closePopup()">Cancel</button>
 </div>
 
 <table border="1">
@@ -293,7 +291,15 @@ function toggleWatchlist(id, btn) {
             });
         });
 }
+function toggleWatchlistPanel() {
+    let panel = document.getElementById("watchlistPanel");
 
+    if (panel.style.display === "none") {
+        panel.style.display = "block";
+    } else {
+        panel.style.display = "none";
+    }
+}
 // 🔥 POPUP
 function openPopup() {
     document.getElementById("popup").style.display = "block";
@@ -306,17 +312,29 @@ function closePopup() {
 function saveToWatchlist() {
     let stocks = getSelectedStocks();
     let wid = document.getElementById("watchlistSelect").value;
-    let newName = document.getElementById("newWatchlist").value;
+    let newName = document.getElementById("newWatchlist").value.trim();
 
+    if (stocks.length === 0) {
+        alert("Select at least one stock");
+        return;
+    }
+
+    // ✅ Create new watchlist
     if (newName) {
         fetch("/create_watchlist", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({name: newName})
-        }).then(() => location.reload());
+        })
+        .then(res => res.json())
+        .then(() => {
+            alert("Watchlist created");
+            location.reload();  // reload to update dropdown
+        });
         return;
     }
 
+    // ✅ Add to existing watchlist
     fetch("/add_to_watchlist", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
@@ -324,7 +342,11 @@ function saveToWatchlist() {
             watchlist_id: wid,
             stocks: stocks
         })
-    }).then(() => alert("Saved"));
+    })
+    .then(() => {
+        alert("Saved to watchlist");
+        document.getElementById("watchlistPanel").style.display = "none";
+    });
 }
 function deleteWatchlist(id) {
 

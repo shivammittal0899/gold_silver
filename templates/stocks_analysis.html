@@ -102,11 +102,7 @@
 <!-- ✅ Selected Stocks ABOVE dropdown -->
 <div id="selectedStocks"></div>
 
-<select id="stockSelect" multiple style="width:350px;">
-    {% for s in symbols %}
-        <option value="{{ s }}">{{ s }}</option>
-    {% endfor %}
-</select>
+<select id="stockSelect" multiple style="width:300px;"></select>
 
 <br><br>
 
@@ -146,6 +142,45 @@
 </table>
 
 <script>
+
+
+$(document).ready(function() {
+    $('#stockSelect').select2({
+        placeholder: "Search stocks...",
+        minimumInputLength: 1,
+        ajax: {
+            url: '/search_symbols',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    q: params.term   // search text
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: data.results
+                };
+            },
+            cache: true
+        }
+    });
+
+    // Update selected preview
+    $('#stockSelect').on('change', function() {
+        updateSelectedDisplay();
+    });
+});
+function loadSelectedStocks(stockList) {
+    let select = $('#stockSelect');
+
+    stockList.forEach(s => {
+        let option = new Option(s, s, true, true);
+        select.append(option);
+    });
+
+    select.trigger('change');
+}
 let activeWatchlist = null;
 
 // ✅ INIT SELECT2 SAFELY

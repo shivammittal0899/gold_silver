@@ -218,7 +218,6 @@ function getSelectedStocks() {
     return allStocks;
 }
 
-
 // 🔥 UPDATE TAGS
 function updateSelectedDisplay() {
     let selected = getSelectedStocks();
@@ -319,7 +318,14 @@ function toggleWatchlistPanel() {
         panel.style.display = "none";
     }
 }
+// 🔥 POPUP
+function openPopup() {
+    document.getElementById("popup").style.display = "block";
+}
 
+function closePopup() {
+    document.getElementById("popup").style.display = "none";
+}
 function proceedSave(validStocks) {
     let selectedWid = document.getElementById("watchlistSelect").value;
     let newName = document.getElementById("newWatchlist").value.trim();

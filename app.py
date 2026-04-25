@@ -1484,6 +1484,8 @@ def delete_stocks_from_watchlist():
 
 
 from instruments import *
+from concurrent.futures import ThreadPoolExecutor
+
 # @app.route('/instruments_dashboard')
 # def instruments_dashboard():
 #     data = get_stock_with_futures()
@@ -1506,7 +1508,65 @@ def reload_instruments_route():
     reload_instruments(kite)
     return redirect('/instruments_dashboard')
 
+def get_instrument_token(symbol):
+    conn = sqlite3.connect("instruments.db")
+    c = conn.cursor()
 
+    row = c.execute("""
+        SELECT instrument_token 
+        FROM instruments
+        WHERE tradingsymbol=? AND segment='EQ'
+    """, (symbol,)).fetchone()
+
+    conn.close()
+
+    return row[0] if row else None
+
+def analyze_one_stock(symbol, kite_local):
+    try:
+        token = get_instrument_token(symbol)
+
+        if not token:
+            return None
+
+        df = fetch_with_retry_token(symbol, token, "15minute", kite_local)
+
+        if df is None or len(df) < 50:
+            return None
+
+        df.rename(columns={
+            'open': 'Open',
+            'high': 'High',
+            'low': 'Low',
+            'close': 'Close',
+            'volume': 'Volume',
+            'oi': 'OI'
+        }, inplace=True)
+
+        result = data_analysis(df, "15m")
+
+        return {"symbol": symbol, **result}
+
+    except:
+        return None
+
+
+@app.route('/analyze_stocks', methods=['POST'])
+def analyze_stocks():
+    symbols = request.json.get("symbols", [])
+
+    access_token = read_access_token()
+
+    kite_local = KiteConnect(api_key=API_KEY)
+    kite_local.set_access_token(access_token)
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        output = list(executor.map(
+            lambda s: analyze_one_stock(s, kite_local),
+            symbols
+        ))
+
+    return jsonify([r for r in output if r])
 # ----------------------------
 # Live Logs Page
 # ----------------------------

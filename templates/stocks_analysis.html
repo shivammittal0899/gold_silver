@@ -326,6 +326,23 @@ function createRow(symbol) {
         </tr>
     `;
 }
+function fetchAndRenderAnalysis(stocks) {
+    if (!stocks || stocks.length === 0) {
+        let table = document.getElementById("stocks_table");
+        table.innerHTML = "<tr><td>No stocks</td></tr>";
+        return;
+    }
+
+    fetch("/analyze_stocks", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({symbols: stocks})
+    })
+    .then(res => res.json())
+    .then(data => {
+        updateTableWithAnalysis(data);
+    });
+}
 // 🔥 TOGGLE WATCHLIST
 function toggleWatchlist(id, btn) {
     let table = document.getElementById("stocks_table");
@@ -349,22 +366,10 @@ function toggleWatchlist(id, btn) {
     btn.classList.add("active");
 
     fetch(`/get_watchlist_items?id=${id}`)
-        .then(res => res.json())
-        .then(data => {
-            table.innerHTML = "";
-            if (data.length === 0) {
-                table.innerHTML += "<tr><td>No stocks</td></tr>";
-                return;
-            }
-
-            let rows = "";
-
-            data.forEach(symbol => {
-                rows += createRow(symbol);
-            });
-
-            table.innerHTML = rows;
-        });
+    .then(res => res.json())
+    .then(data => {
+        fetchAndRenderAnalysis(data);   // 🔥 AUTO ANALYSIS ON LOAD
+    });
 }
 function toggleWatchlistPanel() {
     let panel = document.getElementById("watchlistPanel");
@@ -511,24 +516,10 @@ function autoLoadWatchlist(id) {
     });
 
     fetch(`/get_watchlist_items?id=${id}`)
-        .then(res => res.json())
-        .then(data => {
-            let table = document.getElementById("stocks_table");
-            table.innerHTML = "";
-
-            if (data.length === 0) {
-                table.innerHTML = "<tr><td>No stocks</td></tr>";
-                return;
-            }
-
-            let rows = "";
-
-            data.forEach(symbol => {
-                rows += createRow(symbol);
-            });
-
-            table.innerHTML = rows;
-        });
+    .then(res => res.json())
+    .then(data => {
+        fetchAndRenderAnalysis(data);   // 🔥 AUTO ANALYSIS ON LOAD
+    });
 }
 function deleteWatchlist(id) {
     if (!confirm("Delete this watchlist?")) return;
@@ -555,10 +546,7 @@ function deleteWatchlist(id) {
 }
 
 // 🔥 ANALYZE
-// function analyze() {
-//     let stocks = getSelectedStocks();
-//     alert("Analyze: " + stocks.join(", "));
-// }
+
 function analyze() {
     let stocks = getSelectedStocks();
 
@@ -567,17 +555,7 @@ function analyze() {
         return;
     }
 
-    let table = document.getElementById("stocks_table");
-
-    table.innerHTML = "";
-    // 🔥 Add selected stocks
-    let rows = "";
-
-    stocks.forEach(symbol => {
-        rows += createRow(symbol);
-    });
-
-    table.innerHTML = rows;
+    fetchAndRenderAnalysis(stocks);
     // 🔥 Remove active watchlist highlight
     document.querySelectorAll("#watchlists button").forEach(b => {
         b.classList.remove("active");
@@ -641,6 +619,49 @@ function deleteSelectedStocks() {
         alert("✅ Deleted successfully");
         autoLoadWatchlist(activeWatchlist);
     });
+}
+
+function updateTableWithAnalysis(data) {
+    let table = document.getElementById("stocks_table");
+
+    if (!data || data.length === 0) {
+        table.innerHTML = "<tr><td colspan='7'>No data</td></tr>";
+        return;
+    }
+
+    let html = `
+        <tr>
+            <th><input type="checkbox" onclick="toggleAll(this)"></th>
+            <th>Symbol</th>
+            <th>Price</th>
+            <th>Trend</th>
+            <th>RSI</th>
+            <th>VWAP</th>
+            <th>Signal</th>
+        </tr>
+    `;
+
+    data.forEach(d => {
+        let color =
+            d.signal.includes("Buy") ? "green" :
+            d.signal.includes("Sell") ? "red" : "black";
+
+        html += `
+            <tr>
+                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                <td>${d.symbol}</td>
+                <td>${d.price?.toFixed(2) || '-'}</td>
+                <td>${d.trend || '-'}</td>
+                <td>${d.rsi || '-'}</td>
+                <td>${d.vwap || '-'}</td>
+                <td style="color:${color}; font-weight:bold;">
+                    ${d.signal || '-'}
+                </td>
+            </tr>
+        `;
+    });
+
+    table.innerHTML = html;
 }
 </script>
 <script>

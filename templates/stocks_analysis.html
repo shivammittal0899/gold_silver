@@ -319,8 +319,6 @@ function toggleWatchlist(id, btn) {
         table.innerHTML = "";
         btn.classList.remove("active");
         activeWatchlist = null;
-
-        // ❌ remove saved state
         localStorage.removeItem("activeWatchlist");
         return;
     }
@@ -337,10 +335,16 @@ function toggleWatchlist(id, btn) {
     fetch(`/get_watchlist_items?id=${id}`)
         .then(res => res.json())
         .then(data => {
-            table.innerHTML = "";
+
+            // 🔥 ADD HEADER (IMPORTANT FIX)
+            table.innerHTML = `
+                <tr>
+                    <th>Stock Symbol</th>
+                </tr>
+            `;
 
             if (data.length === 0) {
-                table.innerHTML = "<tr><td>No stocks</td></tr>";
+                table.innerHTML += "<tr><td>No stocks</td></tr>";
                 return;
             }
 
@@ -357,14 +361,6 @@ function toggleWatchlistPanel() {
     } else {
         panel.style.display = "none";
     }
-}
-// 🔥 POPUP
-function openPopup() {
-    document.getElementById("popup").style.display = "block";
-}
-
-function closePopup() {
-    document.getElementById("popup").style.display = "none";
 }
 function proceedSave(validStocks) {
     let selectedWid = document.getElementById("watchlistSelect").value;
@@ -532,9 +528,38 @@ function deleteWatchlist(id) {
 }
 
 // 🔥 ANALYZE
+// function analyze() {
+//     let stocks = getSelectedStocks();
+//     alert("Analyze: " + stocks.join(", "));
+// }
 function analyze() {
     let stocks = getSelectedStocks();
-    alert("Analyze: " + stocks.join(", "));
+
+    if (stocks.length === 0) {
+        alert("Select at least one stock");
+        return;
+    }
+
+    let table = document.getElementById("stocks_table");
+
+    // 🔥 Clear table and add header
+    table.innerHTML = `
+        <tr>
+            <th>Stock Symbol</th>
+        </tr>
+    `;
+
+    // 🔥 Add selected stocks
+    stocks.forEach(symbol => {
+        table.innerHTML += `<tr><td>${symbol}</td></tr>`;
+    });
+
+    // 🔥 Remove active watchlist highlight
+    document.querySelectorAll("#watchlists button").forEach(b => {
+        b.classList.remove("active");
+    });
+
+    activeWatchlist = null;
 }
 </script>
 <script>
@@ -580,6 +605,16 @@ $(document).ready(function() {
                 btn.click();  // 🔥 triggers full load + highlight
             }
         });
+    }
+    let savedWid = localStorage.getItem("activeWatchlist");
+
+    if (savedWid) {
+        let btn = Array.from(document.querySelectorAll("#watchlists button"))
+            .find(b => b.getAttribute("onclick")?.includes(`(${savedWid},`));
+
+        if (btn) {
+            toggleWatchlist(savedWid, btn);
+        }
     }
 });
 </script>

@@ -1513,7 +1513,7 @@ if __name__ == "__main__":
     init_watchlist_db()   # 🔥 MUST BE FIRST
     init_analysis_db()
     load_live_sl_from_db()
-    restart_analysis()
+    # restart_analysis()
 
     try:
         access_token = read_access_token()

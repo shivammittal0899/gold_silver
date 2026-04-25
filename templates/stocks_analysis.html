@@ -407,7 +407,12 @@ function proceedSave(validStocks) {
         })
         .then((newWid) => {
             alert("✅ Saved successfully");
-            autoLoadWatchlist(newWid);
+            // ✅ reload ONLY if it's already active
+            if (activeWatchlist == newWid) {
+                autoLoadWatchlist(newWid);
+            }
+
+            window.checkedStocksToAdd = null;
             document.getElementById("manualStocks").value = "";
             document.getElementById("newWatchlist").value = "";
         });
@@ -427,7 +432,11 @@ function proceedSave(validStocks) {
         })
         .then(() => {
             alert("✅ Saved successfully");
-            autoLoadWatchlist(selectedWid);
+            if (activeWatchlist == selectedWid) {
+                autoLoadWatchlist(selectedWid);
+            }
+
+            window.checkedStocksToAdd = null;
             document.getElementById("manualStocks").value = "";
         });
     }
@@ -564,7 +573,7 @@ function analyze() {
     // 🔥 Add selected stocks
     let rows = "";
 
-    data.forEach(symbol => {
+    stocks.forEach(symbol => {
         rows += createRow(symbol);
     });
 

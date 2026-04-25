@@ -335,7 +335,7 @@ function toggleWatchlist(id, btn) {
     fetch(`/get_watchlist_items?id=${id}`)
         .then(res => res.json())
         .then(data => {
-
+            table.innerHTML = "";
             // 🔥 ADD HEADER (IMPORTANT FIX)
             // table.innerHTML = `
             //     <tr>

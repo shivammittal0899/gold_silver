@@ -1468,8 +1468,8 @@ def delete_stocks_from_watchlist():
     data = request.json
     wid = data.get("watchlist_id")
     stocks = data.get("stocks", [])
-
-    conn = sqlite3.connect("your.db")
+    # stocks = [s.upper() for s in stocks]
+    conn = sqlite3.connect("stocks_analysis.db")  # ✅ FIXED
     c = conn.cursor()
 
     c.executemany("""
@@ -1481,6 +1481,8 @@ def delete_stocks_from_watchlist():
     conn.close()
 
     return jsonify({"status": "success"})
+
+
 from instruments import *
 # @app.route('/instruments_dashboard')
 # def instruments_dashboard():

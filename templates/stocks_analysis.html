@@ -116,7 +116,14 @@
 
 <select id="stockSelect" multiple style="width:300px;"></select>
 
-<br><br>
+<br>
+<input 
+    type="text" 
+    id="manualStocks" 
+    placeholder="Enter symbols (space separated e.g. RELIANCE TCS INFY)"
+    style="width:300px; padding:8px; border-radius:6px; border:1px solid #ccc; margin-top:10px;"
+>
+<br>
 
 <button onclick="addStocks()">Add to Watchlist</button>
 <button onclick="toggleWatchlistPanel()">➕ Add to Watchlist</button>
@@ -197,7 +204,18 @@ let activeWatchlist = null;
 
 // 🔥 GET SELECTED
 function getSelectedStocks() {
-    return $('#stockSelect').val() || [];
+    let selectStocks = $('#stockSelect').val() || [];
+
+    let manualInput = document.getElementById("manualStocks").value.trim();
+
+    let manualStocks = manualInput
+        ? manualInput.split(/\s+/).map(s => s.toUpperCase())
+        : [];
+
+    // merge + remove duplicates
+    let allStocks = [...new Set([...selectStocks, ...manualStocks])];
+
+    return allStocks;
 }
 
 // 🔥 UPDATE TAGS
@@ -308,18 +326,11 @@ function openPopup() {
 function closePopup() {
     document.getElementById("popup").style.display = "none";
 }
-
-function saveToWatchlist() {
-    let stocks = getSelectedStocks();
+function proceedSave(validStocks) {
     let selectedWid = document.getElementById("watchlistSelect").value;
     let newName = document.getElementById("newWatchlist").value.trim();
 
-    if (stocks.length === 0) {
-        alert("Select at least one stock");
-        return;
-    }
-
-    // 🔥 CREATE NEW WATCHLIST + SAVE
+    // 🔥 CREATE NEW
     if (newName) {
         fetch("/create_watchlist", {
             method: "POST",
@@ -330,57 +341,80 @@ function saveToWatchlist() {
         .then(data => {
             let newWid = data.id;
 
-            // ✅ ADD TO UI (no reload)
             addWatchlistToUI(newWid, newName);
 
-            // ✅ ADD TO DROPDOWN
             let select = document.getElementById("watchlistSelect");
             let option = new Option(newName, newWid, true, true);
             select.add(option);
 
-            // ✅ AUTO SELECT NEW
-            select.value = newWid;
-
-            // 🔥 SAVE STOCKS TO NEW
             return fetch("/add_to_watchlist", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
                     watchlist_id: newWid,
-                    stocks: stocks
+                    stocks: validStocks
                 })
             }).then(() => newWid);
         })
         .then((newWid) => {
-            alert("✅ New watchlist created & stocks added");
-
-            // 🔥 AUTO LOAD TABLE
+            alert("✅ Saved successfully");
             autoLoadWatchlist(newWid);
-
-            // clear input
+            document.getElementById("manualStocks").value = "";
             document.getElementById("newWatchlist").value = "";
         });
 
         return;
     }
 
-    // 🔥 EXISTING WATCHLIST
+    // 🔥 EXISTING
     if (selectedWid) {
         fetch("/add_to_watchlist", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 watchlist_id: selectedWid,
-                stocks: stocks
+                stocks: validStocks
             })
         })
         .then(() => {
-            alert("✅ Saved to watchlist");
-
-            // 🔥 AUTO REFRESH TABLE
+            alert("✅ Saved successfully");
             autoLoadWatchlist(selectedWid);
+            document.getElementById("manualStocks").value = "";
         });
     }
+}
+function saveToWatchlist() {
+    let stocks = getSelectedStocks();
+
+    if (stocks.length === 0) {
+        alert("Select at least one stock");
+        return;
+    }
+
+    // 🔥 VALIDATE FIRST
+    fetch("/validate_symbols", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({symbols: stocks})
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        let valid = data.valid;
+        let invalid = data.invalid;
+
+        if (invalid.length > 0) {
+            alert("Invalid symbols: " + invalid.join(", "));
+        }
+
+        if (valid.length === 0) {
+            alert("No valid stocks to add");
+            return;
+        }
+
+        // 🔥 CONTINUE WITH VALID ONLY
+        proceedSave(valid);
+    });
 }
 function addWatchlistToUI(id, name) {
     let container = document.getElementById("watchlists");

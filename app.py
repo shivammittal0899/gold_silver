@@ -1408,7 +1408,34 @@ def delete_watchlist():
     conn.close()
 
     return {"status": "deleted"}
+@app.route('/validate_symbols', methods=['POST'])
+def validate_symbols():
+    data = request.json
+    symbols = data.get("symbols", [])
 
+    conn = sqlite3.connect("instruments.db")
+    c = conn.cursor()
+
+    valid = []
+    invalid = []
+
+    for s in symbols:
+        row = c.execute("""
+            SELECT 1 FROM instruments
+            WHERE tradingsymbol=? AND segment='EQ'
+        """, (s,)).fetchone()
+
+        if row:
+            valid.append(s)
+        else:
+            invalid.append(s)
+
+    conn.close()
+
+    return jsonify({
+        "valid": valid,
+        "invalid": invalid
+    })
 @app.route('/add_to_watchlist', methods=['POST'])
 def add_to_watchlist():
     data = request.json

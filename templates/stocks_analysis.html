@@ -337,11 +337,11 @@ function toggleWatchlist(id, btn) {
         .then(data => {
 
             // 🔥 ADD HEADER (IMPORTANT FIX)
-            table.innerHTML = `
-                <tr>
-                    <th>Stock Symbol</th>
-                </tr>
-            `;
+            // table.innerHTML = `
+            //     <tr>
+            //         <th>Stock Symbol</th>
+            //     </tr>
+            // `;
 
             if (data.length === 0) {
                 table.innerHTML += "<tr><td>No stocks</td></tr>";
@@ -543,11 +543,11 @@ function analyze() {
     let table = document.getElementById("stocks_table");
 
     // 🔥 Clear table and add header
-    table.innerHTML = `
-        <tr>
-            <th>Stock Symbol</th>
-        </tr>
-    `;
+    // table.innerHTML = `
+    //     <tr>
+    //         <th>Stock Symbol</th>
+    //     </tr>
+    // `;
 
     // 🔥 Add selected stocks
     stocks.forEach(symbol => {

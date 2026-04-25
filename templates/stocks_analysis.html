@@ -548,7 +548,7 @@ function analyze() {
     //         <th>Stock Symbol</th>
     //     </tr>
     // `;
-
+    table.innerHTML = "";
     // 🔥 Add selected stocks
     stocks.forEach(symbol => {
         table.innerHTML += `<tr><td>${symbol}</td></tr>`;

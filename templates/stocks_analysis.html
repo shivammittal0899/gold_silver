@@ -570,17 +570,17 @@ $(document).ready(function() {
 
     // 🔥 ALSO update UI display after restore
     updateSelectedDisplay();
-    // // 🔥 RESTORE WATCHLIST AFTER REFRESH
-    // let savedWatchlist = localStorage.getItem("activeWatchlist");
+    // 🔥 RESTORE WATCHLIST AFTER REFRESH
+    let savedWatchlist = localStorage.getItem("activeWatchlist");
 
-    // if (savedWatchlist) {
-    //     // find button and auto-click it
-    //     document.querySelectorAll("#watchlists button").forEach(btn => {
-    //         if (btn.getAttribute("onclick")?.includes(`(${savedWatchlist},`)) {
-    //             btn.click();  // 🔥 triggers full load + highlight
-    //         }
-    //     });
-    // }
+    if (savedWatchlist) {
+        // find button and auto-click it
+        document.querySelectorAll("#watchlists button").forEach(btn => {
+            if (btn.getAttribute("onclick")?.includes(`(${savedWatchlist},`)) {
+                btn.click();  // 🔥 triggers full load + highlight
+            }
+        });
+    }
 });
 </script>
 </body>

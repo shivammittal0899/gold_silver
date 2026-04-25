@@ -1384,9 +1384,14 @@ def create_watchlist():
 
     c.execute("INSERT OR IGNORE INTO watchlists (name) VALUES (?)", (name,))
     conn.commit()
+
+    # 🔥 Get ID
+    c.execute("SELECT id FROM watchlists WHERE name=?", (name,))
+    wid = c.fetchone()[0]
+
     conn.close()
 
-    return {"status": "created"}
+    return {"status": "created", "id": wid}
 
 
 @app.route('/delete_watchlist', methods=['POST'])

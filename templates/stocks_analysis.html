@@ -311,7 +311,7 @@ function closePopup() {
 
 function saveToWatchlist() {
     let stocks = getSelectedStocks();
-    let wid = document.getElementById("watchlistSelect").value;
+    let selectedWid = document.getElementById("watchlistSelect").value;
     let newName = document.getElementById("newWatchlist").value.trim();
 
     if (stocks.length === 0) {
@@ -319,7 +319,7 @@ function saveToWatchlist() {
         return;
     }
 
-    // ✅ Create new watchlist
+    // 🔥 CREATE NEW WATCHLIST + SAVE
     if (newName) {
         fetch("/create_watchlist", {
             method: "POST",
@@ -327,29 +327,113 @@ function saveToWatchlist() {
             body: JSON.stringify({name: newName})
         })
         .then(res => res.json())
-        .then(() => {
-            alert("Watchlist created");
-            location.reload();  // reload to update dropdown
+        .then(data => {
+            let newWid = data.id;
+
+            // ✅ ADD TO UI (no reload)
+            addWatchlistToUI(newWid, newName);
+
+            // ✅ ADD TO DROPDOWN
+            let select = document.getElementById("watchlistSelect");
+            let option = new Option(newName, newWid, true, true);
+            select.add(option);
+
+            // ✅ AUTO SELECT NEW
+            select.value = newWid;
+
+            // 🔥 SAVE STOCKS TO NEW
+            return fetch("/add_to_watchlist", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    watchlist_id: newWid,
+                    stocks: stocks
+                })
+            }).then(() => newWid);
+        })
+        .then((newWid) => {
+            alert("✅ New watchlist created & stocks added");
+
+            // 🔥 AUTO LOAD TABLE
+            autoLoadWatchlist(newWid);
+
+            // clear input
+            document.getElementById("newWatchlist").value = "";
         });
+
         return;
     }
 
-    // ✅ Add to existing watchlist
-    fetch("/add_to_watchlist", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            watchlist_id: wid,
-            stocks: stocks
+    // 🔥 EXISTING WATCHLIST
+    if (selectedWid) {
+        fetch("/add_to_watchlist", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                watchlist_id: selectedWid,
+                stocks: stocks
+            })
         })
-    })
-    .then(() => {
-        alert("Saved to watchlist");
-        document.getElementById("watchlistPanel").style.display = "none";
+        .then(() => {
+            alert("✅ Saved to watchlist");
+
+            // 🔥 AUTO REFRESH TABLE
+            autoLoadWatchlist(selectedWid);
+        });
+    }
+}
+function addWatchlistToUI(id, name) {
+    let container = document.getElementById("watchlists");
+
+    let div = document.createElement("div");
+    div.style.display = "inline-block";
+    div.style.margin = "5px";
+
+    div.innerHTML = `
+        <button onclick="toggleWatchlist(${id}, this)">
+            ${name}
+        </button>
+
+        <button onclick="deleteWatchlist(${id})"
+            style="background:#e74c3c; padding:6px 10px;">
+            ✖
+        </button>
+    `;
+
+    container.appendChild(div);
+}
+function autoLoadWatchlist(id) {
+    activeWatchlist = id;
+
+    // highlight correct button
+    document.querySelectorAll("#watchlists button").forEach(b => {
+        b.classList.remove("active");
     });
+
+    let buttons = document.querySelectorAll("#watchlists button");
+    buttons.forEach(btn => {
+        if (btn.getAttribute("onclick").includes(`(${id},`)) {
+            btn.classList.add("active");
+        }
+    });
+
+    fetch(`/get_watchlist_items?id=${id}`)
+        .then(res => res.json())
+        .then(data => {
+            let table = document.getElementById("stocks_table");
+            table.innerHTML = "";
+
+            if (data.length === 0) {
+                table.innerHTML = "<tr><td>No stocks</td></tr>";
+                return;
+            }
+
+            data.forEach(symbol => {
+                table.innerHTML += `<tr><td>${symbol}</td></tr>`;
+            });
+        });
 }
 function deleteWatchlist(id) {
-
     if (!confirm("Delete this watchlist?")) return;
 
     fetch("/delete_watchlist", {
@@ -358,12 +442,18 @@ function deleteWatchlist(id) {
         body: JSON.stringify({id: id})
     })
     .then(() => {
-        // Remove from UI instantly
+        // 🔥 Remove exact div
         document.querySelectorAll("#watchlists div").forEach(div => {
-            if (div.innerHTML.includes(`(${id})`)) {
+            if (div.querySelector("button")?.getAttribute("onclick")?.includes(`(${id},`)) {
                 div.remove();
             }
         });
+
+        // 🔥 Reset table if active
+        if (activeWatchlist == id) {
+            document.getElementById("stocks_table").innerHTML = "<tr><td>Select another watchlist</td></tr>";
+            activeWatchlist = null;
+        }
     });
 }
 

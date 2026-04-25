@@ -150,13 +150,21 @@
 <table border="1">
     <thead>
         <tr>
+            <th><input type="checkbox" onclick="toggleAll(this)"></th>
             <th>Stock Symbol</th>
         </tr>
     </thead>
     <tbody id="stocks_table">
-        <tr><td>Click a watchlist</td></tr>
+        <tr><td colspan="2">Click a watchlist</td></tr>
     </tbody>
 </table>
+
+<br>
+
+<button onclick="addCheckedToWatchlist()">➕ Add Selected to Watchlist</button>
+<button onclick="deleteSelectedStocks()" style="background:#e74c3c;">
+    🗑 Delete Selected
+</button>
 
 <script>
 
@@ -310,6 +318,14 @@ function addStocks() {
     });
 }
 
+function createRow(symbol) {
+    return `
+        <tr>
+            <td><input type="checkbox" class="rowCheck" value="${symbol}"></td>
+            <td>${symbol}</td>
+        </tr>
+    `;
+}
 // 🔥 TOGGLE WATCHLIST
 function toggleWatchlist(id, btn) {
     let table = document.getElementById("stocks_table");
@@ -336,21 +352,18 @@ function toggleWatchlist(id, btn) {
         .then(res => res.json())
         .then(data => {
             table.innerHTML = "";
-            // 🔥 ADD HEADER (IMPORTANT FIX)
-            // table.innerHTML = `
-            //     <tr>
-            //         <th>Stock Symbol</th>
-            //     </tr>
-            // `;
-
             if (data.length === 0) {
                 table.innerHTML += "<tr><td>No stocks</td></tr>";
                 return;
             }
 
+            let rows = "";
+
             data.forEach(symbol => {
-                table.innerHTML += `<tr><td>${symbol}</td></tr>`;
+                rows += createRow(symbol);
             });
+
+            table.innerHTML = rows;
         });
 }
 function toggleWatchlistPanel() {
@@ -420,7 +433,8 @@ function proceedSave(validStocks) {
     }
 }
 function saveToWatchlist() {
-    let stocks = getSelectedStocks();
+    // let stocks = getSelectedStocks();
+    let stocks = window.checkedStocksToAdd || getSelectedStocks();
 
     if (stocks.length === 0) {
         alert("Select at least one stock");
@@ -498,9 +512,13 @@ function autoLoadWatchlist(id) {
                 return;
             }
 
+            let rows = "";
+
             data.forEach(symbol => {
-                table.innerHTML += `<tr><td>${symbol}</td></tr>`;
+                rows += createRow(symbol);
             });
+
+            table.innerHTML = rows;
         });
 }
 function deleteWatchlist(id) {
@@ -542,24 +560,78 @@ function analyze() {
 
     let table = document.getElementById("stocks_table");
 
-    // 🔥 Clear table and add header
-    // table.innerHTML = `
-    //     <tr>
-    //         <th>Stock Symbol</th>
-    //     </tr>
-    // `;
     table.innerHTML = "";
     // 🔥 Add selected stocks
-    stocks.forEach(symbol => {
-        table.innerHTML += `<tr><td>${symbol}</td></tr>`;
+    let rows = "";
+
+    data.forEach(symbol => {
+        rows += createRow(symbol);
     });
 
+    table.innerHTML = rows;
     // 🔥 Remove active watchlist highlight
     document.querySelectorAll("#watchlists button").forEach(b => {
         b.classList.remove("active");
     });
 
     activeWatchlist = null;
+}
+
+function toggleAll(master) {
+    document.querySelectorAll(".rowCheck").forEach(cb => {
+        cb.checked = master.checked;
+    });
+}
+function getCheckedStocks() {
+    let selected = [];
+
+    document.querySelectorAll(".rowCheck:checked").forEach(cb => {
+        selected.push(cb.value);
+    });
+
+    return selected;
+}
+function addCheckedToWatchlist() {
+    let stocks = getCheckedStocks();
+
+    if (stocks.length === 0) {
+        alert("Select at least one stock");
+        return;
+    }
+
+    // reuse your existing panel
+    document.getElementById("watchlistPanel").style.display = "block";
+
+    // store temporarily
+    window.checkedStocksToAdd = stocks;
+}
+function deleteSelectedStocks() {
+    let stocks = getCheckedStocks();
+
+    if (stocks.length === 0) {
+        alert("Select at least one stock");
+        return;
+    }
+
+    if (!activeWatchlist) {
+        alert("Select a watchlist first");
+        return;
+    }
+
+    if (!confirm("Delete selected stocks?")) return;
+
+    fetch("/delete_stocks_from_watchlist", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            watchlist_id: activeWatchlist,
+            stocks: stocks
+        })
+    })
+    .then(() => {
+        alert("✅ Deleted successfully");
+        autoLoadWatchlist(activeWatchlist);
+    });
 }
 </script>
 <script>

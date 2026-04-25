@@ -1463,7 +1463,24 @@ def add_to_watchlist():
     conn.close()
 
     return {"status": "added"}
+@app.route("/delete_stocks_from_watchlist", methods=["POST"])
+def delete_stocks_from_watchlist():
+    data = request.json
+    wid = data.get("watchlist_id")
+    stocks = data.get("stocks", [])
 
+    conn = sqlite3.connect("your.db")
+    c = conn.cursor()
+
+    c.executemany("""
+        DELETE FROM watchlist_items
+        WHERE watchlist_id = ? AND symbol = ?
+    """, [(wid, s) for s in stocks])
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status": "success"})
 from instruments import *
 # @app.route('/instruments_dashboard')
 # def instruments_dashboard():

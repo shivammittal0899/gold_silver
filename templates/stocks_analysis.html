@@ -123,9 +123,6 @@
     placeholder="Enter symbols (space separated e.g. RELIANCE TCS INFY)"
     style="width:300px; padding:8px; border-radius:6px; border:1px solid #ccc; margin-top:10px;"
 >
-<div id="suggestions" style="border:1px solid #ddd; display:none; max-height:150px; overflow:auto; width:300px;"></div>
-
-<div id="stockError" style="margin-top:5px;"></div>
 <br>
 
 <button onclick="addStocks()">Add to Watchlist</button>
@@ -206,82 +203,21 @@ let activeWatchlist = null;
 
 
 // 🔥 GET SELECTED
-// function getSelectedStocks() {
-//     let selectStocks = $('#stockSelect').val() || [];
-
-//     let manualInput = document.getElementById("manualStocks").value.trim();
-
-//     let manualStocks = manualInput
-//         ? manualInput.split(/\s+/).map(s => s.toUpperCase())
-//         : [];
-
-//     // merge + remove duplicates
-//     let allStocks = [...new Set([...selectStocks, ...manualStocks])];
-
-//     return allStocks;
-// }
 function getSelectedStocks() {
-    return $('#stockSelect').val() || [];
+    let selectStocks = $('#stockSelect').val() || [];
+
+    let manualInput = document.getElementById("manualStocks").value.trim();
+
+    let manualStocks = manualInput
+        ? manualInput.split(/\s+/).map(s => s.toUpperCase())
+        : [];
+
+    // merge + remove duplicates
+    let allStocks = [...new Set([...selectStocks, ...manualStocks])];
+
+    return allStocks;
 }
-function selectSuggestion(symbol) {
-    addStocksToSelection([symbol]);
-    document.getElementById("manualStocks").value = "";
-    document.getElementById("suggestions").style.display = "none";
-}
-function processManualInput(customInput=null) {
 
-    let input = customInput || document.getElementById("manualStocks").value;
-
-    let symbols = input
-        .split(/[\s,\n\t,]+/)
-        .map(s => s.trim().toUpperCase())
-        .filter(s => s.length > 0);
-
-    if (symbols.length === 0) return;
-
-    fetch('/validate_symbols', {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({symbols: symbols})
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        addStocksToSelection(data.valid);
-
-        showValidationResult(data.valid, data.invalid);
-
-        document.getElementById("manualStocks").value = "";
-        document.getElementById("suggestions").style.display = "none";
-    });
-}
-function addStocksToSelection(symbols) {
-    let current = getSelectedStocks();
-
-    let updated = [...new Set([...current, ...symbols])];
-
-    $('#stockSelect').val(updated).trigger('change');
-}
-function showValidationResult(valid, invalid) {
-
-    let box = document.getElementById("stockError");
-
-    let html = "";
-
-    if (valid.length > 0) {
-        html += `<div style="color:green;">✔ Added: ${valid.join(", ")}</div>`;
-    }
-
-    if (invalid.length > 0) {
-        html += `<div style="color:red;">✖ Invalid: ${invalid.join(", ")}</div>`;
-    }
-
-    box.innerHTML = html;
-
-    setTimeout(() => {
-        box.innerHTML = "";
-    }, 3000);
-}
 
 // 🔥 UPDATE TAGS
 function updateSelectedDisplay() {
@@ -555,72 +491,6 @@ function analyze() {
     alert("Analyze: " + stocks.join(", "));
 }
 </script>
-<script>
-let debounceTimer;
 
-document.getElementById("manualStocks").addEventListener("input", function(e) {
-    let query = e.target.value.trim();
-
-    clearTimeout(debounceTimer);
-
-    if (query.length < 1) {
-        document.getElementById("suggestions").style.display = "none";
-        return;
-    }
-
-    debounceTimer = setTimeout(() => {
-        fetch(`/search_symbols?q=${query}`)
-            .then(res => res.json())
-            .then(data => {
-                let box = document.getElementById("suggestions");
-
-                if (data.results.length === 0) {
-                    box.style.display = "none";
-                    return;
-                }
-
-                box.innerHTML = "";
-
-                data.results.forEach(item => {
-                    box.innerHTML += `
-                        <div style="padding:6px; cursor:pointer;"
-                             onclick="selectSuggestion('${item.id}')">
-                             ${item.id}
-                        </div>
-                    `;
-                });
-
-                box.style.display = "block";
-            });
-    }, 300);
-});
-document.getElementById("manualStocks").addEventListener("keydown", function(e) {
-    if (e.key === "Enter") {
-        e.preventDefault();
-        processManualInput();
-    }
-});
-document.getElementById("manualStocks").addEventListener("paste", function(e) {
-    let pasteData = (e.clipboardData || window.clipboardData).getData("text");
-
-    if (pasteData) {
-        e.preventDefault();
-        processManualInput(pasteData);
-    }
-});
-document.getElementById("manualStocks").addEventListener("keyup", function(e) {
-    let words = e.target.value.split(/\s+/);
-
-    fetch('/validate_symbols', {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({symbols: words})
-    })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Valid:", data.valid, "Invalid:", data.invalid);
-    });
-});
-</script>
 </body>
 </html>

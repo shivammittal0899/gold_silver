@@ -1529,7 +1529,7 @@ def analyze_one_stock(symbol, kite_local):
         if not token:
             return None
 
-        df = fetch_with_retry_token(symbol, token, "15minute", kite_local)
+        df = fetch_with_retry_token(symbol, token, "30minute", kite_local)
 
         if df is None or len(df) < 50:
             return None
@@ -1543,7 +1543,7 @@ def analyze_one_stock(symbol, kite_local):
             'oi': 'OI'
         }, inplace=True)
 
-        result = data_analysis(df, "15m")
+        result = data_analysis(df, "30m")
 
         return {"symbol": symbol, **result}
 

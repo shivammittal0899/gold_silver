@@ -261,17 +261,40 @@ function addStocks() {
         return;
     }
 
-    fetch('/add_to_watchlist', {
+    // 🔥 STEP 1: VALIDATE
+    fetch("/validate_symbols", {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({
-            watchlist_id: activeWatchlist,
-            stocks: selectedStocks
-        })
+        body: JSON.stringify({symbols: selectedStocks})
     })
     .then(res => res.json())
-    .then(() => {
-        alert("Added successfully");
+    .then(data => {
+
+        let valid = data.valid;
+        let invalid = data.invalid;
+
+        if (invalid.length > 0) {
+            alert("❌ Invalid symbols: " + invalid.join(", "));
+        }
+
+        if (valid.length === 0) {
+            alert("No valid stocks to add");
+            return;
+        }
+
+        // 🔥 STEP 2: ADD ONLY VALID
+        fetch('/add_to_watchlist', {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({
+                watchlist_id: activeWatchlist,
+                stocks: valid
+            })
+        })
+        .then(() => {
+            alert("✅ Added successfully");
+            autoLoadWatchlist(activeWatchlist);
+        });
     });
 }
 

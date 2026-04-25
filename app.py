@@ -1409,28 +1409,36 @@ def delete_watchlist():
 
     return {"status": "deleted"}
 @app.route('/validate_symbols', methods=['POST'])
+@app.route('/validate_symbols', methods=['POST'])
 def validate_symbols():
     data = request.json
     symbols = data.get("symbols", [])
 
+    # 🔥 Handle empty input (IMPORTANT)
+    if not symbols:
+        return jsonify({"valid": [], "invalid": []})
+
     conn = sqlite3.connect("instruments.db")
     c = conn.cursor()
 
-    valid = []
-    invalid = []
+    # 🔥 Create placeholders (?, ?, ?, ...)
+    placeholders = ",".join(["?"] * len(symbols))
 
-    for s in symbols:
-        row = c.execute("""
-            SELECT 1 FROM instruments
-            WHERE tradingsymbol=? AND segment='EQ'
-        """, (s,)).fetchone()
+    query = f"""
+        SELECT tradingsymbol FROM instruments
+        WHERE tradingsymbol IN ({placeholders})
+        AND segment='EQ'
+    """
 
-        if row:
-            valid.append(s)
-        else:
-            invalid.append(s)
-
+    rows = c.execute(query, symbols).fetchall()
     conn.close()
+
+    # 🔥 Convert DB result to set
+    valid_set = set(r[0] for r in rows)
+
+    # 🔥 Split valid & invalid
+    valid = [s for s in symbols if s in valid_set]
+    invalid = [s for s in symbols if s not in valid_set]
 
     return jsonify({
         "valid": valid,

@@ -222,7 +222,8 @@ function getSelectedStocks() {
 function updateSelectedDisplay() {
     let selected = getSelectedStocks();
     let display = document.getElementById("selectedStocks");
-
+    // 🔥 SAVE TO LOCALSTORAGE HERE
+    localStorage.setItem("selectedStocks", JSON.stringify(selected));
     if (selected.length === 0) {
         display.innerHTML = "<span style='color:#888'>No stocks selected</span>";
         return;
@@ -240,9 +241,20 @@ function updateSelectedDisplay() {
 }
 
 // 🔥 REMOVE STOCK
+// function removeStock(symbol) {
+//     let selected = getSelectedStocks();
+//     selected = selected.filter(s => s !== symbol);
+
+//     $('#stockSelect').val(selected).trigger('change');
+// }
 function removeStock(symbol) {
-    let selected = getSelectedStocks();
-    selected = selected.filter(s => s !== symbol);
+    let selected = getSelectedStocks().filter(s => s !== symbol);
+
+    // clear manual input if needed
+    let manualInput = document.getElementById("manualStocks").value;
+    let manualStocks = manualInput.split(/\s+/).filter(s => s !== symbol);
+
+    document.getElementById("manualStocks").value = manualStocks.join(" ");
 
     $('#stockSelect').val(selected).trigger('change');
 }
@@ -302,14 +314,19 @@ function addStocks() {
 function toggleWatchlist(id, btn) {
     let table = document.getElementById("stocks_table");
 
+    
     if (activeWatchlist === id) {
         table.innerHTML = "";
         btn.classList.remove("active");
         activeWatchlist = null;
+
+        // ❌ remove saved state
+        localStorage.removeItem("activeWatchlist");
         return;
     }
 
     activeWatchlist = id;
+    localStorage.setItem("activeWatchlist", id);
 
     document.querySelectorAll("#watchlists button").forEach(b => {
         b.classList.remove("active");
@@ -520,6 +537,51 @@ function analyze() {
     alert("Analyze: " + stocks.join(", "));
 }
 </script>
+<script>
 
+$(document).ready(function() {
+
+    $('#stockSelect').select2({
+        placeholder: "Search stocks...",
+        minimumInputLength: 1,
+        ajax: {
+            url: '/search_symbols',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return { q: params.term };
+            },
+            processResults: function (data) {
+                return { results: data.results };
+            },
+            cache: true
+        }
+    });
+
+    $('#stockSelect').on('change', function() {
+        updateSelectedDisplay();
+    });
+    // 🔥 RESTORE SAVED STOCKS HERE
+    let savedStocks = JSON.parse(localStorage.getItem("selectedStocks") || "[]");
+
+    if (savedStocks.length > 0) {
+        loadSelectedStocks(savedStocks);
+    }
+
+    // 🔥 ALSO update UI display after restore
+    updateSelectedDisplay();
+    // // 🔥 RESTORE WATCHLIST AFTER REFRESH
+    // let savedWatchlist = localStorage.getItem("activeWatchlist");
+
+    // if (savedWatchlist) {
+    //     // find button and auto-click it
+    //     document.querySelectorAll("#watchlists button").forEach(btn => {
+    //         if (btn.getAttribute("onclick")?.includes(`(${savedWatchlist},`)) {
+    //             btn.click();  // 🔥 triggers full load + highlight
+    //         }
+    //     });
+    // }
+});
+</script>
 </body>
 </html>

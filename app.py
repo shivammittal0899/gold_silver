@@ -1524,7 +1524,7 @@ def get_instrument_token(symbol):
 def empty_stock_result(symbol, e):
     return {
         "symbol": symbol,
-        "price": e,
+        "price": None,
         "ret5": None,
         "ret15": None,
         "ret30": None,

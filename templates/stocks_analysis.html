@@ -649,8 +649,8 @@ function updateTableWithAnalysis(data) {
 
     data.forEach(d => {
         let color =
-            d.signal.includes("Buy") ? "green" :
-            d.signal.includes("Sell") ? "red" : "black";
+            d.signal_30m.includes("Buy") ? "green" :
+            d.signal_30m.includes("Sell") ? "red" : "black";
 
         html += `
             <tr>

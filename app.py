@@ -394,13 +394,13 @@ def stop_task(task_id, reason):
     conn.close()
     log1(f"[{task_id}] STOPPED: {reason}")
 
-def fetch_with_retry_token(symbol, token, interval, kite, retries=3, delay=5):
+def fetch_with_retry_token(symbol, token, interval, kite, period = 30, retries=3, delay=5):
     for attempt in range(retries):
         try:
             time_correction = timedelta(hours=5, minutes=30)
             # time_correction = 0
             time_now = datetime.now() + time_correction
-            time_delay = time_now - timedelta(days=30)
+            time_delay = time_now - timedelta(days=period)
             # print(time_delay, time_now)
             # instrument = kite.ltp(f"MCX:{symbol}")[f"MCX:{symbol}"]['instrument_token']
             data = kite.historical_data(
@@ -1529,12 +1529,37 @@ def analyze_one_stock(symbol, kite_local):
         if not token:
             return None
 
-        df = fetch_with_retry_token(symbol, token, "30minute", kite_local)
+        df1 = fetch_with_retry_token(symbol, token, "30minute", kite_local, period = 60)
+        df2 = fetch_with_retry_token(symbol, token, "60minute", kite_local, period = 90)
+        df3 = fetch_with_retry_token(symbol, token, "day", kite_local, period = 360)
 
-        if df is None or len(df) < 50:
+        if df1 is None or len(df1) < 60:
             return None
 
-        df.rename(columns={
+        df1.rename(columns={
+            'open': 'Open',
+            'high': 'High',
+            'low': 'Low',
+            'close': 'Close',
+            'volume': 'Volume',
+            'oi': 'OI'
+        }, inplace=True)
+        
+        if df2 is None or len(df2) < 60:
+            return None
+
+        df2.rename(columns={
+            'open': 'Open',
+            'high': 'High',
+            'low': 'Low',
+            'close': 'Close',
+            'volume': 'Volume',
+            'oi': 'OI'
+        }, inplace=True)
+        if df3 is None or len(df3) < 60:
+            return None
+
+        df3.rename(columns={
             'open': 'Open',
             'high': 'High',
             'low': 'Low',
@@ -1543,7 +1568,40 @@ def analyze_one_stock(symbol, kite_local):
             'oi': 'OI'
         }, inplace=True)
 
-        result = data_analysis(df, "30m")
+        result1, df1 = stock_data_analysis(df1, "30m")
+        result2, df2 = stock_data_analysis(df2, "60m")
+        result3, df3 = stock_data_analysis(df3, "1d")
+        result_ret = stock_data_analysis_common(df3)
+        result = {
+            'symbol': result1['symbol'],
+            'price': result1['price'],
+            'ret5': result1['ret5'],
+            'ret15': result1['ret15'],
+            'ret30': result1['ret30'],
+            'ret90': result1['ret90'],
+            'trend_30m': result1['trend'],
+            'trend_60m': result2['trend'],
+            'trend_1d': result3['trend'],
+            'vwap_30m': result1['vwap'],
+            'vwap_60m': result2['vwap'],
+            'vwap_1d': result3['vwap'],
+            'rsi_30m': result1['rsi'],
+            'rsi_60m': result2['rsi'],
+            'rsi_1d': result3['rsi'],
+            'tenkan_kijun_30m': result1['tenkan_kijun'],
+            'tenkan_kijun_60m': result2['tenkan_kijun'],
+            'tenkan_kijun_1d': result3['tenkan_kijun'],
+            'price_tenkan_30m': result1['price_tenkan'],
+            'price_tenkan_60m': result2['price_tenkan'],
+            'price_tenkan_1d': result3['price_tenkan'],
+            'cloud_trend_30m': result1['cloud_trend'],
+            'cloud_trend_60m': result2['cloud_trend'],
+            'cloud_trend_1d': result3['cloud_trend'],
+            'signal_30m': result1['signal'],
+            'signal_60m': result2['signal'],
+            'signal_1d': result3['signal'],
+        }
+
 
         return {"symbol": symbol, **result}
 

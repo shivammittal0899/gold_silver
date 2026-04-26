@@ -396,4 +396,59 @@ def data_analysis(df, timeframe):
     return data
 
 
-# data_analysis(df)
+def stock_data_analysis(df, timeframe):
+
+    df = indicator_values(df)
+    df = df[-50:]
+    # log()
+    # print(df.tail())
+    
+    price = df['Close'].iat[-1]
+    vwap_v = df['VWAP'].iat[-1]
+    # ret6 = round((((price / df['Open'].iat[-6]) - 1)*100),2)
+    ret6 = (price - df['Open'].iat[-6])
+    # ret12 = round((((price / df['Open'].iat[-12]) - 1)*100),2)
+    ret12 = (price - df['Open'].iat[-12])
+    trend, last_high, last_low = highlow_trend(df)
+    highlow = highlow_data(df)
+    if isinstance(highlow, list):
+        highlow = json.dumps(highlow)
+    srb = sr_breakout(df)
+    volatility = volatility_analysis(df)
+    volatility_per = volatility_per_analysis(df, timeframe)
+    ichimoku_d = ichimoku_analysis(df)
+    if price > vwap_v:
+        vwap_a = "Above"
+    else:
+        vwap_a = "Below"
+
+    data = {
+        "price": float(price),
+        "ret6": float(ret6),
+        "ret12": float(ret12),
+        "trend": trend,
+        "l_high": (last_high),
+        # "l_high": float(last_high),
+        "l_low": float(last_low),
+        "highlow": highlow,
+        "vwap": vwap_a,
+        "rsi": float(round(df['RSI'].iloc[-1],2)),
+        "adx": 25,
+        "volume": "High"
+    }
+    data.update(volatility if isinstance(volatility, dict) else {})
+    data.update(volatility_per if isinstance(volatility_per, dict) else {})
+    data.update(ichimoku_d if isinstance(ichimoku_d, dict) else {})
+    signal = signal_fun(data, df)
+    data.update(signal if isinstance(signal, dict) else {})
+    return data, df
+
+def stock_data_analysis_common(df, timeframe):
+    price = df['Close'].iat[-1]
+    data = {
+        'ret5': (price - df['Open'].iat[-5]),
+        'ret15': (price - df['Open'].iat[-10]),
+        'ret30': (price - df['Open'].iat[-20]),
+        'ret90': (price - df['Open'].iat[-60])
+    }
+    return data

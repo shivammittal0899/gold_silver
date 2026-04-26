@@ -634,10 +634,16 @@ function updateTableWithAnalysis(data) {
             <th><input type="checkbox" onclick="toggleAll(this)"></th>
             <th>Symbol</th>
             <th>Price</th>
-            <th>Trend</th>
-            <th>RSI</th>
-            <th>VWAP</th>
-            <th>Signal</th>
+            <th>Return 5D</th>
+            <th>Return 15D</th>
+            <th>Return 30D</th>
+            <th>Return 90D</th>
+            <th>Signal 30m</th>
+            <th>Signal 60m</th>
+            <th>Signal 1d</th>
+            <th>TenkanKijun 30m</th>
+            <th>TenkanKijun 60m</th>
+            <th>TenkanKijun 1d</th>
         </tr>
     `;
 
@@ -651,12 +657,16 @@ function updateTableWithAnalysis(data) {
                 <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
                 <td>${d.symbol}</td>
                 <td>${d.price?.toFixed(2) || '-'}</td>
-                <td>${d.trend || '-'}</td>
-                <td>${d.rsi || '-'}</td>
-                <td>${d.vwap || '-'}</td>
-                <td style="color:${color}; font-weight:bold;">
-                    ${d.signal || '-'}
-                </td>
+                <td>${d.ret5?.toFixed(2) || '-'}</td>
+                <td>${d.ret15?.toFixed(2) || '-'}</td>
+                <td>${d.ret30?.toFixed(2) || '-'}</td>
+                <td>${d.ret90?.toFixed(2) || '-'}</td>
+                <td style="color:${color}; font-weight:bold;>${d.signal_30m || '-'}</td>
+                <td style="color:${color}; font-weight:bold;>${d.signal_60m || '-'}</td>
+                <td style="color:${color}; font-weight:bold;>${d.signal_1d || '-'}</td>
+                <td>${d.tenkan_kijun_30m || '-'}</td>
+                <td>${d.tenkan_kijun_60m || '-'}</td>
+                <td>${d.tenkan_kijun_1d || '-'}</td>
             </tr>
         `;
     });

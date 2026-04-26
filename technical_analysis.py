@@ -399,7 +399,7 @@ def data_analysis(df, timeframe):
 def stock_data_analysis(df, timeframe):
 
     df = indicator_values(df)
-    df = df[-50:]
+    df = df[-100:]
     # log()
     # print(df.tail())
     

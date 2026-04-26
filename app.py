@@ -1571,9 +1571,9 @@ def analyze_one_stock(symbol, kite_local):
         result1, df1 = stock_data_analysis(df1, "30m")
         result2, df2 = stock_data_analysis(df2, "60m")
         result3, df3 = stock_data_analysis(df3, "1d")
-        log1(len(df1))
-        log1(len(df2))
-        log1(len(df3))
+        # log1(len(df1))
+        # log1(len(df2))
+        # log1(len(df3))
         result_ret = stock_data_analysis_common(df3)
         result = {
             # 'symbol': result1['symbol'],
@@ -1604,7 +1604,7 @@ def analyze_one_stock(symbol, kite_local):
             'signal_60m': result2['signal'],
             'signal_1d': result3['signal'],
         }
-        log1(f"{symbol} --- {result}")
+        # log1(f"{symbol} --- {result}")
 
         return {"symbol": symbol, **result}
 

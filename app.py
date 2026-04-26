@@ -1408,7 +1408,7 @@ def delete_watchlist():
     conn.close()
 
     return {"status": "deleted"}
-@app.route('/validate_symbols', methods=['POST'])
+
 @app.route('/validate_symbols', methods=['POST'])
 def validate_symbols():
     data = request.json
@@ -1565,7 +1565,7 @@ def analyze_stocks():
             lambda s: analyze_one_stock(s, kite_local),
             symbols
         ))
-
+    log1(output)
     return jsonify([r for r in output if r])
 # ----------------------------
 # Live Logs Page

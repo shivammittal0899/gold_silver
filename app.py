@@ -1551,8 +1551,10 @@ def empty_stock_result(symbol, e):
         "signal_60m": None,
         "signal_1d": None,
     }
-def analyze_one_stock(symbol, kite_local):
+def analyze_one_stock(symbol, access_token):
     try:
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
         token = get_instrument_token(symbol)
 
         if not token:
@@ -1641,7 +1643,9 @@ def analyze_one_stock(symbol, kite_local):
 
 @app.route('/analyze_stocks', methods=['POST'])
 def analyze_stocks():
-    symbols = request.json.get("symbols", [])
+    # symbols = request.json.get("symbols", [])
+    data = request.get_json(silent=True) or {}
+    symbols = data.get("symbols", [])
 
     access_token = read_access_token()
 
@@ -1650,7 +1654,7 @@ def analyze_stocks():
 
     with ThreadPoolExecutor(max_workers=2) as executor:
         output = list(executor.map(
-            lambda s: analyze_one_stock(s, kite_local),
+            lambda s: analyze_one_stock(s, access_token),
             symbols
         ))
     log1(output)

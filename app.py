@@ -1533,7 +1533,7 @@ def analyze_one_stock(symbol, kite_local):
         df2 = fetch_with_retry_token(symbol, token, "60minute", kite_local, period = 90)
         df3 = fetch_with_retry_token(symbol, token, "day", kite_local, period = 360)
         
-        if df1 is None or len(df1) < 60:
+        if df1 is None or len(df1) < 120:
             return None
 
         df1.rename(columns={
@@ -1545,7 +1545,7 @@ def analyze_one_stock(symbol, kite_local):
             'oi': 'OI'
         }, inplace=True)
         
-        if df2 is None or len(df2) < 60:
+        if df2 is None or len(df2) < 120:
             return None
 
         df2.rename(columns={
@@ -1556,7 +1556,7 @@ def analyze_one_stock(symbol, kite_local):
             'volume': 'Volume',
             'oi': 'OI'
         }, inplace=True)
-        if df3 is None or len(df3) < 60:
+        if df3 is None or len(df3) < 120:
             return None
 
         df3.rename(columns={
@@ -1622,7 +1622,7 @@ def analyze_stocks():
     kite_local = KiteConnect(api_key=API_KEY)
     kite_local.set_access_token(access_token)
 
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         output = list(executor.map(
             lambda s: analyze_one_stock(s, kite_local),
             symbols

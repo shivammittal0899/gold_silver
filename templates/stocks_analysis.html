@@ -648,9 +648,16 @@ function updateTableWithAnalysis(data) {
     `;
 
     data.forEach(d => {
+        let sig30 = d.signal_30m || "";
+        let sig60 = d.signal_60m || "";
+        let sig1d = d.signal_1d || "";
+
         let color =
-            d.signal_30m.includes("Buy") ? "green" :
-            d.signal_30m.includes("Sell") ? "red" : "black";
+            sig30.includes("Buy") ? "green" :
+            sig30.includes("Sell") ? "red" : "black";
+        // let color =
+        //     d.signal_30m.includes("Buy") ? "green" :
+        //     d.signal_30m.includes("Sell") ? "red" : "black";
 
         html += `
             <tr>
@@ -661,9 +668,9 @@ function updateTableWithAnalysis(data) {
                 <td>${d.ret15?.toFixed(2) || '-'}</td>
                 <td>${d.ret30?.toFixed(2) || '-'}</td>
                 <td>${d.ret90?.toFixed(2) || '-'}</td>
-                <td style="color:${color}; font-weight:bold;">${d.signal_30m || '-'}</td>
-                <td style="color:${color}; font-weight:bold;">${d.signal_60m || '-'}</td>
-                <td style="color:${color}; font-weight:bold;">${d.signal_1d || '-'}</td>
+                <td style="color:${color}; font-weight:bold;">${sig30 || '-'}</td>
+                <td style="color:${color}; font-weight:bold;">${sig60 || '-'}</td>
+                <td style="color:${color}; font-weight:bold;">${sig1d || '-'}</td>
                 <td>${d.tenkan_kijun_30m || '-'}</td>
                 <td>${d.tenkan_kijun_60m || '-'}</td>
                 <td>${d.tenkan_kijun_1d || '-'}</td>

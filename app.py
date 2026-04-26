@@ -1532,9 +1532,7 @@ def analyze_one_stock(symbol, kite_local):
         df1 = fetch_with_retry_token(symbol, token, "30minute", kite_local, period = 60)
         df2 = fetch_with_retry_token(symbol, token, "60minute", kite_local, period = 90)
         df3 = fetch_with_retry_token(symbol, token, "day", kite_local, period = 360)
-        # log1(len(df1))
-        # log1(len(df2))
-        # log1(len(df3))
+        
         if df1 is None or len(df1) < 60:
             return None
 
@@ -1573,9 +1571,12 @@ def analyze_one_stock(symbol, kite_local):
         result1, df1 = stock_data_analysis(df1, "30m")
         result2, df2 = stock_data_analysis(df2, "60m")
         result3, df3 = stock_data_analysis(df3, "1d")
+        log1(len(df1))
+        log1(len(df2))
+        log1(len(df3))
         result_ret = stock_data_analysis_common(df3)
         result = {
-            'symbol': result1['symbol'],
+            # 'symbol': result1['symbol'],
             'price': result1['price'],
             'ret5': result_ret['ret5'],
             'ret15': result_ret['ret15'],
@@ -1607,7 +1608,8 @@ def analyze_one_stock(symbol, kite_local):
 
         return {"symbol": symbol, **result}
 
-    except:
+    except Exception as e:
+        log1(f"Error in {symbol}: {e}")
         return None
 
 

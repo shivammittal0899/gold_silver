@@ -443,7 +443,7 @@ def stock_data_analysis(df, timeframe):
     data.update(signal if isinstance(signal, dict) else {})
     return data, df
 
-def stock_data_analysis_common(df, timeframe):
+def stock_data_analysis_common(df):
     price = df['Close'].iat[-1]
     data = {
         'ret5': (price - df['Open'].iat[-5]),

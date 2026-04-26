@@ -1603,7 +1603,9 @@ def analyze_one_stock(symbol, access_token):
         result2, df2 = stock_data_analysis(df2, "60m")
         result3, df3 = stock_data_analysis(df3, "1d")
         log1(df3['Close'].iat[-1])
+        log1(df3['Close'].iat[-5])
         result_ret = stock_data_analysis_common(df3)
+        log1(result_ret)
         result = {
             # 'symbol': result1['symbol'],
             'price': result1['price'],

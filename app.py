@@ -1521,20 +1521,49 @@ def get_instrument_token(symbol):
     conn.close()
 
     return row[0] if row else None
-
+def empty_stock_result(symbol, e):
+    return {
+        "symbol": symbol,
+        "price": e,
+        "ret5": None,
+        "ret15": None,
+        "ret30": None,
+        "ret90": None,
+        "trend_30m": None,
+        "trend_60m": None,
+        "trend_1d": None,
+        "vwap_30m": None,
+        "vwap_60m": None,
+        "vwap_1d": None,
+        "rsi_30m": None,
+        "rsi_60m": None,
+        "rsi_1d": None,
+        "tenkan_kijun_30m": None,
+        "tenkan_kijun_60m": None,
+        "tenkan_kijun_1d": None,
+        "price_tenkan_30m": None,
+        "price_tenkan_60m": None,
+        "price_tenkan_1d": None,
+        "cloud_trend_30m": None,
+        "cloud_trend_60m": None,
+        "cloud_trend_1d": None,
+        "signal_30m": None,
+        "signal_60m": None,
+        "signal_1d": None,
+    }
 def analyze_one_stock(symbol, kite_local):
     try:
         token = get_instrument_token(symbol)
 
         if not token:
-            return None
+            return empty_stock_result(symbol, "token issue")
 
         df1 = fetch_with_retry_token(symbol, token, "30minute", kite_local, period = 60)
         df2 = fetch_with_retry_token(symbol, token, "60minute", kite_local, period = 90)
         df3 = fetch_with_retry_token(symbol, token, "day", kite_local, period = 360)
         
         if df1 is None or len(df1) < 120:
-            return None
+            return empty_stock_result(symbol, "df1")
 
         df1.rename(columns={
             'open': 'Open',
@@ -1546,7 +1575,7 @@ def analyze_one_stock(symbol, kite_local):
         }, inplace=True)
         
         if df2 is None or len(df2) < 120:
-            return None
+            return empty_stock_result(symbol, "df2")
 
         df2.rename(columns={
             'open': 'Open',
@@ -1557,7 +1586,7 @@ def analyze_one_stock(symbol, kite_local):
             'oi': 'OI'
         }, inplace=True)
         if df3 is None or len(df3) < 120:
-            return None
+            return empty_stock_result(symbol, "df3")
 
         df3.rename(columns={
             'open': 'Open',
@@ -1571,9 +1600,6 @@ def analyze_one_stock(symbol, kite_local):
         result1, df1 = stock_data_analysis(df1, "30m")
         result2, df2 = stock_data_analysis(df2, "60m")
         result3, df3 = stock_data_analysis(df3, "1d")
-        # log1(len(df1))
-        # log1(len(df2))
-        # log1(len(df3))
         result_ret = stock_data_analysis_common(df3)
         result = {
             # 'symbol': result1['symbol'],
@@ -1610,7 +1636,7 @@ def analyze_one_stock(symbol, kite_local):
 
     except Exception as e:
         log1(f"Error in {symbol}: {e}")
-        return None
+        return empty_stock_result(symbol, "Error")
 
 
 @app.route('/analyze_stocks', methods=['POST'])

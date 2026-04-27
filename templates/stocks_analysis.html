@@ -653,6 +653,8 @@ function updateTableWithAnalysis(data) {
         let sig1d = d.signal_1d || "";
 
         let color =
+            sig30.includes("STRONG BUY") ? "darkgreen" :
+            sig30.includes("STRONG SELL") ? "darkred" :
             sig30.includes("Buy") ? "green" :
             sig30.includes("Sell") ? "red" : "black";
         // let color =

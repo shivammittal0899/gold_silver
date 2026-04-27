@@ -147,16 +147,25 @@
     <button onclick="saveToWatchlist()">Save</button>
 </div>
 
-<table border="1">
+<table id="analysisTable" class="display">
     <thead>
         <tr>
             <th><input type="checkbox" onclick="toggleAll(this)"></th>
-            <th>Stock Symbol</th>
+            <th>Symbol</th>
+            <th>Price</th>
+            <th>Return 5D</th>
+            <th>Return 15D</th>
+            <th>Return 30D</th>
+            <th>Return 90D</th>
+            <th>Signal 30m</th>
+            <th>Signal 60m</th>
+            <th>Signal 1d</th>
+            <th>TenkanKijun 30m</th>
+            <th>TenkanKijun 60m</th>
+            <th>TenkanKijun 1d</th>
         </tr>
     </thead>
-    <tbody id="stocks_table">
-        <tr><td colspan="2">Click a watchlist</td></tr>
-    </tbody>
+    <tbody id="stocks_table"></tbody>
 </table>
 
 <br>
@@ -629,23 +638,6 @@ function updateTableWithAnalysis(data) {
         return;
     }
 
-    let html = `
-        <tr>
-            <th><input type="checkbox" onclick="toggleAll(this)"></th>
-            <th>Symbol</th>
-            <th>Price</th>
-            <th>Return 5D</th>
-            <th>Return 15D</th>
-            <th>Return 30D</th>
-            <th>Return 90D</th>
-            <th>Signal 30m</th>
-            <th>Signal 60m</th>
-            <th>Signal 1d</th>
-            <th>TenkanKijun 30m</th>
-            <th>TenkanKijun 60m</th>
-            <th>TenkanKijun 1d</th>
-        </tr>
-    `;
 
     data.forEach(d => {
         let sig30 = d.signal_30m || "";
@@ -688,6 +680,27 @@ function updateTableWithAnalysis(data) {
     });
 
     table.innerHTML = html;
+
+    initDataTable();
+}
+let dataTable = null;
+
+function initDataTable() {
+    if (dataTable) {
+        dataTable.destroy();   // 🔥 destroy old instance
+    }
+
+    dataTable = $('#analysisTable').DataTable({
+        pageLength: 25,
+        ordering: true,
+        searching: true,
+        destroy: true   // 🔥 safety
+    });
+    dataTable = $('#analysisTable').DataTable({
+        columnDefs: [
+            { orderable: false, targets: 0 }
+        ]
+    });
 }
 </script>
 <script>

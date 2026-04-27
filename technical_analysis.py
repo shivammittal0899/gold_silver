@@ -209,20 +209,20 @@ def volatility_per_analysis(df, timeframe):
         "avg_volatility": "None"
     }
 def ichimoku_analysis(df):
-    tenkan = df['tenkan'].iloc[-2]
-    kijun = df['kijun'].iloc[-2]
-    senkou_a = df['senkou_a'].iloc[-2]
-    senkou_b = df['senkou_b'].iloc[-2]
-    senkou_af = df['senkou_af'].iloc[-2]
-    senkou_bf = df['senkou_bf'].iloc[-2]
-    close = df['Close'].iloc[-2]
-    open = df['Open'].iloc[-2]
+    tenkan = df['tenkan'].iloc[-1]
+    kijun = df['kijun'].iloc[-1]
+    senkou_a = df['senkou_a'].iloc[-1]
+    senkou_b = df['senkou_b'].iloc[-1]
+    senkou_af = df['senkou_af'].iloc[-1]
+    senkou_bf = df['senkou_bf'].iloc[-1]
+    close = df['Close'].iloc[-1]
+    open = df['Open'].iloc[-1]
     cloud = "green" if senkou_a >= senkou_b else "red"
     cloud_max = max(senkou_a, senkou_b)
     cloud_min = min(senkou_a, senkou_b)
     cloud_maxf = max(senkou_af, senkou_bf)
     cloud_minf = min(senkou_af, senkou_bf)
-    sideways = df['price_line'].iloc[-2]
+    sideways = df['price_line'].iloc[-1]
 
     
     if (tenkan > kijun) and (tenkan > cloud_max) and (tenkan > cloud_maxf) and (close > cloud_max):

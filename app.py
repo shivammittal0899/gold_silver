@@ -1655,7 +1655,7 @@ def analyze_stocks():
     kite_local = KiteConnect(api_key=API_KEY)
     kite_local.set_access_token(access_token)
 
-    with ThreadPoolExecutor(max_workers=2) as executor:
+    with ThreadPoolExecutor(max_workers=3) as executor:
         output = list(executor.map(
             lambda s: analyze_one_stock(s, access_token),
             symbols

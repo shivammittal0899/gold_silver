@@ -97,7 +97,7 @@
         <div style="display:inline-block; margin:5px;">
             
             <!-- Watchlist Button -->
-            <button onclick="toggleWatchlist({{ w[0] }}, this)">
+            <button class="watchlist-btn" data-id="{{ w[0] }}" onclick="toggleWatchlist({{ w[0] }}, this)">
                 {{ w[1] }}
             </button>
 
@@ -181,33 +181,6 @@
 <script>
 
 
-$(document).ready(function() {
-    $('#stockSelect').select2({
-        placeholder: "Search stocks...",
-        minimumInputLength: 1,
-        ajax: {
-            url: '/search_symbols',
-            dataType: 'json',
-            delay: 250,
-            data: function (params) {
-                return {
-                    q: params.term   // search text
-                };
-            },
-            processResults: function (data) {
-                return {
-                    results: data.results
-                };
-            },
-            cache: true
-        }
-    });
-
-    // Update selected preview
-    $('#stockSelect').on('change', function() {
-        updateSelectedDisplay();
-    });
-});
 function loadSelectedStocks(stockList) {
     let select = $('#stockSelect');
 
@@ -641,7 +614,7 @@ function updateTableWithAnalysis(data) {
         return;
     }
 
-    html = ""
+    let html = ""
     data.forEach(d => {
         let sig30 = d.signal_30m || "";
         let sig60 = d.signal_60m || "";
@@ -710,6 +683,7 @@ function initDataTable() {
 
 $(document).ready(function() {
 
+    // 🔹 Select2 init (KEEP THIS ONE ONLY)
     $('#stockSelect').select2({
         placeholder: "Search stocks...",
         minimumInputLength: 1,
@@ -727,39 +701,30 @@ $(document).ready(function() {
         }
     });
 
+    // 🔹 On change
     $('#stockSelect').on('change', function() {
         updateSelectedDisplay();
     });
-    // 🔥 RESTORE SAVED STOCKS HERE
-    let savedStocks = JSON.parse(localStorage.getItem("selectedStocks") || "[]");
 
+    // 🔹 Restore selected stocks
+    let savedStocks = JSON.parse(localStorage.getItem("selectedStocks") || "[]");
     if (savedStocks.length > 0) {
         loadSelectedStocks(savedStocks);
     }
-
-    // 🔥 ALSO update UI display after restore
     updateSelectedDisplay();
-    // 🔥 RESTORE WATCHLIST AFTER REFRESH
-    let savedWatchlist = localStorage.getItem("activeWatchlist");
 
-    if (savedWatchlist) {
-        // find button and auto-click it
-        document.querySelectorAll("#watchlists button").forEach(btn => {
-            if (btn.getAttribute("onclick")?.includes(`(${savedWatchlist},`)) {
-                btn.click();  // 🔥 triggers full load + highlight
-            }
-        });
-    }
+    // 🔹 Restore active watchlist (KEEP ONLY THIS ONE LOGIC)
     let savedWid = localStorage.getItem("activeWatchlist");
 
     if (savedWid) {
-        let btn = Array.from(document.querySelectorAll("#watchlists button"))
-            .find(b => b.getAttribute("onclick")?.includes(`(${savedWid},`));
+        let btn = Array.from(document.querySelectorAll(".watchlist-btn"))
+            .find(b => b.dataset.id == savedWid);
 
         if (btn) {
             toggleWatchlist(savedWid, btn);
         }
     }
+
 });
 </script>
 </body>

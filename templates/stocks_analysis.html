@@ -664,9 +664,9 @@ function updateTableWithAnalysis(data) {
 let dataTable = null;
 
 function initDataTable() {
-    if (dataTable) {
-        dataTable.destroy();   // 🔥 destroy old instance
-    }
+    // if (dataTable) {
+    //     dataTable.destroy();   // 🔥 destroy old instance
+    // }
 
     dataTable = $('#analysisTable').DataTable({
         pageLength: 25,

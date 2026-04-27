@@ -10,6 +10,9 @@
     <!-- LOCAL Select2 -->
     <link href="{{ url_for('static', filename='select2/select2.min.css') }}" rel="stylesheet" />
     <script src="{{ url_for('static', filename='select2/select2.min.js') }}"></script>
+    <!-- Datatables -->
+    <link href="{{ url_for('static', filename='datatables/jquery.dataTables.min.css') }}" rel="stylesheet" />
+    <script src="{{ url_for('static', filename='datatables/jquery.dataTables.min.js') }}"></script>
     <style>
     body {
         font-family: Arial;
@@ -634,7 +637,7 @@ function updateTableWithAnalysis(data) {
     let table = document.getElementById("stocks_table");
 
     if (!data || data.length === 0) {
-        table.innerHTML = "<tr><td colspan='7'>No data</td></tr>";
+        table.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
         return;
     }
 
@@ -678,7 +681,9 @@ function updateTableWithAnalysis(data) {
             </tr>
         `;
     });
-
+    if (dataTable) {
+        dataTable.clear().destroy();
+    }
     table.innerHTML = html;
 
     initDataTable();
@@ -694,9 +699,7 @@ function initDataTable() {
         pageLength: 25,
         ordering: true,
         searching: true,
-        destroy: true   // 🔥 safety
-    });
-    dataTable = $('#analysisTable').DataTable({
+        destroy: true,  // 🔥 safety
         columnDefs: [
             { orderable: false, targets: 0 }
         ]

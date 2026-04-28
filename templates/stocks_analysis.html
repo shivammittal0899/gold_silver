@@ -868,6 +868,7 @@ function addVWAP(data) {
     );
 }
 function addIchimoku(data) {
+
     const tenkan = chart.addSeries(LightweightCharts.LineSeries, { color: "blue" });
     const kijun = chart.addSeries(LightweightCharts.LineSeries, { color: "red" });
 
@@ -885,39 +886,18 @@ function addIchimoku(data) {
         lineWidth: 1
     });
 
-    // 🔥 shift value (26 periods)
-    const shift = 26;
+    // ✅ NO SHIFT
+    tenkan.setData(data.filter(d => d.tenkan != null)
+        .map(d => ({ time: d.time, value: d.tenkan })));
 
-    // Tenkan & Kijun (normal)
-    tenkan.setData(data.map(d => ({ time: d.time, value: d.tenkan })));
-    kijun.setData(data.map(d => ({ time: d.time, value: d.kijun })));
+    kijun.setData(data.filter(d => d.kijun != null)
+        .map(d => ({ time: d.time, value: d.kijun })));
 
-    // 🔥 SHIFTED CLOUD
-    spanA.setData(
-        data
-            .filter(d => d.spanA != null)
-            .map((d, i) => {
-                if (i + shift >= data.length) return null;
-                return {
-                    time: data[i + shift].time,
-                    value: d.spanA
-                };
-            })
-            .filter(x => x)
-    );
+    spanA.setData(data.filter(d => d.spanA != null)
+        .map(d => ({ time: d.time, value: d.spanA })));
 
-    spanB.setData(
-        data
-            .filter(d => d.spanB != null)
-            .map((d, i) => {
-                if (i + shift >= data.length) return null;
-                return {
-                    time: data[i + shift].time,
-                    value: d.spanB
-                };
-            })
-            .filter(x => x)
-    );
+    spanB.setData(data.filter(d => d.spanB != null)
+        .map(d => ({ time: d.time, value: d.spanB })));
 }
 function addRSI(data) {
     let rsiSeries = chart.addSeries(LightweightCharts.LineSeries, {

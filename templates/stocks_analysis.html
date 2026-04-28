@@ -742,7 +742,7 @@ let currentInterval = "day";
 let requestId = 0;
 
 let indicators = {
-    ichimoku: false,
+    ichimoku: true,
     rsi: false,
     vwap: false,
     ema: false
@@ -818,7 +818,7 @@ function loadChart() {
                 const finalData = Array.from(uniqueMap.values());
 
                 candleSeries.setData(finalData);
-                console.log(data.slice(-10));
+                // console.log(data.slice(-10));
                 if (indicators.ema) addEMA(finalData);
                 if (indicators.vwap) addVWAP(finalData);
                 if (indicators.ichimoku) addIchimoku(finalData);

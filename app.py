@@ -1737,12 +1737,12 @@ def get_chart_data():
 
             # indicators
             "ema": safe(row.get("ema")),
-            "vwap": safe(row.get("vwap")),
-            "rsi": safe(row.get("rsi")),
+            "vwap": safe(row.get("VWAP")),
+            "rsi": safe(row.get("RSI")),
             "tenkan": safe(row.get("tenkan")),
             "kijun": safe(row.get("kijun")),
-            "spanA": safe(row.get("span_a")),
-            "spanB": safe(row.get("span_b")),
+            "spanA": safe(row.get("senkou_a")),
+            "spanB": safe(row.get("senkou_b")),
             "volume": safe(row.get("Volume")),
         })
 

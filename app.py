@@ -1724,11 +1724,10 @@ def get_chart_data():
         if None in (o, h, l, c):
             continue
         # log1(row)
-        if interval == "day":
-            time_val = row["Date"].strftime("%Y-%m-%d")
-        else:
-            # time_val = row["Date"].strftime("%Y-%m-%d %H:%M:%S")
-            time_val = int(pd.Timestamp(row["Date"]).timestamp())
+        # if interval == "day":
+        #     time_val = row["Date"].strftime("%Y-%m-%d")
+        # else:
+        time_val = int(pd.Timestamp(row["Date"]).timestamp())
         data.append({
             "time": time_val,
             "open": o,

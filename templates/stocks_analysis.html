@@ -772,6 +772,14 @@ function loadChart() {
                 secondsVisible: false  // optional
             }
         });
+        chart.applyOptions({
+            localization: {
+                timeFormatter: time => {
+                    const date = new Date(time * 1000);
+                    return date.toLocaleString(); // shows date + time
+                }
+            }
+        });
 
         candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries);
         fetch(`/get_chart_data?symbol=${currentSymbol}&interval=${currentInterval}`)

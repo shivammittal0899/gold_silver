@@ -1607,6 +1607,7 @@ def analyze_one_stock(symbol, access_token):
         result = {
             # 'symbol': result1['symbol'],
             'price': result1['price'],
+            'ret1': result_ret['ret1'],
             'ret5': result_ret['ret5'],
             'ret15': result_ret['ret15'],
             'ret30': result_ret['ret30'],

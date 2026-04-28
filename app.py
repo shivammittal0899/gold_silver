@@ -1690,7 +1690,7 @@ def get_chart_data():
     if df.empty:
         return jsonify([])
 
-    log1(f"{symbol} -------- {len(df)}")
+    log1(f"{symbol} -------- {len(df)} -- {df.columns}")
     df.reset_index(inplace=True)
 
     data = []

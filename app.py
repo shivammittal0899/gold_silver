@@ -1671,7 +1671,7 @@ def get_chart_data():
     # ✅ Fix symbol for NSE
     if not symbol.endswith(".NS"):
         symbol = symbol + ".NS"
-
+    log1(symbol)
     df = yf.download(symbol, period="3mo", interval="1d")
 
     log1(len(df))

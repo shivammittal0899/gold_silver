@@ -719,25 +719,30 @@ function openChart(symbol) {
     document.getElementById("chartModal").style.display = "block";
     document.getElementById("chartTitle").innerText = symbol;
 
-    // clear old chart
-    document.getElementById("chartContainer").innerHTML = "";
+    let container = document.getElementById("chartContainer");
+    container.innerHTML = "";
 
-    chart = LightweightCharts.createChart(
-        document.getElementById("chartContainer"),
-        {
-            width: document.getElementById("chartContainer").clientWidth,
-            height: document.getElementById("chartContainer").clientHeight,
-        }
-    );
+    if (chart) {
+        chart.remove();
+        chart = null;
+    }
 
-    candleSeries = chart.addCandlestickSeries();
-
-    // 🔥 fetch OHLC data from backend
-    fetch(`/get_chart_data?symbol=${symbol}`)
-        .then(res => res.json())
-        .then(data => {
-            candleSeries.setData(data);
+    setTimeout(() => {
+        chart = LightweightCharts.createChart(container, {
+            width: container.clientWidth,
+            height: container.clientHeight,
         });
+
+        // ✅ FIX HERE
+        candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries);
+
+        fetch(`/get_chart_data?symbol=${symbol}`)
+            .then(res => res.json())
+            .then(data => {
+                candleSeries.setData(data);
+            });
+
+    }, 100);
 }
 
 function closeChart() {

@@ -1682,11 +1682,11 @@ def get_chart_data():
     period_map = {
         "5minute": 7,
         "15minute": 15,
-        "30minute": 30,
+        "30minute": 60,
         "60minute": 60,
-        "day": 365
+        "day": 665
     }
-    log1(f"{interval} -- {period_map.get(interval, 365)}")
+    # log1(f"{interval} -- {period_map.get(interval, 365)}")
     df = fetch_with_retry_token(
         symbol,
         token,
@@ -1710,7 +1710,7 @@ def get_chart_data():
 
     df.reset_index(drop=True, inplace=True)
     df = indicator_values(df)
-    df = df[60:]
+    df = df[100:]
     log1(f"{symbol} -- {len(df)} -- {df.columns}")
     data = []
     for _, row in df.iterrows():

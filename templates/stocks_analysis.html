@@ -894,11 +894,12 @@ function addIchimoku(data) {
     kijun.setData(data.map(d => ({ time: d.time, value: d.kijun })));
 
     // 🔥 SHIFTED CLOUD
+    // 🔥 Span A (correct)
     spanA.setData(
         data
-            .filter(d => d.spanA != null)
             .map((d, i) => {
-                if (i + shift >= data.length) return null;
+                if (d.spanA == null || i + shift >= data.length) return null;
+
                 return {
                     time: data[i + shift].time,
                     value: d.spanA
@@ -907,11 +908,12 @@ function addIchimoku(data) {
             .filter(x => x)
     );
 
+    // 🔥 Span B (correct)
     spanB.setData(
         data
-            .filter(d => d.spanB != null)
             .map((d, i) => {
-                if (i + shift >= data.length) return null;
+                if (d.spanB == null || i + shift >= data.length) return null;
+
                 return {
                     time: data[i + shift].time,
                     value: d.spanB

@@ -1730,7 +1730,7 @@ def get_chart_data():
             "spanA": float(row.get("senkou_a", 0)),
             "spanB": float(row.get("senkou_b", 0)),
         })
-
+    
     return jsonify(data)
 
 

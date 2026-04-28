@@ -1662,7 +1662,7 @@ def analyze_stocks():
     return jsonify([r for r in output if r])
 def safe(val):
     if pd.isna(val) or val is None:
-        return 0
+        return None
     return float(val)
 @app.route("/get_chart_data")
 def get_chart_data():
@@ -1723,9 +1723,13 @@ def get_chart_data():
         # 🚨 HARD FILTER (MANDATORY)
         if None in (o, h, l, c):
             continue
-        log1(row)
+        # log1(row)
+        if interval == "day":
+            time_val = row["Date"].strftime("%Y-%m-%d")
+        else:
+            time_val = row["Date"].strftime("%Y-%m-%d %H:%M:%S")
         data.append({
-            "time": str(row["Date"])[:10],
+            "time": time_val,
             "open": o,
             "high": h,
             "low": l,

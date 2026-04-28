@@ -1666,13 +1666,26 @@ def get_chart_data():
     symbol = request.args.get("symbol")
 
     import yfinance as yf
+    import pandas as pd
+
+    # ✅ Fix symbol for NSE
+    if not symbol.endswith(".NS"):
+        symbol = symbol + ".NS"
+
     df = yf.download(symbol, period="3mo", interval="1d")
-    log1(len(df))
+
+    if df.empty:
+        return jsonify([])
 
     df.reset_index(inplace=True)
 
     data = []
+
     for _, row in df.iterrows():
+        # ✅ Skip NaN rows
+        if any(pd.isna([row["Open"], row["High"], row["Low"], row["Close"]])):
+            continue
+
         data.append({
             "time": row["Date"].strftime("%Y-%m-%d"),
             "open": float(row["Open"]),

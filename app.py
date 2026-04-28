@@ -1674,10 +1674,11 @@ def get_chart_data():
     log1(symbol)
     df = yf.download(symbol, period="3mo", interval="1d")
 
-    log1(len(df))
+    log1(f"{symbol} -- {len(df)}")
     if df.empty:
         return jsonify([])
 
+    log1(f"{symbol} -------- {len(df)}")
     df.reset_index(inplace=True)
 
     data = []

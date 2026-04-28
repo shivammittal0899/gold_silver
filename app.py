@@ -1660,7 +1660,10 @@ def analyze_stocks():
         ))
     # log1(output)
     return jsonify([r for r in output if r])
-
+def safe(val):
+    if pd.isna(val) or val is None:
+        return None
+    return float(val)
 @app.route("/get_chart_data")
 def get_chart_data():
     symbol = request.args.get("symbol")
@@ -1711,25 +1714,32 @@ def get_chart_data():
     log1(f"{symbol} -- {len(df)} -- {df.columns}")
     data = []
     for _, row in df.iterrows():
-        if pd.isna(row["Open"]) or pd.isna(row["High"]) or pd.isna(row["Low"]) or pd.isna(row["Close"]):
+
+        o = safe(row["Open"])
+        h = safe(row["High"])
+        l = safe(row["Low"])
+        c = safe(row["Close"])
+
+        # 🚨 HARD FILTER (MANDATORY)
+        if None in (o, h, l, c):
             continue
 
         data.append({
-            "time": row["Date"].strftime("%Y-%m-%d %H:%M:%S") if interval != "day" else row["Date"].strftime("%Y-%m-%d"),
-
-            "open": float(row["Open"]),
-            "high": float(row["High"]),
-            "low": float(row["Low"]),
-            "close": float(row["Close"]),
+            "time": str(row["Date"])[:10],
+            "open": o,
+            "high": h,
+            "low": l,
+            "close": c,
 
             # indicators
-            "ema": float(row.get("ema", 0)),
-            "vwap": float(row.get("vwap", 0)),
-            "rsi": float(row.get("rsi", 0)),
-            "tenkan": float(row.get("tenkan", 0)),
-            "kijun": float(row.get("kijun", 0)),
-            "spanA": float(row.get("senkou_a", 0)),
-            "spanB": float(row.get("senkou_b", 0)),
+            "ema": safe(row.get("ema")),
+            "vwap": safe(row.get("vwap")),
+            "rsi": safe(row.get("rsi")),
+            "tenkan": safe(row.get("tenkan")),
+            "kijun": safe(row.get("kijun")),
+            "spanA": safe(row.get("span_a")),
+            "spanB": safe(row.get("span_b")),
+            "volume": safe(row.get("Volume")),
         })
 
     return jsonify(data)

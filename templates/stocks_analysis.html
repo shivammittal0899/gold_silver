@@ -190,7 +190,7 @@
     <div style="
         background:white;
         width:80%;
-        height:80%;
+        height:90%;
         margin:5% auto;
         padding:10px;
         border-radius:10px;
@@ -776,7 +776,11 @@ function loadChart() {
             localization: {
                 timeFormatter: time => {
                     const date = new Date(time * 1000);
-                    return date.toLocaleString(); // shows date + time
+                    if (currentInterval === "day") {
+                        return date.toLocaleDateString();
+                    } else {
+                        return date.toLocaleTimeString();
+                    }
                 }
             }
         });

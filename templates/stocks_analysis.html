@@ -770,44 +770,44 @@ function loadChart() {
         });
 
         candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries);
-
         fetch(`/get_chart_data?symbol=${currentSymbol}&interval=${currentInterval}`)
             .then(res => res.json())
             .then(data => {
 
-                // 🚨 ignore outdated responses
                 if (currentRequest !== requestId) return;
 
-                if (!data || data.length === 0) {
-                    console.warn("No chart data");
-                    return;
-                }
+                if (!data || data.length === 0) return;
 
-                const cleanData = data.filter(d =>
-                    d && d.time &&
-                    d.open != null &&
-                    d.high != null &&
-                    d.low != null &&
-                    d.close != null &&
-                    !isNaN(d.open) &&
-                    !isNaN(d.high) &&
-                    !isNaN(d.low) &&
-                    !isNaN(d.close)
+                let cleanData = data.filter(d =>
+                    d &&
+                    typeof d.time !== "undefined" &&
+                    Number.isFinite(d.open) &&
+                    Number.isFinite(d.high) &&
+                    Number.isFinite(d.low) &&
+                    Number.isFinite(d.close)
                 );
 
                 if (cleanData.length === 0) return;
 
-                candleSeries.setData(cleanData);
+                // ✅ sort
+                cleanData.sort((a, b) => a.time - b.time);
 
-                if (indicators.ema) addEMA(cleanData);
-                if (indicators.vwap) addVWAP(cleanData);
-                if (indicators.ichimoku) addIchimoku(cleanData);
-                if (indicators.rsi) addRSI(cleanData);
+                // ✅ remove duplicates
+                const uniqueMap = new Map();
+                cleanData.forEach(d => uniqueMap.set(d.time, d));
+                const finalData = Array.from(uniqueMap.values());
+
+                candleSeries.setData(finalData);
+
+                if (indicators.ema) addEMA(finalData);
+                if (indicators.vwap) addVWAP(finalData);
+                if (indicators.ichimoku) addIchimoku(finalData);
+                if (indicators.rsi) addRSI(finalData);
 
                 chart.timeScale().fitContent();
             })
             .catch(err => console.error("Chart error:", err));
-
+        
     }, 50);
 }
 function changeTimeframe() {

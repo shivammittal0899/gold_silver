@@ -1662,7 +1662,7 @@ def analyze_stocks():
     return jsonify([r for r in output if r])
 def safe(val):
     if pd.isna(val) or val is None:
-        return None
+        return 0
     return float(val)
 @app.route("/get_chart_data")
 def get_chart_data():

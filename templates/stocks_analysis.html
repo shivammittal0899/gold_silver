@@ -735,6 +735,7 @@ let chart = null;
 let candleSeries = null;
 let currentSymbol = null;
 let currentInterval = "day";
+let requestId = 0;
 
 let indicators = {
     ichimoku: false,
@@ -751,9 +752,9 @@ function openChart(symbol) {
     loadChart();   // 🔥 delegate everything
 }
 function loadChart() {
-    let container = document.getElementById("chartContainer");
+    const currentRequest = ++requestId;
 
-    // clear old chart
+    let container = document.getElementById("chartContainer");
     container.innerHTML = "";
 
     if (chart) {
@@ -761,7 +762,6 @@ function loadChart() {
         chart = null;
     }
 
-    // slight delay to ensure modal renders
     setTimeout(() => {
 
         chart = LightweightCharts.createChart(container, {
@@ -775,21 +775,35 @@ function loadChart() {
             .then(res => res.json())
             .then(data => {
 
+                // 🚨 ignore outdated responses
+                if (currentRequest !== requestId) return;
+
                 if (!data || data.length === 0) {
                     console.warn("No chart data");
                     return;
                 }
 
-                // ✅ set candles
-                candleSeries.setData(data);
+                const cleanData = data.filter(d =>
+                    d && d.time &&
+                    d.open != null &&
+                    d.high != null &&
+                    d.low != null &&
+                    d.close != null &&
+                    !isNaN(d.open) &&
+                    !isNaN(d.high) &&
+                    !isNaN(d.low) &&
+                    !isNaN(d.close)
+                );
 
-                // ✅ apply indicators (from backend values)
-                if (indicators.ema) addEMA(data);
-                if (indicators.vwap) addVWAP(data);
-                if (indicators.ichimoku) addIchimoku(data);
-                if (indicators.rsi) addRSI(data);
+                if (cleanData.length === 0) return;
 
-                // ✅ auto-fit chart
+                candleSeries.setData(cleanData);
+
+                if (indicators.ema) addEMA(cleanData);
+                if (indicators.vwap) addVWAP(cleanData);
+                if (indicators.ichimoku) addIchimoku(cleanData);
+                if (indicators.rsi) addRSI(cleanData);
+
                 chart.timeScale().fitContent();
             })
             .catch(err => console.error("Chart error:", err));

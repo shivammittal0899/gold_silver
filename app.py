@@ -1662,6 +1662,29 @@ def analyze_stocks():
         ))
     log1(output)
     return jsonify([r for r in output if r])
+
+@app.route("/get_chart_data")
+def get_chart_data():
+    symbol = request.args.get("symbol")
+
+    import yfinance as yf
+    df = yf.download(symbol, period="3mo", interval="1d")
+
+    df.reset_index(inplace=True)
+
+    data = []
+    for _, row in df.iterrows():
+        data.append({
+            "time": row["Date"].strftime("%Y-%m-%d"),
+            "open": float(row["Open"]),
+            "high": float(row["High"]),
+            "low": float(row["Low"]),
+            "close": float(row["Close"]),
+        })
+
+    return jsonify(data)
+
+
 # ----------------------------
 # Live Logs Page
 # ----------------------------

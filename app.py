@@ -1727,7 +1727,8 @@ def get_chart_data():
         if interval == "day":
             time_val = row["Date"].strftime("%Y-%m-%d")
         else:
-            time_val = row["Date"].strftime("%Y-%m-%d %H:%M:%S")
+            # time_val = row["Date"].strftime("%Y-%m-%d %H:%M:%S")
+            time_val = int(pd.Timestamp(row["Date"]).timestamp())
         data.append({
             "time": time_val,
             "open": o,

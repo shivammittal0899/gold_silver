@@ -1707,7 +1707,7 @@ def get_chart_data():
     df.reset_index(drop=True, inplace=True)
     df = indicator_values(df)
     log1(f"{symbol} -- {len(df)} -- {df.columns}")
-
+    df = df[60:]
     data = []
     for _, row in df.iterrows():
         if pd.isna(row["Open"]) or pd.isna(row["High"]) or pd.isna(row["Low"]) or pd.isna(row["Close"]):
@@ -1730,7 +1730,7 @@ def get_chart_data():
             "spanA": float(row.get("senkou_a", 0)),
             "spanB": float(row.get("senkou_b", 0)),
         })
-    
+
     return jsonify(data)
 
 

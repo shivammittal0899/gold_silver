@@ -1,5 +1,5 @@
 from ta.momentum import RSIIndicator
-from ta.trend import IchimokuIndicator
+from ta.trend import IchimokuIndicator, EMAIndicator
 from ta import volatility
 from ta.volume import VolumeWeightedAveragePrice
 import pandas as pd
@@ -7,7 +7,7 @@ import json
 def indicator_values(df):
     rsi = RSIIndicator(close=df['Close'], window=14)
     df['RSI'] = rsi.rsi()
-
+    df["ema"] = EMAIndicator(df["Close"], window=9).ema_indicator()
     ichi = IchimokuIndicator(
         high=df['High'],
         low=df['Low'],

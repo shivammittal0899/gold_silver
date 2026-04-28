@@ -1653,7 +1653,7 @@ def analyze_stocks():
     # kite_local = KiteConnect(api_key=API_KEY)
     # kite_local.set_access_token(access_token)
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         output = list(executor.map(
             lambda s: analyze_one_stock(s, access_token),
             symbols
@@ -1722,13 +1722,13 @@ def get_chart_data():
             "close": float(row["Close"]),
 
             # indicators
-            # "ema": float(row.get("ema", 0)),
+            "ema": float(row.get("ema", 0)),
             "vwap": float(row.get("vwap", 0)),
             "rsi": float(row.get("rsi", 0)),
             "tenkan": float(row.get("tenkan", 0)),
             "kijun": float(row.get("kijun", 0)),
-            "spanA": float(row.get("span_a", 0)),
-            "spanB": float(row.get("span_b", 0)),
+            "spanA": float(row.get("senkou_a", 0)),
+            "spanB": float(row.get("senkou_b", 0)),
         })
 
     return jsonify(data)

@@ -809,40 +809,44 @@ function closeChart() {
 }
 
 function addEMA(data) {
-    let emaSeries = chart.addLineSeries({ color: 'blue', lineWidth: 2 });
+    let emaSeries = chart.addSeries(LightweightCharts.LineSeries, {
+        color: 'blue',
+        lineWidth: 2
+    });
 
-    let emaData = data.map(d => ({
-        time: d.time,
-        value: d.ema
-    }));
-
-    emaSeries.setData(emaData);
+    emaSeries.setData(
+        data
+            .filter(d => d.ema != null)
+            .map(d => ({ time: d.time, value: d.ema }))
+    );
 }
 
 function addVWAP(data) {
-    let vwapSeries = chart.addLineSeries({ color: 'orange', lineWidth: 2 });
+    let vwapSeries = chart.addSeries(LightweightCharts.LineSeries, {
+        color: 'orange',
+        lineWidth: 2
+    });
 
-    let vwapData = data.map(d => ({
-        time: d.time,
-        value: d.vwap
-    }));
-
-    vwapSeries.setData(vwapData);
+    vwapSeries.setData(
+        data
+            .filter(d => d.vwap != null)
+            .map(d => ({ time: d.time, value: d.vwap }))
+    );
 }
 
 function addIchimoku(data) {
-    let tenkan = chart.addLineSeries({ color: 'red' });
-    let kijun = chart.addLineSeries({ color: 'blue' });
-    let spanA = chart.addLineSeries({ color: 'green' });
-    let spanB = chart.addLineSeries({ color: 'brown' });
+    let tenkan = chart.addSeries(LightweightCharts.LineSeries, { color: 'red' });
+    let kijun = chart.addSeries(LightweightCharts.LineSeries, { color: 'blue' });
+    let spanA = chart.addSeries(LightweightCharts.LineSeries, { color: 'green' });
+    let spanB = chart.addSeries(LightweightCharts.LineSeries, { color: 'brown' });
 
-    tenkan.setData(data.map(d => ({ time: d.time, value: d.tenkan })));
-    kijun.setData(data.map(d => ({ time: d.time, value: d.kijun })));
-    spanA.setData(data.map(d => ({ time: d.time, value: d.spanA })));
-    spanB.setData(data.map(d => ({ time: d.time, value: d.spanB })));
+    tenkan.setData(data.filter(d => d.tenkan != null).map(d => ({ time: d.time, value: d.tenkan })));
+    kijun.setData(data.filter(d => d.kijun != null).map(d => ({ time: d.time, value: d.kijun })));
+    spanA.setData(data.filter(d => d.spanA != null).map(d => ({ time: d.time, value: d.spanA })));
+    spanB.setData(data.filter(d => d.spanB != null).map(d => ({ time: d.time, value: d.spanB })));
 }
 function addRSI(data) {
-    let rsiSeries = chart.addLineSeries({
+    let rsiSeries = chart.addSeries(LightweightCharts.LineSeries, {
         color: 'purple',
         lineWidth: 2,
         priceScaleId: 'rsi-scale'
@@ -851,16 +855,15 @@ function addRSI(data) {
     chart.priceScale('rsi-scale').applyOptions({
         scaleMargins: {
             top: 0.8,
-            bottom: 0,
+            bottom: 0
         }
     });
 
-    let rsiData = data.map(d => ({
-        time: d.time,
-        value: d.rsi
-    }));
-
-    rsiSeries.setData(rsiData);
+    rsiSeries.setData(
+        data
+            .filter(d => d.rsi != null)
+            .map(d => ({ time: d.time, value: d.rsi }))
+    );
 }
 </script>
 <script>

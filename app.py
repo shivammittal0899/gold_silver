@@ -1674,13 +1674,13 @@ def get_chart_data():
 
     df = yf.download(symbol, period="3mo", interval="1d")
 
+    log1(len(df))
     if df.empty:
         return jsonify([])
 
     df.reset_index(inplace=True)
 
     data = []
-
     for _, row in df.iterrows():
         # ✅ Skip NaN rows
         if any(pd.isna([row["Open"], row["High"], row["Low"], row["Close"]])):

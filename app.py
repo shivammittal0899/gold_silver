@@ -1662,45 +1662,44 @@ def analyze_stocks():
     return jsonify([r for r in output if r])
 
 @app.route("/get_chart_data")
+@app.route("/get_chart_data")
 def get_chart_data():
     symbol = request.args.get("symbol")
+
     access_token = read_access_token()
     kite_local = KiteConnect(api_key=API_KEY)
     kite_local.set_access_token(access_token)
+
     token = get_instrument_token(symbol)
 
     if not token:
-        return empty_stock_result(symbol, "token issue")
+        return jsonify([])
 
-    df = fetch_with_retry_token(symbol, token, "day", kite_local, period = 360)
-    
-    if df is None or len(df) < 120:
-        return empty_stock_result(symbol, "df")
+    df = fetch_with_retry_token(symbol, token, "day", kite_local, period=360)
+
+    if df is None or len(df) < 50:
+        return jsonify([])
 
     df.rename(columns={
+        'date': 'Date',
         'open': 'Open',
         'high': 'High',
         'low': 'Low',
         'close': 'Close',
-        'volume': 'Volume',
-        'oi': 'OI'
     }, inplace=True)
 
-    log1(f"{symbol} -- {len(df)}")
     if df.empty:
         return jsonify([])
-
-    log1(f"{symbol} -------- {len(df)} -- {df.columns}")
-    df.reset_index(inplace=True)
+    df.reset_index(drop=True, inplace=True)
+    log1(f"{symbol} -- {len(df)} -- {df.columns}")
 
     data = []
     for _, row in df.iterrows():
-        # ✅ Skip NaN rows
-        if any(pd.isna([row["Open"], row["High"], row["Low"], row["Close"]])):
+        if pd.isna(row["Open"]) or pd.isna(row["High"]) or pd.isna(row["Low"]) or pd.isna(row["Close"]):
             continue
 
         data.append({
-            "time": row["Date"].strftime("%Y-%m-%d"),
+            "time": str(row["Date"])[:10],
             "open": float(row["Open"]),
             "high": float(row["High"]),
             "low": float(row["Low"]),

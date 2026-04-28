@@ -868,50 +868,36 @@ function addVWAP(data) {
     );
 }
 function addIchimoku(data) {
-    const shift = 26;
 
-    // 🔹 Lines
     const tenkan = chart.addSeries(LightweightCharts.LineSeries, { color: "blue" });
     const kijun = chart.addSeries(LightweightCharts.LineSeries, { color: "red" });
-    const spanALine = chart.addSeries(LightweightCharts.LineSeries, { color: "green" });
-    const spanBLine = chart.addSeries(LightweightCharts.LineSeries, { color: "brown" });
 
-    // 🔹 Tenkan & Kijun
-    tenkan.setData(
-        data.filter(d => d.tenkan != null)
-            .map(d => ({ time: d.time, value: d.tenkan }))
-    );
+    const spanA = chart.addSeries(LightweightCharts.AreaSeries, {
+        topColor: "rgba(0, 200, 0, 0.3)",
+        bottomColor: "rgba(0, 200, 0, 0.05)",
+        lineColor: "green",
+        lineWidth: 1
+    });
 
-    kijun.setData(
-        data.filter(d => d.kijun != null)
-            .map(d => ({ time: d.time, value: d.kijun }))
-    );
+    const spanB = chart.addSeries(LightweightCharts.AreaSeries, {
+        topColor: "rgba(200, 0, 0, 0.3)",
+        bottomColor: "rgba(200, 0, 0, 0.05)",
+        lineColor: "red",
+        lineWidth: 1
+    });
 
-    // 🔥 Create ONE aligned shifted dataset
-    let spanDataA = [];
-    let spanDataB = [];
+    // ✅ NO SHIFT
+    tenkan.setData(data.filter(d => d.tenkan != null)
+        .map(d => ({ time: d.time, value: d.tenkan })));
 
-    for (let i = 0; i < data.length - shift; i++) {
-        let d = data[i];
-        let futureTime = data[i + shift].time;
+    kijun.setData(data.filter(d => d.kijun != null)
+        .map(d => ({ time: d.time, value: d.kijun })));
 
-        if (d.spanA != null) {
-            spanDataA.push({
-                time: futureTime,
-                value: d.spanA
-            });
-        }
+    spanA.setData(data.filter(d => d.spanA != null)
+        .map(d => ({ time: d.time, value: d.spanA })));
 
-        if (d.spanB != null) {
-            spanDataB.push({
-                time: futureTime,
-                value: d.spanB
-            });
-        }
-    }
-
-    spanALine.setData(spanDataA);
-    spanBLine.setData(spanDataB);
+    spanB.setData(data.filter(d => d.spanB != null)
+        .map(d => ({ time: d.time, value: d.spanB })));
 }
 function addRSI(data) {
     let rsiSeries = chart.addSeries(LightweightCharts.LineSeries, {

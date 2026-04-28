@@ -776,7 +776,18 @@ function loadChart() {
                 secondsVisible: false  // optional
             }
         });
-        
+        chart.applyOptions({
+            localization: {
+                timeFormatter: time => {
+                    const date = new Date(time * 1000);
+                    if (currentInterval === "day") {
+                        return date.toLocaleDateString();
+                    } else {
+                        return date.toLocaleTimeString();
+                    }
+                }
+            }
+        });
 
         candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries);
         fetch(`/get_chart_data?symbol=${currentSymbol}&interval=${currentInterval}`)
@@ -816,18 +827,7 @@ function loadChart() {
                 chart.timeScale().fitContent();
             })
             .catch(err => console.error("Chart error:", err));
-        chart.applyOptions({
-            localization: {
-                timeFormatter: time => {
-                    const date = new Date(time * 1000);
-                    if (currentInterval === "day") {
-                        return date.toLocaleDateString();
-                    } else {
-                        return date.toLocaleTimeString();
-                    }
-                }
-            }
-        });
+        
     }, 50);
 }
 function changeTimeframe() {
@@ -886,11 +886,39 @@ function addIchimoku(data) {
         lineWidth: 1
     });
 
+    // 🔥 shift value (26 periods)
+    const shift = 26;
+
+    // Tenkan & Kijun (normal)
     tenkan.setData(data.map(d => ({ time: d.time, value: d.tenkan })));
     kijun.setData(data.map(d => ({ time: d.time, value: d.kijun })));
 
-    spanA.setData(data.map(d => ({ time: d.time, value: d.spanA })));
-    spanB.setData(data.map(d => ({ time: d.time, value: d.spanB })));
+    // 🔥 SHIFTED CLOUD
+    spanA.setData(
+        data
+            .filter(d => d.spanA != null)
+            .map((d, i) => {
+                if (i + shift >= data.length) return null;
+                return {
+                    time: data[i + shift].time,
+                    value: d.spanA
+                };
+            })
+            .filter(x => x)
+    );
+
+    spanB.setData(
+        data
+            .filter(d => d.spanB != null)
+            .map((d, i) => {
+                if (i + shift >= data.length) return null;
+                return {
+                    time: data[i + shift].time,
+                    value: d.spanB
+                };
+            })
+            .filter(x => x)
+    );
 }
 function addRSI(data) {
     let rsiSeries = chart.addSeries(LightweightCharts.LineSeries, {

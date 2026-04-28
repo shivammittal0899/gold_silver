@@ -1683,6 +1683,7 @@ def get_chart_data():
         "60minute": 60,
         "day": 365
     }
+    log1(f"{interval} -- {period_map.get(interval, 365)}")
     df = fetch_with_retry_token(
         symbol,
         token,
@@ -1706,8 +1707,8 @@ def get_chart_data():
 
     df.reset_index(drop=True, inplace=True)
     df = indicator_values(df)
-    log1(f"{symbol} -- {len(df)} -- {df.columns}")
     df = df[60:]
+    log1(f"{symbol} -- {len(df)} -- {df.columns}")
     data = []
     for _, row in df.iterrows():
         if pd.isna(row["Open"]) or pd.isna(row["High"]) or pd.isna(row["Low"]) or pd.isna(row["Close"]):

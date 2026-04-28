@@ -401,8 +401,6 @@ def fetch_with_retry_token(symbol, token, interval, kite, period = 30, retries=3
             # time_correction = 0
             time_now = datetime.now() + time_correction
             time_delay = time_now - timedelta(days=period)
-            # print(time_delay, time_now)
-            # instrument = kite.ltp(f"MCX:{symbol}")[f"MCX:{symbol}"]['instrument_token']
             data = kite.historical_data(
                 instrument_token=token,
                 from_date=time_delay,
@@ -411,7 +409,7 @@ def fetch_with_retry_token(symbol, token, interval, kite, period = 30, retries=3
                 oi = True
             )
             df = pd.DataFrame(data)
-            log1(df['date'].iloc[-1])
+            # log1(df['date'].iloc[-1])
             return df
         except Exception as e:
             log1(f"⚠️ Attempt {attempt+1} failed: {e}")
@@ -1602,10 +1600,10 @@ def analyze_one_stock(symbol, access_token):
         result1, df1 = stock_data_analysis(df1, "30m")
         result2, df2 = stock_data_analysis(df2, "60m")
         result3, df3 = stock_data_analysis(df3, "1d")
-        log1(df3['Close'].iat[-1])
-        log1(df3['Close'].iat[-5])
+        # log1(df3['Close'].iat[-1])
+        # log1(df3['Close'].iat[-5])
         result_ret = stock_data_analysis_common(df3)
-        log1(result_ret)
+        # log1(result_ret)
         result = {
             # 'symbol': result1['symbol'],
             'price': result1['price'],
@@ -1660,7 +1658,7 @@ def analyze_stocks():
             lambda s: analyze_one_stock(s, access_token),
             symbols
         ))
-    log1(output)
+    # log1(output)
     return jsonify([r for r in output if r])
 
 @app.route("/get_chart_data")
@@ -1669,6 +1667,7 @@ def get_chart_data():
 
     import yfinance as yf
     df = yf.download(symbol, period="3mo", interval="1d")
+    log1(len(df))
 
     df.reset_index(inplace=True)
 

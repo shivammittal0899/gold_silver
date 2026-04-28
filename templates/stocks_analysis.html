@@ -767,6 +767,10 @@ function loadChart() {
         chart = LightweightCharts.createChart(container, {
             width: container.clientWidth,
             height: container.clientHeight,
+            timeScale: {
+                timeVisible: true,     // 🔥 REQUIRED
+                secondsVisible: false  // optional
+            }
         });
 
         candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries);

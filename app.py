@@ -1650,8 +1650,8 @@ def analyze_stocks():
 
     access_token = read_access_token()
 
-    kite_local = KiteConnect(api_key=API_KEY)
-    kite_local.set_access_token(access_token)
+    # kite_local = KiteConnect(api_key=API_KEY)
+    # kite_local.set_access_token(access_token)
 
     with ThreadPoolExecutor(max_workers=3) as executor:
         output = list(executor.map(
@@ -1664,15 +1664,27 @@ def analyze_stocks():
 @app.route("/get_chart_data")
 def get_chart_data():
     symbol = request.args.get("symbol")
+    access_token = read_access_token()
+    kite_local = KiteConnect(api_key=API_KEY)
+    kite_local.set_access_token(access_token)
+    token = get_instrument_token(symbol)
 
-    import yfinance as yf
-    import pandas as pd
+    if not token:
+        return empty_stock_result(symbol, "token issue")
 
-    # ✅ Fix symbol for NSE
-    if not symbol.endswith(".NS"):
-        symbol = symbol + ".NS"
-    log1(symbol)
-    df = yf.download(symbol, period="3mo", interval="1d")
+    df = fetch_with_retry_token(symbol, token, "day", kite_local, period = 360)
+    
+    if df is None or len(df) < 120:
+        return empty_stock_result(symbol, "df")
+
+    df.rename(columns={
+        'open': 'Open',
+        'high': 'High',
+        'low': 'Low',
+        'close': 'Close',
+        'volume': 'Volume',
+        'oi': 'OI'
+    }, inplace=True)
 
     log1(f"{symbol} -- {len(df)}")
     if df.empty:

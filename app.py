@@ -1723,7 +1723,7 @@ def get_chart_data():
         # 🚨 HARD FILTER (MANDATORY)
         if None in (o, h, l, c):
             continue
-
+        log1(row)
         data.append({
             "time": str(row["Date"])[:10],
             "open": o,

@@ -207,7 +207,26 @@
 
         <!-- Chart container -->
         <div id="chartContainer" style="width:100%; height:90%;"></div>
+        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+
+            <!-- Timeframe -->
+            <select id="timeframeSelect" onchange="changeTimeframe()">
+                <option value="5minute">5m</option>
+                <option value="15minute">15m</option>
+                <option value="30minute">30m</option>
+                <option value="60minute">60m</option>
+                <option value="day" selected>1D</option>
+            </select>
+
+            <!-- Indicators -->
+            <label><input type="checkbox" onchange="toggleIndicator('ichimoku')"> Ichimoku</label>
+            <label><input type="checkbox" onchange="toggleIndicator('rsi')"> RSI</label>
+            <label><input type="checkbox" onchange="toggleIndicator('vwap')"> VWAP</label>
+            <label><input type="checkbox" onchange="toggleIndicator('ema')"> EMA</label>
+
+        </div>
     </div>
+
 </div>
 <script>
 
@@ -714,12 +733,27 @@ function initDataTable() {
 }
 let chart = null;
 let candleSeries = null;
+let currentSymbol = null;
+let currentInterval = "day";
 
+let indicators = {
+    ichimoku: false,
+    rsi: false,
+    vwap: false,
+    ema: false
+};
 function openChart(symbol) {
+    currentSymbol = symbol;
+
     document.getElementById("chartModal").style.display = "block";
     document.getElementById("chartTitle").innerText = symbol;
 
+    loadChart();   // 🔥 delegate everything
+}
+function loadChart() {
     let container = document.getElementById("chartContainer");
+
+    // clear old chart
     container.innerHTML = "";
 
     if (chart) {
@@ -727,26 +761,106 @@ function openChart(symbol) {
         chart = null;
     }
 
+    // slight delay to ensure modal renders
     setTimeout(() => {
+
         chart = LightweightCharts.createChart(container, {
             width: container.clientWidth,
             height: container.clientHeight,
         });
 
-        // ✅ FIX HERE
         candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries);
 
-        fetch(`/get_chart_data?symbol=${symbol}`)
+        fetch(`/get_chart_data?symbol=${currentSymbol}&interval=${currentInterval}`)
             .then(res => res.json())
             .then(data => {
+
+                if (!data || data.length === 0) {
+                    console.warn("No chart data");
+                    return;
+                }
+
+                // ✅ set candles
                 candleSeries.setData(data);
-            });
 
-    }, 100);
+                // ✅ apply indicators (from backend values)
+                if (indicators.ema) addEMA(data);
+                if (indicators.vwap) addVWAP(data);
+                if (indicators.ichimoku) addIchimoku(data);
+                if (indicators.rsi) addRSI(data);
+
+                // ✅ auto-fit chart
+                chart.timeScale().fitContent();
+            })
+            .catch(err => console.error("Chart error:", err));
+
+    }, 50);
 }
-
+function changeTimeframe() {
+    currentInterval = document.getElementById("timeframeSelect").value;
+    loadChart();
+}
+function toggleIndicator(name) {
+    indicators[name] = !indicators[name];
+    loadChart();
+}
 function closeChart() {
     document.getElementById("chartModal").style.display = "none";
+}
+
+function addEMA(data) {
+    let emaSeries = chart.addLineSeries({ color: 'blue', lineWidth: 2 });
+
+    let emaData = data.map(d => ({
+        time: d.time,
+        value: d.ema
+    }));
+
+    emaSeries.setData(emaData);
+}
+
+function addVWAP(data) {
+    let vwapSeries = chart.addLineSeries({ color: 'orange', lineWidth: 2 });
+
+    let vwapData = data.map(d => ({
+        time: d.time,
+        value: d.vwap
+    }));
+
+    vwapSeries.setData(vwapData);
+}
+
+function addIchimoku(data) {
+    let tenkan = chart.addLineSeries({ color: 'red' });
+    let kijun = chart.addLineSeries({ color: 'blue' });
+    let spanA = chart.addLineSeries({ color: 'green' });
+    let spanB = chart.addLineSeries({ color: 'brown' });
+
+    tenkan.setData(data.map(d => ({ time: d.time, value: d.tenkan })));
+    kijun.setData(data.map(d => ({ time: d.time, value: d.kijun })));
+    spanA.setData(data.map(d => ({ time: d.time, value: d.spanA })));
+    spanB.setData(data.map(d => ({ time: d.time, value: d.spanB })));
+}
+function addRSI(data) {
+    let rsiSeries = chart.addLineSeries({
+        color: 'purple',
+        lineWidth: 2,
+        priceScaleId: 'rsi-scale'
+    });
+
+    chart.priceScale('rsi-scale').applyOptions({
+        scaleMargins: {
+            top: 0.8,
+            bottom: 0,
+        }
+    });
+
+    let rsiData = data.map(d => ({
+        time: d.time,
+        value: d.rsi
+    }));
+
+    rsiSeries.setData(rsiData);
 }
 </script>
 <script>

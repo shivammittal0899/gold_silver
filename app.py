@@ -1662,9 +1662,9 @@ def analyze_stocks():
     return jsonify([r for r in output if r])
 
 @app.route("/get_chart_data")
-@app.route("/get_chart_data")
 def get_chart_data():
     symbol = request.args.get("symbol")
+    interval = request.args.get("interval", "day")
 
     access_token = read_access_token()
     kite_local = KiteConnect(api_key=API_KEY)
@@ -1674,8 +1674,23 @@ def get_chart_data():
 
     if not token:
         return jsonify([])
+    
+    # 🔥 adjust period dynamically
+    period_map = {
+        "5minute": 7,
+        "15minute": 15,
+        "30minute": 30,
+        "60minute": 60,
+        "day": 365
+    }
+    df = fetch_with_retry_token(
+        symbol,
+        token,
+        interval,
+        kite_local,
+        period=period_map.get(interval, 365)
+    )
 
-    df = fetch_with_retry_token(symbol, token, "day", kite_local, period=360)
 
     if df is None or len(df) < 50:
         return jsonify([])
@@ -1686,11 +1701,11 @@ def get_chart_data():
         'high': 'High',
         'low': 'Low',
         'close': 'Close',
+        'volume': 'Volume',
     }, inplace=True)
 
-    if df.empty:
-        return jsonify([])
     df.reset_index(drop=True, inplace=True)
+    df = indicator_values(df)
     log1(f"{symbol} -- {len(df)} -- {df.columns}")
 
     data = []
@@ -1699,11 +1714,21 @@ def get_chart_data():
             continue
 
         data.append({
-            "time": str(row["Date"])[:10],
+            "time": row["Date"].strftime("%Y-%m-%d %H:%M:%S") if interval != "day" else row["Date"].strftime("%Y-%m-%d"),
+
             "open": float(row["Open"]),
             "high": float(row["High"]),
             "low": float(row["Low"]),
             "close": float(row["Close"]),
+
+            # indicators
+            # "ema": float(row.get("ema", 0)),
+            "vwap": float(row.get("vwap", 0)),
+            "rsi": float(row.get("rsi", 0)),
+            "tenkan": float(row.get("tenkan", 0)),
+            "kijun": float(row.get("kijun", 0)),
+            "spanA": float(row.get("span_a", 0)),
+            "spanB": float(row.get("span_b", 0)),
         })
 
     return jsonify(data)

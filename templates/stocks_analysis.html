@@ -182,6 +182,7 @@
 <button onclick="deleteSelectedStocks()" style="background:#e74c3c;">
     🗑 Delete Selected
 </button>
+<button onclick="copySelectedSymbols()">📋 Copy Symbols</button>
 <div id="chartModal" style="
     display:none;
     position:fixed;
@@ -271,7 +272,7 @@ function updateSelectedDisplay() {
     let selected = getSelectedStocks();
     let display = document.getElementById("selectedStocks");
     // 🔥 SAVE TO LOCALSTORAGE HERE
-    localStorage.setItem("selectedStocks", JSON.stringify(selected));
+    sessionStorage.setItem("selectedStocks", JSON.stringify(selected));
     if (selected.length === 0) {
         display.innerHTML = "<span style='color:#888'>No stocks selected</span>";
         return;
@@ -397,7 +398,7 @@ function toggleWatchlist(id, btn) {
     }
 
     activeWatchlist = id;
-    localStorage.setItem("activeWatchlist", id);
+    sessionStorage.setItem("activeWatchlist", id);
 
     document.querySelectorAll("#watchlists button").forEach(b => {
         b.classList.remove("active");
@@ -921,6 +922,25 @@ function addRSI(data) {
             .map(d => ({ time: d.time, value: d.rsi }))
     );
 }
+function copySelectedSymbols() {
+    let selected = getCheckedStocks();  // already exists in your code
+
+    if (selected.length === 0) {
+        alert("Select at least one stock");
+        return;
+    }
+
+    let text = selected.join(" ");
+
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            alert("✅ Copied: " + text);
+        })
+        .catch(err => {
+            console.error("Copy failed", err);
+            alert("❌ Copy failed");
+        });
+}
 </script>
 <script>
 
@@ -950,14 +970,14 @@ $(document).ready(function() {
     });
 
     // 🔹 Restore selected stocks
-    let savedStocks = JSON.parse(localStorage.getItem("selectedStocks") || "[]");
+    let savedStocks = JSON.parse(sessionStorage.getItem("selectedStocks") || "[]");
     if (savedStocks.length > 0) {
         loadSelectedStocks(savedStocks);
     }
     updateSelectedDisplay();
 
     // 🔹 Restore active watchlist (KEEP ONLY THIS ONE LOGIC)
-    let savedWid = localStorage.getItem("activeWatchlist");
+    let savedWid = sessionStorage.getItem("activeWatchlist");
 
     if (savedWid) {
         let btn = Array.from(document.querySelectorAll(".watchlist-btn"))

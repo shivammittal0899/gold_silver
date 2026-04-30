@@ -665,7 +665,7 @@ function getReturnColor(val) {
     if (val === null || val === undefined) return "";
 
     // Strong negative → dark red
-    if (val <= -10) return "background-color:#8B0000; color:white; font-weight:bold;";
+    if (val <= -10) return "background-color:#e60000; color:white; font-weight:bold;";
     
     if (val <= -5) return "color:#cc0000; font-weight:bold;";
 
@@ -679,7 +679,7 @@ function getReturnColor(val) {
     if (val > 0 && val < 5) return "color:#00cc00; font-weight:bold;";
 
     // Strong positive → dark green
-    if (val >= 5) return "color:#004d00; font-weight:bold;";
+    if (val >=5 && val < 10) return "color:#004d00; font-weight:bold;";
     
     if (val >= 10) return "background-color:#004d00; color:white; font-weight:bold;";
 

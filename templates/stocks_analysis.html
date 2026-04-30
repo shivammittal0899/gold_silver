@@ -706,7 +706,7 @@ function getRSIColor(val) {
     // if (val < 60) return "color:#ff4d4d; font-weight:bold;";
 
     // Neutral
-    if (val === 60) return "background-color:#f2f2f2; font-weight:bold;";
+    if (val < 60) return "background-color:#f2f2f2; font-weight:bold;";
 
     // Mild positive → light green
     // if (val > 0 && val < 5) return "color:#00cc00; font-weight:bold;";

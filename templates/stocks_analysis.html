@@ -168,6 +168,12 @@
             <th>Signal 30m</th>
             <th>Signal 60m</th>
             <th>Signal 1d</th>
+            <th>RSI 30m</th>
+            <th>RSI 60m</th>
+            <th>RSI 1d</th>
+            <th>PriceTenkan 30m</th>
+            <th>PriceTenkan 60m</th>
+            <th>PriceTenkan 1d</th>
             <th>TenkanKijun 30m</th>
             <th>TenkanKijun 60m</th>
             <th>TenkanKijun 1d</th>
@@ -685,6 +691,30 @@ function getReturnColor(val) {
 
     return "";
 }
+function getRSIColor(val) {
+    if (val === null || val === undefined) return "";
+
+    // Strong negative → dark red
+    if (val <= 20) return "background-color:#e60000; color:white; font-weight:bold;";
+    
+    if (val <= 40) return "color:#cc0000; font-weight:bold;";
+
+    // Mild negative → light red
+    // if (val < 60) return "color:#ff4d4d; font-weight:bold;";
+
+    // Neutral
+    if (val === 60) return "background-color:#f2f2f2; font-weight:bold;";
+
+    // Mild positive → light green
+    // if (val > 0 && val < 5) return "color:#00cc00; font-weight:bold;";
+
+    // Strong positive → dark green
+    if (val <= 80) return "color:#004d00; font-weight:bold;";
+    
+    if (val <= 100) return "background-color:#004d00; color:white; font-weight:bold;";
+
+    return "";
+}
 function updateTableWithAnalysis(data) {
     let table = document.getElementById("stocks_table");
     // ✅ Proper destroy
@@ -734,6 +764,12 @@ function updateTableWithAnalysis(data) {
                 <td style="color:${color30}; font-weight:bold;">${sig30 || '-'}</td>
                 <td style="color:${color60}; font-weight:bold;">${sig60 || '-'}</td>
                 <td style="color:${color1d}; font-weight:bold;">${sig1d || '-'}</td>
+                <td style="${getRSIColor(d.ret1)}">${d.rsi_30m || '-'}</td>
+                <td style="${getRSIColor(d.ret1)}">${d.rsi_60m || '-'}</td>
+                <td style="${getRSIColor(d.ret1)}">${d.rsi_1d || '-'}</td>
+                <td>${d.price_tenkan_30m || '-'}</td>
+                <td>${d.price_tenkan_60m || '-'}</td>
+                <td>${d.price_tenkan_1d || '-'}</td>
                 <td>${d.tenkan_kijun_30m || '-'}</td>
                 <td>${d.tenkan_kijun_60m || '-'}</td>
                 <td>${d.tenkan_kijun_1d || '-'}</td>

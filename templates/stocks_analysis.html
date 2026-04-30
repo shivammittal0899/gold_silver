@@ -19,6 +19,9 @@
         font-family: Arial;
         margin: 20px;
     }
+    body {
+        overflow: hidden;   /* 🔥 stops full page scrolling */
+    }
 
     h3 {
         margin-top: 20px;
@@ -89,6 +92,9 @@
     #chartContainer table{
         margin-top: 0!important;
     }
+    .dataTables_wrapper {
+        width: 100%;
+    }
     </style>
 </head>
 
@@ -153,35 +159,35 @@
 
     <button onclick="saveToWatchlist()">Save</button>
 </div>
-
-<table id="analysisTable" class="display">
-    <thead>
-        <tr>
-            <th><input type="checkbox" onclick="toggleAll(this)"></th>
-            <th>Symbol</th>
-            <th>Price</th>
-            <th>Return 1D</th>
-            <th>Return 5D</th>
-            <th>Return 15D</th>
-            <th>Return 30D</th>
-            <th>Return 90D</th>
-            <th>Signal 30m</th>
-            <th>Signal 60m</th>
-            <th>Signal 1d</th>
-            <th>RSI 30m</th>
-            <th>RSI 60m</th>
-            <th>RSI 1d</th>
-            <th>PriceTenkan 30m</th>
-            <th>PriceTenkan 60m</th>
-            <th>PriceTenkan 1d</th>
-            <th>TenkanKijun 30m</th>
-            <th>TenkanKijun 60m</th>
-            <th>TenkanKijun 1d</th>
-        </tr>
-    </thead>
-    <tbody id="stocks_table"></tbody>
-</table>
-
+<div class = "analysis-table-container" style="width:100%;">
+    <table id="analysisTable" class="display">
+        <thead>
+            <tr>
+                <th><input type="checkbox" onclick="toggleAll(this)"></th>
+                <th>Symbol</th>
+                <th>Price</th>
+                <th>Return 1D</th>
+                <th>Return 5D</th>
+                <th>Return 15D</th>
+                <th>Return 30D</th>
+                <th>Return 90D</th>
+                <th>Signal 30m</th>
+                <th>Signal 60m</th>
+                <th>Signal 1d</th>
+                <th>RSI 30m</th>
+                <th>RSI 60m</th>
+                <th>RSI 1d</th>
+                <th>PriceTenkan 30m</th>
+                <th>PriceTenkan 60m</th>
+                <th>PriceTenkan 1d</th>
+                <th>TenkanKijun 30m</th>
+                <th>TenkanKijun 60m</th>
+                <th>TenkanKijun 1d</th>
+            </tr>
+        </thead>
+        <tbody id="stocks_table"></tbody>
+    </table>
+</div>
 <br>
 
 <button onclick="addCheckedToWatchlist()">➕ Add Selected to Watchlist</button>
@@ -687,7 +693,7 @@ function getReturnColor(val) {
     // Strong positive → dark green
     if (val >=5 && val < 10) return "color:#004d00; font-weight:bold;";
     
-    if (val >= 10) return "background-color:#004d00; color:white; font-weight:bold;";
+    if (val >= 10) return "background-color:#009933; color:white; font-weight:bold;";
 
     return "";
 }
@@ -792,6 +798,9 @@ function initDataTable() {
         ordering: true,
         searching: true,
         // destroy: true,  // 🔥 safety
+        scrollY: "80vh",     // 🔥 vertical scroll
+        scrollX: true,        // 🔥 horizontal scroll
+        scrollCollapse: true, // shrink if less data
         columnDefs: [
             { orderable: false, targets: 0 }
         ]

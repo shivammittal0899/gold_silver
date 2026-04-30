@@ -661,7 +661,26 @@ function deleteSelectedStocks() {
         autoLoadWatchlist(activeWatchlist);
     });
 }
+function getReturnColor(val) {
+    if (val === null || val === undefined) return "";
 
+    // Strong negative → dark red
+    if (val <= -5) return "background-color:#8B0000; color:white;";
+
+    // Mild negative → light red
+    if (val < 0) return "background-color:#ffcccc;";
+
+    // Neutral
+    if (val === 0) return "background-color:#f2f2f2;";
+
+    // Mild positive → light green
+    if (val > 0 && val < 5) return "background-color:#ccffcc;";
+
+    // Strong positive → dark green
+    if (val >= 5) return "background-color:#006400; color:white;";
+
+    return "";
+}
 function updateTableWithAnalysis(data) {
     let table = document.getElementById("stocks_table");
     // ✅ Proper destroy
@@ -703,11 +722,11 @@ function updateTableWithAnalysis(data) {
                     ${d.symbol}
                 </td>
                 <td>${d.price?.toFixed(2) || '-'}</td>
-                <td>${d.ret1?.toFixed(2) || '-'}</td>
-                <td>${d.ret5?.toFixed(2) || '-'}</td>
-                <td>${d.ret15?.toFixed(2) || '-'}</td>
-                <td>${d.ret30?.toFixed(2) || '-'}</td>
-                <td>${d.ret90?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.ret1?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret5)}">${d.ret5?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret15)}">${d.ret15?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret30)}">${d.ret30?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret90)}">${d.ret90?.toFixed(2) || '-'}</td>
                 <td style="color:${color30}; font-weight:bold;">${sig30 || '-'}</td>
                 <td style="color:${color60}; font-weight:bold;">${sig60 || '-'}</td>
                 <td style="color:${color1d}; font-weight:bold;">${sig1d || '-'}</td>

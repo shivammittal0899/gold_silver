@@ -764,9 +764,9 @@ function updateTableWithAnalysis(data) {
                 <td style="color:${color30}; font-weight:bold;">${sig30 || '-'}</td>
                 <td style="color:${color60}; font-weight:bold;">${sig60 || '-'}</td>
                 <td style="color:${color1d}; font-weight:bold;">${sig1d || '-'}</td>
-                <td style="${getRSIColor(d.ret1)}">${d.rsi_30m || '-'}</td>
-                <td style="${getRSIColor(d.ret1)}">${d.rsi_60m || '-'}</td>
-                <td style="${getRSIColor(d.ret1)}">${d.rsi_1d || '-'}</td>
+                <td style="${getRSIColor(d.rsi_30m)}">${d.rsi_30m || '-'}</td>
+                <td style="${getRSIColor(d.rsi_60m)}">${d.rsi_60m || '-'}</td>
+                <td style="${getRSIColor(d.rsi_1d)}">${d.rsi_1d || '-'}</td>
                 <td>${d.price_tenkan_30m || '-'}</td>
                 <td>${d.price_tenkan_60m || '-'}</td>
                 <td>${d.price_tenkan_1d || '-'}</td>

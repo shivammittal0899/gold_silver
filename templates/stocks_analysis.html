@@ -156,6 +156,12 @@
 
     <button onclick="saveToWatchlist()">Save</button>
 </div>
+<button onclick="addCheckedToWatchlist()">➕ Add Selected to Watchlist</button>
+<button onclick="deleteSelectedStocks()" style="background:#e74c3c;">
+    🗑 Delete Selected
+</button>
+<button onclick="copySelectedSymbols()">📋 Copy Symbols</button>
+<br>
 <div class = "analysis-table-container" style="width:100%;">
     <table id="analysisTable" class="display">
         <thead>
@@ -185,13 +191,38 @@
         <tbody id="stocks_table"></tbody>
     </table>
 </div>
+<div class = "analysis-table-container" style="width:100%;">
+    <table id="HighLowTable" class="display">
+        <thead>
+            <tr>
+                <th><input type="checkbox" onclick="toggleAll(this)"></th>
+                <th>Symbol</th>
+                <th>Price</th>
+                <th>Return 1D</th>
+                <th>Return 5D</th>
+                <th>Return 15D</th>
+                <th>Return 30D</th>
+                <th>Return 90D</th>
+                <th>Signal 30m</th>
+                <th>Signal 60m</th>
+                <th>Signal 1d</th>
+                <th>RSI 30m</th>
+                <th>RSI 60m</th>
+                <th>RSI 1d</th>
+                <th>PriceTenkan 30m</th>
+                <th>PriceTenkan 60m</th>
+                <th>PriceTenkan 1d</th>
+                <th>TenkanKijun 30m</th>
+                <th>TenkanKijun 60m</th>
+                <th>TenkanKijun 1d</th>
+            </tr>
+        </thead>
+        <tbody id="stockshighlow_table"></tbody>
+    </table>
+</div>
 <br>
 
-<button onclick="addCheckedToWatchlist()">➕ Add Selected to Watchlist</button>
-<button onclick="deleteSelectedStocks()" style="background:#e74c3c;">
-    🗑 Delete Selected
-</button>
-<button onclick="copySelectedSymbols()">📋 Copy Symbols</button>
+
 <div id="chartModal" style="
     display:none;
     position:fixed;
@@ -702,14 +733,8 @@ function getRSIColor(val) {
     
     if (val <= 40) return "color:#cc0000; font-weight:bold;";
 
-    // Mild negative → light red
-    // if (val < 60) return "color:#ff4d4d; font-weight:bold;";
-
     // Neutral
     if (val < 60) return "background-color:#f2f2f2; font-weight:bold;";
-
-    // Mild positive → light green
-    // if (val > 0 && val < 5) return "color:#00cc00; font-weight:bold;";
 
     // Strong positive → dark green
     if (val <= 80) return "color:#004d00; font-weight:bold;";
@@ -720,9 +745,13 @@ function getRSIColor(val) {
 }
 function updateTableWithAnalysis(data) {
     let table = document.getElementById("stocks_table");
+    let table1 = document.getElementById("stocks_table");
     // ✅ Proper destroy
     if ($.fn.DataTable.isDataTable('#analysisTable')) {
         $('#analysisTable').DataTable().clear().destroy();
+    }
+    if ($.fn.DataTable.isDataTable('#HighLowTable')) {
+        $('#HighLowTable').DataTable().clear().destroy();
     }
     if (!data || data.length === 0) {
         table.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
@@ -780,6 +809,7 @@ function updateTableWithAnalysis(data) {
         `;
     });
     table.innerHTML = html;
+    table1.innerHTML = html;
 
     initDataTable();
 }
@@ -791,7 +821,19 @@ function initDataTable() {
     // }
 
     dataTable = $('#analysisTable').DataTable({
-        pageLength: 25,
+        pageLength: 50,
+        ordering: true,
+        searching: true,
+        // destroy: true,  // 🔥 safety
+        scrollY: "80vh",     // 🔥 vertical scroll
+        scrollX: true,        // 🔥 horizontal scroll
+        scrollCollapse: true, // shrink if less data
+        columnDefs: [
+            { orderable: false, targets: 0 }
+        ]
+    });
+    dataTable = $('#HighLowTable').DataTable({
+        pageLength: 50,
         ordering: true,
         searching: true,
         // destroy: true,  // 🔥 safety

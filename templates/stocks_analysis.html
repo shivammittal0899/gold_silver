@@ -745,7 +745,7 @@ function getRSIColor(val) {
 }
 function updateTableWithAnalysis(data) {
     let table = document.getElementById("stocks_table");
-    let table1 = document.getElementById("stocks_table");
+    let table1 = document.getElementById("stockshighlow_table");
     // ✅ Proper destroy
     if ($.fn.DataTable.isDataTable('#analysisTable')) {
         $('#analysisTable').DataTable().clear().destroy();
@@ -755,6 +755,7 @@ function updateTableWithAnalysis(data) {
     }
     if (!data || data.length === 0) {
         table.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
+        table1.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
         return;
     }
 

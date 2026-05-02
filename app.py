@@ -1597,11 +1597,12 @@ def analyze_one_stock(symbol, access_token):
             'oi': 'OI'
         }, inplace=True)
 
-        df_yf = yf.Ticker(symbol+".NS")
+        df_yf = yf.Ticker("HAL.NS")
 
         info = df_yf.info
-        log1(symbol+".NS")
+        # log1(symbol+".NS")
         log1(info)
+        log1(df_yf)
         
         result1, df1 = stock_data_analysis(df1, "30m")
         result2, df2 = stock_data_analysis(df2, "60m")

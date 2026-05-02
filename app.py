@@ -1597,12 +1597,9 @@ def analyze_one_stock(symbol, access_token):
             'oi': 'OI'
         }, inplace=True)
 
-        df_yf = yf.Ticker("HAL.NS")
-        # log1((df_yf.info['longName']))
+        df_yf = yf.Ticker(symbol+".NS")
         info = df_yf.get_info()
-        # log1(symbol+".NS")
-        log1(info)
-        log1(df_yf)
+        # log1(info)
         
         result1, df1 = stock_data_analysis(df1, "30m")
         result2, df2 = stock_data_analysis(df2, "60m")
@@ -1637,9 +1634,9 @@ def analyze_one_stock(symbol, access_token):
             'cloud_trend_1d': result3['cloud_trend'],
             'signal_30m': result1['signal'],
             'signal_60m': result2['signal'],
-            'signal_1d': result3['signal']
-            # 'industry': info.get("industry"),
-            # 'sector': info.get("sector"),
+            'signal_1d': result3['signal'],
+            'industry': info.get("industry"),
+            'sector': info.get("sector"),
         }
         # log1(f"{symbol} --- {result}")
 

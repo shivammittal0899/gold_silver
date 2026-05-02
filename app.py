@@ -1600,6 +1600,7 @@ def analyze_one_stock(symbol, access_token):
         df_yf = yf.Ticker(symbol+".NS")
 
         info = df_yf.info
+        log1(symbol+".NS")
         log1(info)
         
         result1, df1 = stock_data_analysis(df1, "30m")

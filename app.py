@@ -1598,7 +1598,7 @@ def analyze_one_stock(symbol, access_token):
         }, inplace=True)
 
         df_yf = yf.Ticker("HAL.NS")
-
+        log1((df_yf.info['longName']))
         info = df_yf.info
         # log1(symbol+".NS")
         log1(info)

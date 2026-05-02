@@ -1597,9 +1597,9 @@ def analyze_one_stock(symbol, access_token):
             'oi': 'OI'
         }, inplace=True)
 
-        df_yf = yf.Ticker(symbol+".NS")
+        # df_yf = yf.Ticker(symbol+".NS")
 
-        info = df_yf.info
+        # info = df_yf.info
 
         
         result1, df1 = stock_data_analysis(df1, "30m")
@@ -1635,9 +1635,9 @@ def analyze_one_stock(symbol, access_token):
             'cloud_trend_1d': result3['cloud_trend'],
             'signal_30m': result1['signal'],
             'signal_60m': result2['signal'],
-            'signal_1d': result3['signal'],
-            'industry': info.get("industry"),
-            'sector': info.get("sector"),
+            'signal_1d': result3['signal']
+            # 'industry': info.get("industry"),
+            # 'sector': info.get("sector"),
         }
         # log1(f"{symbol} --- {result}")
 

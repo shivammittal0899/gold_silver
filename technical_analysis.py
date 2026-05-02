@@ -445,11 +445,15 @@ def stock_data_analysis(df, timeframe):
 
 def stock_data_analysis_common(df):
     price = df['Close'].iat[-1]
+    high = df['High'].iat[-1]
+    low = df['Low'].iat[-1]
     data = {
         'ret1': float(((price/df['Close'].iat[-2])-1)*100),
         'ret5': float(((price/df['Open'].iat[-5])-1)*100),
         'ret15': float(((price/df['Open'].iat[-10]) - 1)*100),
         'ret30': float(((price/df['Open'].iat[-20]) - 1)*100),
-        'ret90': float(((price/df['Open'].iat[-60]) - 1)*100)
+        'ret90': float(((price/df['Open'].iat[-60]) - 1)*100),
+        'retDayHigh': float(((price/high) - 1)*100),
+        'retDayLow': float(((price/low) - 1)*100)
     }
     return data

@@ -13,7 +13,7 @@ from technical_analysis import *
 import pandas as pd
 import yfinance as yf
 from threading import Lock
-
+import yfinance as yf
 app = Flask(__name__)
 # api_key = "0qw10pvn638g9jid"
 # api_secret = "8bbev51ab3ov4jfkq0ddhmsw1itviexc"
@@ -1596,12 +1596,15 @@ def analyze_one_stock(symbol, access_token):
             'volume': 'Volume',
             'oi': 'OI'
         }, inplace=True)
+
+        df_yf = yf.Ticker(symbol+".NS")
+
+        info = df_yf.info
+
         
         result1, df1 = stock_data_analysis(df1, "30m")
         result2, df2 = stock_data_analysis(df2, "60m")
         result3, df3 = stock_data_analysis(df3, "1d")
-        # log1(df3['Close'].iat[-1])
-        # log1(df3['Close'].iat[-5])
         result_ret = stock_data_analysis_common(df3)
         # log1(result_ret)
         result = {
@@ -1633,6 +1636,8 @@ def analyze_one_stock(symbol, access_token):
             'signal_30m': result1['signal'],
             'signal_60m': result2['signal'],
             'signal_1d': result3['signal'],
+            'industry': info.get("industry"),
+            'sector': info.get("sector"),
         }
         # log1(f"{symbol} --- {result}")
 

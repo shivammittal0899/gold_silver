@@ -31,7 +31,7 @@ def score_peg(value):
 
 def valuation_analysis(result):
     
-    pe = safe(result.get("trailingPE"))
+    # pe = safe(result.get("trailingPE"))
     pe = float(result['trailingPE'])
     fpe = safe(result.get("forwardPE"))
     peg = safe(result.get("pegRatio"))
@@ -69,11 +69,11 @@ def valuation_analysis(result):
         "valuation_score": round(valuation_score, 2),
         "label": label,
         "components": {
-            "pe": low_pe_score,
-            "forward_pe": low_fpe_score,
-            "pb": low_pb_score,
-            "ev_ebitda": low_ev_ebitda_score,
-            "ev_revenue": low_ev_rev_score,
-            "peg": low_peg_score
+            "pe": pe,
+            "forward_pe": fpe,
+            "pb": pb,
+            "ev_ebitda": ev_ebitda,
+            "ev_revenue": ev_rev,
+            "peg": peg
         }
     }

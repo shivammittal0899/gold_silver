@@ -1699,7 +1699,7 @@ def analyze_one_stock(symbol, access_token):
 
         composite = composite_score(result)
         result.update(composite if isinstance(composite, dict) else {})
-
+        log1(result)
         return {"symbol": symbol, **result}
 
     except Exception as e:

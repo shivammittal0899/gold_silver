@@ -10,6 +10,7 @@ import uuid
 from datetime import datetime, timedelta
 from trailling_strategy import *
 from technical_analysis import *
+from fund_analysis import *
 import pandas as pd
 import yfinance as yf
 from threading import Lock
@@ -1635,9 +1636,56 @@ def analyze_one_stock(symbol, access_token):
             'signal_30m': result1['signal'],
             'signal_60m': result2['signal'],
             'signal_1d': result3['signal'],
-            'industry': info.get("industry"),
-            'sector': info.get("sector"),
+            'industry': info.get("industry", None),
+            'sector': info.get("sector", None),
+            'business': info.get("longBusinessSummary", None),
+            'dividendYield': info.get("dividendYield", None),
+            'payoutRatio': info.get("payoutRatio", None),
+            'beta': info.get("beta", None),
+            'trailingPE': info.get("trailingPE", None),
+            'forwardPE': info.get("forwardPE", None),
+            'trailingEPS': info.get("trailingEps", None),
+            'forwardEPS': info.get("forwardEps", None),
+            'epsTrailingTwelveMonths': info.get("epsTrailingTwelveMonths", None),
+            'epsForward': info.get("epsForward", None),
+            'epsCurrentYear': info.get("epsCurrentYear", None),
+            'pegRatio': info.get("pegRatio", None),
+            'marketCap': info.get("marketCap", None),
+            'enterpriseValue': info.get("enterpriseValue", None),
+            'profitMargins': info.get("profitMargins", None),
+            'bookValue': info.get("bookValue", None),
+            'priceToBook': info.get("priceToBook", None),
+            'earningsQuarterlyGrowth': info.get("earningsQuarterlyGrowth", None),
+            'enterpriseToRevenue': info.get("enterpriseToRevenue", None),
+            'enterpriseToEbitda': info.get("enterpriseToEbitda", None),
+            'targetHighPrice': info.get("targetHighPrice", None),
+            'targetLowPrice': info.get("targetLowPrice", None),
+            'targetMeanPrice': info.get("targetMeanPrice", None),
+            'recommendationKey': info.get("recommendationKey", None),
+            'totalCashPerShare': info.get("totalCashPerShare", None),
+            'ebitda': info.get("ebitda", None),
+            'totalRevenue': info.get("totalRevenue", None),
+            'totalDebt': info.get("totalDebt", None),
+            'quickRatio': info.get("quickRatio", None),
+            'currentRatio': info.get("currentRatio", None),
+            'debtToEquity': info.get("debtToEquity", None),
+            'revenuePerShare': info.get("revenuePerShare", None),
+            'returnOnAssets': info.get("returnOnAssets", None),
+            'returnOnEquity': info.get("returnOnEquity", None),
+            'grossProfits': info.get("grossProfits", None),
+            'freeCashflow': info.get("freeCashflow", None),
+            'operatingCashflow': info.get("operatingCashflow", None),
+            'earningsGrowth': info.get("earningsGrowth", None),
+            'revenueGrowth': info.get("revenueGrowth", None),
+            'grossMargins': info.get("grossMargins", None),
+            'ebitdaMargins': info.get("ebitdaMargins", None),
+            'operatingMargins': info.get("operatingMargins", None),
+            'customPriceAlertConfidence': info.get("customPriceAlertConfidence", None),
+            'fiftyTwoWeekRange': info.get("fiftyTwoWeekRange", None),
         }
+        val = valuation_analysis(result)
+        log1(val)
+
         # log1(f"{symbol} --- {result}")
 
         return {"symbol": symbol, **result}

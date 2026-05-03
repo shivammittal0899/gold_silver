@@ -32,6 +32,7 @@ def score_peg(value):
 def valuation_analysis(result):
     
     pe = safe(result.get("trailingPE"))
+    pe = float(result['trailingPE'])
     fpe = safe(result.get("forwardPE"))
     peg = safe(result.get("pegRatio"))
     pb = safe(result.get("priceToBook"))

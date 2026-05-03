@@ -40,11 +40,11 @@ def valuation_analysis(result):
     ev_rev = safe(result.get("enterpriseToRevenue"))
 
     # --- Individual Scores ---
-    low_pe_score = score_low_better(pe, ideal=15, max_val=40)
-    low_fpe_score = score_low_better(fpe, ideal=15, max_val=40)
-    low_pb_score = score_low_better(pb, ideal=1.5, max_val=6)
-    low_ev_ebitda_score = score_low_better(ev_ebitda, ideal=10, max_val=30)
-    low_ev_rev_score = score_low_better(ev_rev, ideal=2, max_val=10)
+    low_pe_score = score_low_better(pe, ideal=15, max_val=100)
+    low_fpe_score = score_low_better(fpe, ideal=15, max_val=100)
+    low_pb_score = score_low_better(pb, ideal=1.5, max_val=50)
+    low_ev_ebitda_score = score_low_better(ev_ebitda, ideal=10, max_val=100)
+    low_ev_rev_score = score_low_better(ev_rev, ideal=2, max_val=20)
     low_peg_score = score_peg(peg)
 
     # --- Final Score ---

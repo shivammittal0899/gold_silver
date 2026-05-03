@@ -27,7 +27,45 @@ def score_peg(value):
         return 0.5
     else:
         return 0
+
+def score_growth(value):
+    """
+    Growth metrics are usually in decimal (e.g., 0.15 = 15%)
+    """
+    if value is None:
+        return 0
+    if value >= 0.20:   # 20%+
+        return 1
+    elif value >= 0.10:
+        return 0.7
+    elif value > 0:
+        return 0.4
+    else:
+        return 0
     
+def eps_growth_score(forward_eps, current_eps):
+    if forward_eps is None or current_eps is None or current_eps == 0:
+        return 0
+    
+    growth = (forward_eps - current_eps) / abs(current_eps)
+
+    return score_growth(growth)
+
+def peg_adjustment(pe, growth):
+    """
+    Approx PEG logic using PE and earnings growth
+    """
+    if pe is None or growth is None or growth <= 0:
+        return 0
+    
+    peg = pe / (growth * 100)  # growth assumed decimal
+
+    if peg < 1:
+        return 1
+    elif peg < 2:
+        return 0.5
+    else:
+        return 0
 
 def valuation_analysis(result):
     
@@ -75,5 +113,54 @@ def valuation_analysis(result):
             "ev_ebitda": ev_ebitda,
             "ev_revenue": ev_rev,
             "peg": peg
+        }
+    }
+
+def growth_analysis(result):
+
+    revenue_growth = safe(result.get("revenueGrowth"))
+    earnings_growth = safe(result.get("earningsGrowth"))
+    quarterly_growth = safe(result.get("earningsQuarterlyGrowth"))
+
+    forward_eps = safe(result.get("forwardEPS"))
+    current_eps = safe(result.get("epsCurrentYear"))
+
+    pe = safe(result.get("trailingPE"))
+
+    # --- Individual Scores ---
+    revenue_score = score_growth(revenue_growth)
+    earnings_score = score_growth(earnings_growth)
+    quarterly_score = score_growth(quarterly_growth)
+    eps_score = eps_growth_score(forward_eps, current_eps)
+
+    # PEG logic using earnings growth
+    peg_score = peg_adjustment(pe, earnings_growth)
+
+    # --- Final Growth Score ---
+    growth_score = (
+        revenue_score +
+        earnings_score +
+        quarterly_score +
+        eps_score +
+        peg_score
+    ) / 5
+
+    # --- Label ---
+    if growth_score > 0.7:
+        label = "High Growth"
+    elif growth_score > 0.4:
+        label = "Moderate Growth"
+    else:
+        label = "Low Growth"
+
+    return {
+        "growth_score": round(growth_score, 2),
+        "label": label,
+        "components": {
+            "revenue_growth": revenue_score,
+            "earnings_growth": earnings_score,
+            "quarterly_growth": quarterly_score,
+            "eps_growth": eps_score,
+            "peg_factor": peg_score
         }
     }

@@ -1682,7 +1682,9 @@ def analyze_one_stock(symbol, access_token):
             'fiftyTwoWeekRange': info.get("fiftyTwoWeekRange", None),
         }
         val = valuation_analysis(result)
-        log1(val)
+        # log1(val)
+        growth = growth_analysis(result)
+        log1(growth)
 
         # log1(f"{symbol} --- {result}")
 

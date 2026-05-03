@@ -443,7 +443,7 @@ def sentiment_analysis(result, current_price):
 
     return {
         "sentiment_score": round(sentiment_score, 2),
-        "label": label,
+        "sentiment_label": label,
         "upside": round(upside, 2),
         "sent_components": {
             "upside": upside_score,

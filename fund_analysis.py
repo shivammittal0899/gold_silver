@@ -67,6 +67,162 @@ def peg_adjustment(pe, growth):
     else:
         return 0
 
+def score_margin(value):
+    """
+    value is in decimal (e.g., 0.25 = 25%)
+    """
+    if value is None:
+        return 0
+    if value >= 0.30:
+        return 1
+    elif value >= 0.20:
+        return 0.8
+    elif value >= 0.10:
+        return 0.6
+    elif value > 0:
+        return 0.3
+    else:
+        return 0
+    
+def score_roe(value):
+    if value is None:
+        return 0
+    if value >= 0.20:   # 20%+
+        return 1
+    elif value >= 0.15:
+        return 0.8
+    elif value >= 0.10:
+        return 0.6
+    elif value > 0:
+        return 0.3
+    else:
+        return 0
+
+
+def score_roa(value):
+    if value is None:
+        return 0
+    if value >= 0.10:
+        return 1
+    elif value >= 0.07:
+        return 0.8
+    elif value >= 0.04:
+        return 0.6
+    elif value > 0:
+        return 0.3
+    else:
+        return 0
+    
+
+def score_debt_to_equity(value):
+    if value is None:
+        return 0
+    
+    if value <= 0.5:
+        return 1      # very safe
+    elif value <= 1:
+        return 0.8
+    elif value <= 2:
+        return 0.5
+    elif value <= 3:
+        return 0.2
+    else:
+        return 0      # high risk
+
+def score_current_ratio(value):
+    if value is None:
+        return 0
+    
+    if value >= 2:
+        return 1
+    elif value >= 1.5:
+        return 0.8
+    elif value >= 1:
+        return 0.5
+    else:
+        return 0   # liquidity risk
+
+def score_quick_ratio(value):
+    if value is None:
+        return 0
+    
+    if value >= 1.5:
+        return 1
+    elif value >= 1:
+        return 0.8
+    elif value >= 0.7:
+        return 0.5
+    else:
+        return 0
+
+def score_total_debt(total_debt, market_cap):
+    if total_debt is None or market_cap is None or market_cap == 0:
+        return 0
+    
+    ratio = total_debt / market_cap
+
+    if ratio < 0.2:
+        return 1
+    elif ratio < 0.5:
+        return 0.7
+    elif ratio < 1:
+        return 0.4
+    else:
+        return 0
+
+def calculate_upside(target_mean, current_price):
+    if target_mean is None or current_price is None or current_price == 0:
+        return 0
+    return (target_mean - current_price) / current_price
+
+def score_upside(upside):
+    """
+    upside is decimal (e.g., 0.25 = 25%)
+    """
+    if upside >= 0.30:
+        return 1
+    elif upside >= 0.15:
+        return 0.8
+    elif upside >= 0.05:
+        return 0.6
+    elif upside > 0:
+        return 0.4
+    else:
+        return 0   # negative upside
+    
+def score_recommendation(rec):
+    if rec is None:
+        return 0
+
+    rec = rec.lower()
+
+    mapping = {
+        "strong_buy": 1,
+        "buy": 0.8,
+        "outperform": 0.7,
+        "hold": 0.5,
+        "neutral": 0.5,
+        "underperform": 0.2,
+        "sell": 0
+    }
+
+    return mapping.get(rec, 0.5)
+
+def score_target_range(high, low, current_price):
+    if high is None or low is None or current_price is None:
+        return 0
+    
+    spread = (high - low) / current_price
+
+    # smaller spread = higher confidence
+    if spread < 0.2:
+        return 1
+    elif spread < 0.4:
+        return 0.7
+    else:
+        return 0.4
+    
+
 def valuation_analysis(result):
     
     # pe = safe(result.get("trailingPE"))
@@ -105,8 +261,8 @@ def valuation_analysis(result):
 
     return {
         "valuation_score": round(valuation_score, 2),
-        "label": label,
-        "components": {
+        "valuation_label": label,
+        "val_components": {
             "pe": pe,
             "forward_pe": fpe,
             "pb": pb,
@@ -155,12 +311,175 @@ def growth_analysis(result):
 
     return {
         "growth_score": round(growth_score, 2),
-        "label": label,
-        "components": {
+        "growth_label": label,
+        "growth_components": {
             "revenue_growth": revenue_score,
             "earnings_growth": earnings_score,
             "quarterly_growth": quarterly_score,
             "eps_growth": eps_score,
             "peg_factor": peg_score
         }
+    }
+
+def profitability_analysis(result):
+
+    profit_margin = safe(result.get("profitMargins"))
+    gross_margin = safe(result.get("grossMargins"))
+    operating_margin = safe(result.get("operatingMargins"))
+    ebitda_margin = safe(result.get("ebitdaMargins"))
+
+    roe = safe(result.get("returnOnEquity"))
+    roa = safe(result.get("returnOnAssets"))
+
+    # --- Individual Scores ---
+    profit_score = score_margin(profit_margin)
+    gross_score = score_margin(gross_margin)
+    operating_score = score_margin(operating_margin)
+    ebitda_score = score_margin(ebitda_margin)
+
+    roe_score = score_roe(roe)
+    roa_score = score_roa(roa)
+
+    # --- Final Score ---
+    profitability_score = (
+        profit_score +
+        gross_score +
+        operating_score +
+        ebitda_score +
+        roe_score +
+        roa_score
+    ) / 6
+
+    # --- Label ---
+    if profitability_score > 0.7:
+        label = "High Quality Business"
+    elif profitability_score > 0.4:
+        label = "Average Quality"
+    else:
+        label = "Low Quality"
+
+    return {
+        "profitability_score": round(profitability_score, 2),
+        "profitability_label": label,
+        "prof_components": {
+            "profit_margin": profit_score,
+            "gross_margin": gross_score,
+            "operating_margin": operating_score,
+            "ebitda_margin": ebitda_score,
+            "roe": roe_score,
+            "roa": roa_score
+        }
+    }
+
+def financial_health_analysis(result):
+
+    debt_to_equity = safe(result.get("debtToEquity"))
+    total_debt = safe(result.get("totalDebt"))
+    current_ratio = safe(result.get("currentRatio"))
+    quick_ratio = safe(result.get("quickRatio"))
+    market_cap = safe(result.get("marketCap"))
+
+    # --- Individual Scores ---
+    debt_score = score_debt_to_equity(debt_to_equity)
+    current_score = score_current_ratio(current_ratio)
+    quick_score = score_quick_ratio(quick_ratio)
+    total_debt_score = score_total_debt(total_debt, market_cap)
+
+    # --- Final Risk Score ---
+    risk_score = (
+        debt_score +
+        current_score +
+        quick_score +
+        total_debt_score
+    ) / 4
+
+    # --- Label ---
+    if risk_score > 0.7:
+        label = "Low Risk (Strong Balance Sheet)"
+    elif risk_score > 0.4:
+        label = "Moderate Risk"
+    else:
+        label = "High Risk"
+
+    return {
+        "risk_score": round(risk_score, 2),
+        "risk_label": label,
+        "health_components": {
+            "debt_to_equity": debt_score,
+            "current_ratio": current_score,
+            "quick_ratio": quick_score,
+            "total_debt": total_debt_score
+        }
+    }
+
+def sentiment_analysis(result, current_price):
+
+    target_high = safe(result.get("targetHighPrice"))
+    target_mean = safe(result.get("targetMeanPrice"))
+    target_low = safe(result.get("targetLowPrice"))
+    recommendation = safe(result.get("recommendationKey"))
+
+    # --- Core calculations ---
+    upside = calculate_upside(target_mean, current_price)
+
+    upside_score = score_upside(upside)
+    rec_score = score_recommendation(recommendation)
+    range_score = score_target_range(target_high, target_low, current_price)
+
+    # --- Final Score ---
+    sentiment_score = (
+        upside_score * 0.5 +
+        rec_score * 0.3 +
+        range_score * 0.2
+    )
+
+    # --- Label ---
+    if sentiment_score > 0.7:
+        label = "Bullish"
+    elif sentiment_score > 0.4:
+        label = "Neutral"
+    else:
+        label = "Bearish"
+
+    return {
+        "sentiment_score": round(sentiment_score, 2),
+        "label": label,
+        "upside": round(upside, 2),
+        "sent_components": {
+            "upside": upside_score,
+            "recommendation": rec_score,
+            "confidence": range_score
+        }
+    }
+
+def composite_score(result):
+
+    v = result.get("valuation_score", 0)
+    g = result.get("growth_score", 0)
+    p = result.get("profitability_score", 0)
+    r = result.get("risk_score", 0)
+    s = result.get("sentiment_score", 0)
+
+    # --- Weights (balanced model) ---
+    composite = (
+        v * 0.25 +   # valuation
+        g * 0.25 +   # growth
+        p * 0.20 +   # quality
+        r * 0.15 +   # risk
+        s * 0.15     # sentiment
+    )
+
+    # --- Label ---
+    if composite > 0.75:
+        label = "Strong Buy"
+    elif composite > 0.6:
+        label = "Buy"
+    elif composite > 0.45:
+        label = "Hold"
+    else:
+        label = "Avoid"
+
+    return {
+        "composite_score": round(composite, 2),
+        "composite_label": label
     }

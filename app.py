@@ -1681,12 +1681,24 @@ def analyze_one_stock(symbol, access_token):
             'customPriceAlertConfidence': info.get("customPriceAlertConfidence", None),
             'fiftyTwoWeekRange': info.get("fiftyTwoWeekRange", None),
         }
-        val = valuation_analysis(result)
+        valu = valuation_analysis(result)
         # log1(val)
         growth = growth_analysis(result)
-        log1(growth)
+        # log1(growth)
+        prof = profitability_analysis(result)
+        # log1(prof)
+        risk = financial_health_analysis(result)
+        # log1(risk)
+        sent = sentiment_analysis(result, result1['price'])
+        # log1(sent)
+        result.update(valu if isinstance(valu, dict) else {})
+        result.update(growth if isinstance(growth, dict) else {})
+        result.update(prof if isinstance(prof, dict) else {})
+        result.update(risk if isinstance(risk, dict) else {})
+        result.update(sent if isinstance(sent, dict) else {})
 
-        # log1(f"{symbol} --- {result}")
+        composite = composite_score(result)
+        result.update(composite if isinstance(composite, dict) else {})
 
         return {"symbol": symbol, **result}
 

@@ -46,7 +46,7 @@ function getRSIColor(val) {
 function fundamental_table(data){
     let html = ""
     data.forEach(d => {
-
+        
         html += `
             <tr>
                 <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
@@ -54,20 +54,41 @@ function fundamental_table(data){
                 <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
                     ${d.symbol}
                 </td>
-                <td style="${getReturnColor(d.ret1)}">${d.composite_score?.toFixed(2) || '-'}</td>
-                <td>${d.composite_label || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.valuation_score?.toFixed(2) || '-'}</td>
-                <td>${d.valuation_label || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.growth_score?.toFixed(2) || '-'}</td>
-                <td>${d.growth_label || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.profitability_score?.toFixed(2) || '-'}</td>
-                <td>${d.profitability_label || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.risk_score?.toFixed(2) || '-'}</td>
-                <td>${d.risk_label || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.sentiment_score?.toFixed(2) || '-'}</td>
-                <td>${d.sentiment_label || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.beta?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.trailingPE?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.forwardPE?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.trailingEPS?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.forwardEPS?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.epsCurrentYear?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.epsForward?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.pegRatio?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.profitMargins?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.bookValue?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.priceToBook?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.earningsQuarterlyGrowth?.toFixed(2) || '-'}</td>
             </tr>
         `;
+        // html += `
+        //     <tr>
+        //         <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                
+        //         <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+        //             ${d.symbol}
+        //         </td>
+        //         <td style="${getReturnColor(d.ret1)}">${d.composite_score?.toFixed(2) || '-'}</td>
+        //         <td>${d.composite_label || '-'}</td>
+        //         <td style="${getReturnColor(d.ret1)}">${d.valuation_score?.toFixed(2) || '-'}</td>
+        //         <td>${d.valuation_label || '-'}</td>
+        //         <td style="${getReturnColor(d.ret1)}">${d.growth_score?.toFixed(2) || '-'}</td>
+        //         <td>${d.growth_label || '-'}</td>
+        //         <td style="${getReturnColor(d.ret1)}">${d.profitability_score?.toFixed(2) || '-'}</td>
+        //         <td>${d.profitability_label || '-'}</td>
+        //         <td style="${getReturnColor(d.ret1)}">${d.risk_score?.toFixed(2) || '-'}</td>
+        //         <td>${d.risk_label || '-'}</td>
+        //         <td style="${getReturnColor(d.ret1)}">${d.sentiment_score?.toFixed(2) || '-'}</td>
+        //         <td>${d.sentiment_label || '-'}</td>
+        //     </tr>
+        // `;
     });
     return html
 }

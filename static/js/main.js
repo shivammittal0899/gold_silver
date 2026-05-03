@@ -69,4 +69,5 @@ function fundamental_table(data){
             </tr>
         `;
     });
+    return html
 }

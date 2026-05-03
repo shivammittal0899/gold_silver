@@ -1600,13 +1600,11 @@ def analyze_one_stock(symbol, access_token):
 
         df_yf = yf.Ticker(symbol+".NS")
         info = df_yf.get_info()
-        # log1(info)
         
         result1, df1 = stock_data_analysis(df1, "30m")
         result2, df2 = stock_data_analysis(df2, "60m")
         result3, df3 = stock_data_analysis(df3, "1d")
         result_ret = stock_data_analysis_common(df3)
-        # log1(result_ret)
         result = {
             # 'symbol': result1['symbol'],
             'price': result1['price'],
@@ -1764,7 +1762,6 @@ def get_chart_data():
     df.reset_index(drop=True, inplace=True)
     df = indicator_values(df)
     df = df[100:]
-    log1(f"{symbol} -- {len(df)} -- {df.columns}")
     data = []
     for _, row in df.iterrows():
 

@@ -215,6 +215,27 @@
         <tbody id="stockshighlow_table"></tbody>
     </table>
 </div>
+<div class = "growth-table-container" style="width:100%;">
+    <table id="GrowthTable" class="display">
+        <thead>
+            <tr>
+                <th><input type="checkbox" onclick="toggleAll(this)"></th>
+                <th>Symbol</th>
+                <th>Earning Quart Growth</th>
+                <th>Earning Growth</th>
+                <th>Revenue Growth</th>
+                <th>Revenue Per Share</th>
+                <th>Cash Per Share</th>
+                <th>ReturnOnAssets</th>
+                <th>ReturnOnEquity</th>
+                <th>Enter To Revenue</th>
+                <th>Enter To Ebitda</th>
+                <th>Price To Book</th>
+            </tr>
+        </thead>
+        <tbody id="stocksgrowth_table"></tbody>
+    </table>
+</div>
 <br>
 
 
@@ -699,6 +720,7 @@ function deleteSelectedStocks() {
 function updateTableWithAnalysis(data) {
     let table = document.getElementById("stocks_table");
     let table1 = document.getElementById("stockshighlow_table");
+    let table2 = document.getElementById("stocksgrowth_table");
     // ✅ Proper destroy
     if ($.fn.DataTable.isDataTable('#analysisTable')) {
         $('#analysisTable').DataTable().clear().destroy();
@@ -706,64 +728,20 @@ function updateTableWithAnalysis(data) {
     if ($.fn.DataTable.isDataTable('#HighLowTable')) {
         $('#HighLowTable').DataTable().clear().destroy();
     }
+    if ($.fn.DataTable.isDataTable('#GrowthTable')) {
+        $('#GrowthTable').DataTable().clear().destroy();
+    }
     if (!data || data.length === 0) {
         table.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
         table1.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
+        table2.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
         return;
     }
 
-    let html = ""
-    data.forEach(d => {
-        let sig30 = d.signal_30m || "";
-        let sig60 = d.signal_60m || "";
-        let sig1d = d.signal_1d || "";
-
-        let color30 =
-            sig30.includes("Strong Buy") ? "darkgreen" :
-            sig30.includes("Strong Sell") ? "darkred" :
-            sig30.includes("Buy") ? "lightgreen" :
-            sig30.includes("Sell") ? "red" : "black";
-        let color60 =
-            sig60.includes("Strong Buy") ? "darkgreen" :
-            sig60.includes("Strong Sell") ? "darkred" :
-            sig60.includes("Buy") ? "green" :
-            sig60.includes("Sell") ? "red" : "black";
-        let color1d =
-            sig1d.includes("Strong Buy") ? "darkgreen" :
-            sig1d.includes("Strong Sell") ? "darkred" :
-            sig1d.includes("Buy") ? "green" :
-            sig1d.includes("Sell") ? "red" : "black";
-
-        html += `
-            <tr>
-                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
-                
-                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
-                    ${d.symbol}
-                </td>
-                <td>${d.price?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.ret1?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret5)}">${d.ret5?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret15)}">${d.ret15?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret30)}">${d.ret30?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret90)}">${d.ret90?.toFixed(2) || '-'}</td>
-                <td style="color:${color30}; font-weight:bold;">${sig30 || '-'}</td>
-                <td style="color:${color60}; font-weight:bold;">${sig60 || '-'}</td>
-                <td style="color:${color1d}; font-weight:bold;">${sig1d || '-'}</td>
-                <td style="${getRSIColor(d.rsi_30m)}">${d.rsi_30m || '-'}</td>
-                <td style="${getRSIColor(d.rsi_60m)}">${d.rsi_60m || '-'}</td>
-                <td style="${getRSIColor(d.rsi_1d)}">${d.rsi_1d || '-'}</td>
-                <td>${d.price_tenkan_30m || '-'}</td>
-                <td>${d.price_tenkan_60m || '-'}</td>
-                <td>${d.price_tenkan_1d || '-'}</td>
-                <td>${d.tenkan_kijun_30m || '-'}</td>
-                <td>${d.tenkan_kijun_60m || '-'}</td>
-                <td>${d.tenkan_kijun_1d || '-'}</td>
-            </tr>
-        `;
-    });
-    table.innerHTML = html;
+    
+    table.innerHTML = technical_table(data);
     table1.innerHTML = fundamental_table(data);
+    table2.innerHTML = fundamentalgrowth_table(data);
 
     initDataTable();
 }
@@ -787,6 +765,18 @@ function initDataTable() {
         ]
     });
     dataTable = $('#HighLowTable').DataTable({
+        pageLength: 50,
+        ordering: true,
+        searching: true,
+        // destroy: true,  // 🔥 safety
+        scrollY: "80vh",     // 🔥 vertical scroll
+        scrollX: true,        // 🔥 horizontal scroll
+        scrollCollapse: true, // shrink if less data
+        columnDefs: [
+            { orderable: false, targets: 0 }
+        ]
+    });
+    dataTable = $('#GrowthTable').DataTable({
         pageLength: 50,
         ordering: true,
         searching: true,
@@ -906,83 +896,6 @@ function closeChart() {
     document.getElementById("chartModal").style.display = "none";
 }
 
-function addEMA(data) {
-    let emaSeries = chart.addSeries(LightweightCharts.LineSeries, {
-        color: 'blue',
-        lineWidth: 2
-    });
-
-    emaSeries.setData(
-        data
-            .filter(d => d.ema != null)
-            .map(d => ({ time: d.time, value: d.ema }))
-    );
-}
-
-function addVWAP(data) {
-    let vwapSeries = chart.addSeries(LightweightCharts.LineSeries, {
-        color: 'orange',
-        lineWidth: 2
-    });
-
-    vwapSeries.setData(
-        data
-            .filter(d => d.vwap != null)
-            .map(d => ({ time: d.time, value: d.vwap }))
-    );
-}
-function addIchimoku(data) {
-
-    const tenkan = chart.addSeries(LightweightCharts.LineSeries, { color: "blue" });
-    const kijun = chart.addSeries(LightweightCharts.LineSeries, { color: "red" });
-
-    const spanA = chart.addSeries(LightweightCharts.AreaSeries, {
-        topColor: "rgba(0, 200, 0, 0.3)",
-        bottomColor: "rgba(0, 200, 0, 0.05)",
-        lineColor: "green",
-        lineWidth: 1
-    });
-
-    const spanB = chart.addSeries(LightweightCharts.AreaSeries, {
-        topColor: "rgba(200, 0, 0, 0.3)",
-        bottomColor: "rgba(200, 0, 0, 0.05)",
-        lineColor: "red",
-        lineWidth: 1
-    });
-
-    // ✅ NO SHIFT
-    tenkan.setData(data.filter(d => d.tenkan != null)
-        .map(d => ({ time: d.time, value: d.tenkan })));
-
-    kijun.setData(data.filter(d => d.kijun != null)
-        .map(d => ({ time: d.time, value: d.kijun })));
-
-    spanA.setData(data.filter(d => d.spanA != null)
-        .map(d => ({ time: d.time, value: d.spanA })));
-
-    spanB.setData(data.filter(d => d.spanB != null)
-        .map(d => ({ time: d.time, value: d.spanB })));
-}
-function addRSI(data) {
-    let rsiSeries = chart.addSeries(LightweightCharts.LineSeries, {
-        color: 'purple',
-        lineWidth: 2,
-        priceScaleId: 'rsi-scale'
-    });
-
-    chart.priceScale('rsi-scale').applyOptions({
-        scaleMargins: {
-            top: 0.8,
-            bottom: 0
-        }
-    });
-
-    rsiSeries.setData(
-        data
-            .filter(d => d.rsi != null)
-            .map(d => ({ time: d.time, value: d.rsi }))
-    );
-}
 function copySelectedSymbols() {
     let selected = getCheckedStocks();  // already exists in your code
 

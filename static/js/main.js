@@ -201,11 +201,10 @@ function fundamental_table(data){
                 <td style="${getReturnColor(d.ret1)}">${d.forwardEPS?.toFixed(2) || '-'}</td>
                 <td style="${getReturnColor(d.ret1)}">${d.epsCurrentYear?.toFixed(2) || '-'}</td>
                 <td style="${getReturnColor(d.ret1)}">${d.epsForward?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.pegRatio?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.profitMargins?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.bookValue?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.priceToBook?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.earningsQuarterlyGrowth?.toFixed(2) || '-'}</td>
+                
+                <td style="${getReturnColor(d.ret1)}">${d.quickRatio?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.currentRatio?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.debtToEquity?.toFixed(2) || '-'}</td>
             </tr>
         `;
     });
@@ -248,8 +247,9 @@ function fundamentalgrowth_table(data){
                 <td style="${getFundamentalColor(d.ret1)}">${d.revenueGrowth?.toFixed(2) || '-'}</td>
                 <td style="${getFundamentalColor(d.ret1)}">${d.revenuePerShare?.toFixed(2) || '-'}</td>
                 <td style="${getReturnColor(d.ret1)}">${d.totalCashPerShare?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.returnOnAssets?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.returnOnEquity?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.profitMargins?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.grossMargins?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.ebitdaMargins?.toFixed(2) || '-'}</td>
                 <td style="${getReturnColor(d.ret1)}">${d.enterpriseToRevenue?.toFixed(2) || '-'}</td>
                 <td style="${getReturnColor(d.ret1)}">${d.enterpriseToEbitda?.toFixed(2) || '-'}</td>
                 <td style="${getReturnColor(d.ret1)}">${d.priceToBook?.toFixed(2) || '-'}</td>

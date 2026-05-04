@@ -59,18 +59,7 @@ def ensure_instruments_data(kite):
         print("⚠️ Empty DB → reloading instruments")
         reload_instruments(kite)
 
-#  {'instrument_token': 864001,
-#   'exchange_token': '3375',
-#   'tradingsymbol': 'SURYAROSNI',
-#   'name': 'SURYA ROSHNI',
-#   'last_price': 0.0,
-#   'expiry': '',
-#   'strike': 0.0,
-#   'tick_size': 0.01,
-#   'lot_size': 1,
-#   'instrument_type': 'EQ',
-#   'segment': 'NSE',
-#   'exchange': 'NSE'},
+
 
 
 def reload_instruments(kite):

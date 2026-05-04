@@ -717,32 +717,6 @@ function deleteSelectedStocks() {
         autoLoadWatchlist(activeWatchlist);
     });
 }
-function fundamentalgrowth_table(data){
-    let html = ""
-    data.forEach(d => {
-        
-        html += `
-            <tr>
-                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
-                
-                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
-                    ${d.symbol}
-                </td>
-                <td style="${getFundamentalColor(d.ret1)}">${d.earningsQuarterlyGrowth?.toFixed(2) || '-'}</td>
-                <td style="${getFundamentalColor(d.ret1)}">${d.earningsGrowth?.toFixed(2) || '-'}</td>
-                <td style="${getFundamentalColor(d.ret1)}">${d.revenueGrowth?.toFixed(2) || '-'}</td>
-                <td style="${getFundamentalColor(d.ret1)}">${d.revenuePerShare?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.totalCashPerShare?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.returnOnAssets?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.returnOnEquity?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.enterpriseToRevenue?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.enterpriseToEbitda?.toFixed(2) || '-'}</td>
-                <td style="${getReturnColor(d.ret1)}">${d.priceToBook?.toFixed(2) || '-'}</td>
-            </tr>
-        `;
-    });
-    return html
-}
 function updateTableWithAnalysis(data) {
     let table = document.getElementById("stocks_table");
     let table1 = document.getElementById("stockshighlow_table");

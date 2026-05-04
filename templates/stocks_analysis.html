@@ -738,8 +738,58 @@ function updateTableWithAnalysis(data) {
         return;
     }
 
-    
-    table.innerHTML = technical_table1(data);
+    let html = ""
+    data.forEach(d => {
+        let sig30 = d.signal_30m || "";
+        let sig60 = d.signal_60m || "";
+        let sig1d = d.signal_1d || "";
+
+        let color30 =
+            sig30.includes("Strong Buy") ? "darkgreen" :
+            sig30.includes("Strong Sell") ? "darkred" :
+            sig30.includes("Buy") ? "lightgreen" :
+            sig30.includes("Sell") ? "red" : "black";
+        let color60 =
+            sig60.includes("Strong Buy") ? "darkgreen" :
+            sig60.includes("Strong Sell") ? "darkred" :
+            sig60.includes("Buy") ? "green" :
+            sig60.includes("Sell") ? "red" : "black";
+        let color1d =
+            sig1d.includes("Strong Buy") ? "darkgreen" :
+            sig1d.includes("Strong Sell") ? "darkred" :
+            sig1d.includes("Buy") ? "green" :
+            sig1d.includes("Sell") ? "red" : "black";
+
+        html += `
+            <tr>
+                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+                    ${d.symbol}
+                </td>
+                <td>${d.price?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.ret1?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret5)}">${d.ret5?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret15)}">${d.ret15?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret30)}">${d.ret30?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret90)}">${d.ret90?.toFixed(2) || '-'}</td>
+                <td style="color:${color30}; font-weight:bold;">${sig30 || '-'}</td>
+                <td style="color:${color60}; font-weight:bold;">${sig60 || '-'}</td>
+                <td style="color:${color1d}; font-weight:bold;">${sig1d || '-'}</td>
+                <td style="${getRSIColor(d.rsi_30m)}">${d.rsi_30m || '-'}</td>
+                <td style="${getRSIColor(d.rsi_60m)}">${d.rsi_60m || '-'}</td>
+                <td style="${getRSIColor(d.rsi_1d)}">${d.rsi_1d || '-'}</td>
+                <td>${d.price_tenkan_30m || '-'}</td>
+                <td>${d.price_tenkan_60m || '-'}</td>
+                <td>${d.price_tenkan_1d || '-'}</td>
+                <td>${d.tenkan_kijun_30m || '-'}</td>
+                <td>${d.tenkan_kijun_60m || '-'}</td>
+                <td>${d.tenkan_kijun_1d || '-'}</td>
+            </tr>
+        `;
+    });
+    // table.innerHTML = technical_table1(data);
+    table.innerHTML = html;
     table1.innerHTML = fundamental_table(data);
     table2.innerHTML = fundamentalgrowth_table(data);
 

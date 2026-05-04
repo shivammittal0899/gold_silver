@@ -273,7 +273,7 @@ function priceTarget_table(data){
                 <td style="${getFundamentalColor(d.ret1)}">${d.targetHighPrice?.toFixed(2) || '-'}</td>
                 <td style="${getFundamentalColor(d.ret1)}">${d.targetLowPrice?.toFixed(2) || '-'}</td>
                 <td style="${getFundamentalColor(d.ret1)}">${d.targetMeanPrice?.toFixed(2) || '-'}</td>
-                <td style="${getFundamentalColor(d.ret1)}">${d.recommendationKey?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.recommendationKey || '-'}</td>
                 <td style="${getReturnColor(d.ret1)}">${d.customPriceAlertConfidence || '-'}</td>
                 <td style="${getReturnColor(d.ret1)}">${d.fiftyTwoWeekRange || '-'}</td>
             </tr>

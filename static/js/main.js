@@ -129,7 +129,7 @@ function getFundamentalColor(val) {
 }
 
 
-function technical_table(data){
+function technical_table1(data){
     let html = ""
     data.forEach(d => {
         let sig30 = d.signal_30m || "";
@@ -182,6 +182,7 @@ function technical_table(data){
     });
     return html
 }
+
 function fundamental_table(data){
     let html = ""
     data.forEach(d => {

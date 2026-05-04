@@ -235,6 +235,24 @@
         <tbody id="stocksgrowth_table"></tbody>
     </table>
 </div>
+<div class = "price-target-container" style="width:100%;">
+    <table id="priceTargetTable" class="display">
+        <thead>
+            <tr>
+                <th><input type="checkbox" onclick="toggleAll(this)"></th>
+                <th>Symbol</th>
+                <th>Price</th>
+                <th>High Price</th>
+                <th>Low Price</th>
+                <th>Mean Price</th>
+                <th>Recommendation Key</th>
+                <th>Alert Confidence</th>
+                <th>52 Week Range</th>
+            </tr>
+        </thead>
+        <tbody id="priceTarget_table"></tbody>
+    </table>
+</div>
 <br>
 
 
@@ -720,6 +738,7 @@ function updateTableWithAnalysis(data) {
     let table = document.getElementById("stocks_table");
     let table1 = document.getElementById("stockshighlow_table");
     let table2 = document.getElementById("stocksgrowth_table");
+    let table3 = document.getElementById("priceTarget_table");
     // ✅ Proper destroy
     if ($.fn.DataTable.isDataTable('#analysisTable')) {
         $('#analysisTable').DataTable().clear().destroy();
@@ -730,10 +749,14 @@ function updateTableWithAnalysis(data) {
     if ($.fn.DataTable.isDataTable('#GrowthTable')) {
         $('#GrowthTable').DataTable().clear().destroy();
     }
+    if ($.fn.DataTable.isDataTable('#priceTargetTable')) {
+        $('#priceTargetTable').DataTable().clear().destroy();
+    }
     if (!data || data.length === 0) {
         table.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
         table1.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
         table2.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
+        table3.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
         return;
     }
 
@@ -826,6 +849,18 @@ function initDataTable() {
         ]
     });
     dataTable = $('#GrowthTable').DataTable({
+        pageLength: 50,
+        ordering: true,
+        searching: true,
+        // destroy: true,  // 🔥 safety
+        scrollY: "80vh",     // 🔥 vertical scroll
+        scrollX: true,        // 🔥 horizontal scroll
+        scrollCollapse: true, // shrink if less data
+        columnDefs: [
+            { orderable: false, targets: 0 }
+        ]
+    });
+    dataTable = $('#priceTargetTable').DataTable({
         pageLength: 50,
         ordering: true,
         searching: true,

@@ -258,3 +258,26 @@ function fundamentalgrowth_table(data){
     });
     return html
 }
+function priceTarget_table(data){
+    let html = ""
+    data.forEach(d => {
+        
+        html += `
+            <tr>
+                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+                    ${d.symbol}
+                </td>
+                <td>${d.price?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.targetHighPrice?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.targetLowPrice?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.targetMeanPrice?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.recommendationKey?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.customPriceAlertConfidence || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.fiftyTwoWeekRange || '-'}</td>
+            </tr>
+        `;
+    });
+    return html
+}

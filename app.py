@@ -1821,11 +1821,12 @@ log.disabled = True
 
 
 
+import sqlite3
+
 def init_portfolio_db():
     conn = sqlite3.connect('portfolio.db')
     cur = conn.cursor()
 
-    # Portfolio table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS portfolios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1833,7 +1834,6 @@ def init_portfolio_db():
     )
     """)
 
-    # Holdings table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS holdings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1847,79 +1847,37 @@ def init_portfolio_db():
 
     conn.commit()
     conn.close()
+
 init_portfolio_db()
 
 
 @app.route('/portfolio')
 def portfolio():
-    try:
-        access_token = read_access_token()
-        kite.set_access_token(access_token)
-        
-        positions_data = kite.positions()['net']
-        active_positions = [p for p in positions_data if p['quantity'] != 0]
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
 
-        symbols = [f"{p['exchange']}:{p['tradingsymbol']}" for p in active_positions]
-        ltp_data = kite.ltp(symbols) if symbols else {}
+    cur.execute("SELECT * FROM portfolios")
+    portfolios = cur.fetchall()
 
-        total_pnl = 0
+    result = []
 
-        for p in active_positions:
-            key = f"{p['exchange']}:{p['tradingsymbol']}"
-            ltp = ltp_data.get(key, {}).get('last_price', 0)
+    for p in portfolios:
+        cur.execute("SELECT * FROM holdings WHERE portfolio_id=?", (p[0],))
+        holdings = cur.fetchall()
 
-            p['ltp'] = ltp
-            p['pnl'] = (ltp - p['average_price']) * p['quantity'] * p['multiplier']
-            p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
-            # 👉 Invested value
-            invested = p['average_price'] * abs(p['quantity'])
+        result.append({
+            "id": p[0],
+            "name": p[1],
+            "holdings": holdings
+        })
 
-            # 👉 P&L %
-            p['pnl_percent'] = (p['pnl'] / invested * 100) if invested != 0 else 0
+    conn.close()
 
-            # Classification
-            if p['exchange'] == 'NSE' and p['product'] in ['CNC', 'MIS']:
-                p['type'] = 'Equity'
-            elif p['exchange'] == 'NFO':
-                p['type'] = 'Futures'
-            elif p['exchange'] == 'MCX':
-                p['type'] = 'Commodity'
-            else:
-                p['type'] = 'Other'
-
-            total_pnl += p['pnl']
-        
-        
-        conn = sqlite3.connect('portfolio.db')
-        cur = conn.cursor()
-
-        cur.execute("SELECT * FROM portfolios")
-        portfolios = cur.fetchall()
-
-        
-        result = []
-
-        for p in portfolios:
-            cur.execute("SELECT * FROM holdings WHERE portfolio_id=?", (p[0],))
-            holdings = cur.fetchall()
-
-            result.append({
-                "id": p[0],
-                "name": p[1],
-                "holdings": holdings
-            })
-
-        conn.close()
-        return render_template('portfolio.html',
-                        positions=active_positions,
-                        total_pnl=total_pnl,
-                        portfolios=result)
-
-    except Exception as e:
-        return str(e)
+    return render_template('portfolio.html', portfolios=result)
 
 @app.route('/portfolio-data')
 def portfolio_data():
+
     access_token = read_access_token()
     kite.set_access_token(access_token)
 
@@ -1929,26 +1887,28 @@ def portfolio_data():
     positions_data = kite.positions()['net']
     active_positions = [p for p in positions_data if p['quantity'] != 0]
 
-    symbols = [f"{p['exchange']}:{p['tradingsymbol']}" for p in active_positions]
-
     ####################################
     # 🔹 MANUAL HOLDINGS
     ####################################
     conn = sqlite3.connect('portfolio.db')
     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM holdings")
-    holdings = cur.fetchall()
+    cur.execute("SELECT symbol, quantity, buy_price FROM holdings")
+    manual_db = cur.fetchall()
     conn.close()
+
+    ####################################
+    # 🔹 BUILD SYMBOL LIST
+    ####################################
+    symbols = []
+
+    for p in active_positions:
+        symbols.append(f"{p['exchange']}:{p['tradingsymbol']}")
 
     manual_positions = []
 
-    for h in holdings:
-        symbol = h[2]
-        qty = h[3]
-        price = h[4]
+    for symbol, qty, price in manual_db:
 
-        # 👉 detect exchange (simple logic)
         exchange = "NSE"
         if "FUT" in symbol or "-" in symbol:
             exchange = "NFO"
@@ -1960,11 +1920,12 @@ def portfolio_data():
             "quantity": qty,
             "average_price": price,
             "exchange": exchange,
-            "multiplier": 1
+            "multiplier": 1,
+            "source": "manual"
         })
 
     ####################################
-    # 🔹 FETCH LTP (COMMON)
+    # 🔹 FETCH LTP
     ####################################
     ltp_data = kite.ltp(symbols) if symbols else {}
 
@@ -1974,6 +1935,7 @@ def portfolio_data():
     # 🔹 PROCESS ZERODHA
     ####################################
     for p in active_positions:
+
         key = f"{p['exchange']}:{p['tradingsymbol']}"
         ltp = ltp_data.get(key, {}).get('last_price', 0)
 
@@ -1993,12 +1955,15 @@ def portfolio_data():
         else:
             p['type'] = 'Other'
 
+        p['source'] = 'zerodha'
+
         total_pnl += p['pnl']
 
     ####################################
     # 🔹 PROCESS MANUAL
     ####################################
     for p in manual_positions:
+
         key = f"{p['exchange']}:{p['tradingsymbol']}"
         ltp = ltp_data.get(key, {}).get('last_price', 0)
 
@@ -2019,7 +1984,7 @@ def portfolio_data():
         total_pnl += p['pnl']
 
     ####################################
-    # 🔹 MERGE BOTH
+    # 🔹 COMBINE
     ####################################
     all_positions = active_positions + manual_positions
 
@@ -2027,8 +1992,13 @@ def portfolio_data():
         "positions": all_positions,
         "total_pnl": total_pnl
     })
-@app.route('/manual-portfolio')
-def manual_portfolio():
+
+@app.route('/manual-portfolio-data')
+def manual_portfolio_data():
+
+    access_token = read_access_token()
+    kite.set_access_token(access_token)
+
     conn = sqlite3.connect('portfolio.db')
     cur = conn.cursor()
 
@@ -2038,50 +2008,63 @@ def manual_portfolio():
     result = []
 
     for p in portfolios:
+
         cur.execute("SELECT * FROM holdings WHERE portfolio_id=?", (p[0],))
         holdings = cur.fetchall()
+
+        symbols = []
+        enriched = []
+
+        for h in holdings:
+            symbol = h[2]
+            exchange = "NSE"
+
+            if "FUT" in symbol or "-" in symbol:
+                exchange = "NFO"
+
+            symbols.append(f"{exchange}:{symbol}")
+
+        ltp_data = kite.ltp(symbols) if symbols else {}
+
+        for h in holdings:
+            symbol = h[2]
+            qty = h[3]
+            buy_price = h[4]
+
+            exchange = "NSE"
+            if "FUT" in symbol or "-" in symbol:
+                exchange = "NFO"
+
+            key = f"{exchange}:{symbol}"
+            ltp = ltp_data.get(key, {}).get('last_price', 0)
+
+            pnl = (ltp - buy_price) * qty
+            invested = buy_price * qty
+            pnl_percent = (pnl / invested * 100) if invested else 0
+
+            enriched.append({
+                "id": h[0],
+                "symbol": symbol,
+                "quantity": qty,
+                "buy_price": buy_price,
+                "ltp": ltp,
+                "pnl": pnl,
+                "pnl_percent": pnl_percent
+            })
 
         result.append({
             "id": p[0],
             "name": p[1],
-            "holdings": holdings
+            "holdings": enriched
         })
 
     conn.close()
-    return render_template('portfolio.html', portfolios=result)
 
-@app.route('/create-portfolio', methods=['POST'])
-def create_portfolio():
-    name = request.form['name']
-
-    conn = sqlite3.connect('portfolio.db')
-    cur = conn.cursor()
-
-    cur.execute("INSERT INTO portfolios (name) VALUES (?)", (name,))
-
-    conn.commit()
-    conn.close()
-
-    return redirect('/portfolio')
-
-@app.route('/delete-portfolio/<int:portfolio_id>')
-def delete_portfolio(portfolio_id):
-    conn = sqlite3.connect('portfolio.db')
-    cur = conn.cursor()
-
-    # Delete holdings first (important)
-    cur.execute("DELETE FROM holdings WHERE portfolio_id=?", (portfolio_id,))
-    
-    # Then delete portfolio
-    cur.execute("DELETE FROM portfolios WHERE id=?", (portfolio_id,))
-
-    conn.commit()
-    conn.close()
-
-    return redirect('/portfolio')
+    return jsonify(result)
 
 @app.route('/add-holding', methods=['POST'])
 def add_holding():
+
     portfolio_id = request.form['portfolio_id']
     symbol = request.form['symbol'].upper()
     quantity = float(request.form['quantity'])
@@ -2100,8 +2083,23 @@ def add_holding():
 
     return jsonify({"status": "success"})
 
+@app.route('/create-portfolio', methods=['POST'])
+def create_portfolio():
+
+    name = request.form['name']
+
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
+
+    cur.execute("INSERT INTO portfolios (name) VALUES (?)", (name,))
+    conn.commit()
+    conn.close()
+
+    return redirect('/portfolio')
+
 @app.route('/delete-holding/<int:holding_id>')
 def delete_holding(holding_id):
+
     conn = sqlite3.connect('portfolio.db')
     cur = conn.cursor()
 
@@ -2112,37 +2110,21 @@ def delete_holding(holding_id):
 
     return redirect('/portfolio')
 
-@app.route('/edit-holding/<int:holding_id>')
-def edit_holding(holding_id):
-    conn = sqlite3.connect('portfolio.db')
-    cur = conn.cursor()
-
-    cur.execute("SELECT * FROM holdings WHERE id=?", (holding_id,))
-    holding = cur.fetchone()
-
-    conn.close()
-
-    return render_template('edit_holding.html', holding=holding)
-
-@app.route('/update-holding/<int:holding_id>', methods=['POST'])
-def update_holding(holding_id):
-    symbol = request.form['symbol'].upper()
-    quantity = float(request.form['quantity'])
-    buy_price = float(request.form['buy_price'])
+@app.route('/delete-portfolio/<int:portfolio_id>')
+def delete_portfolio(portfolio_id):
 
     conn = sqlite3.connect('portfolio.db')
     cur = conn.cursor()
 
-    cur.execute("""
-        UPDATE holdings
-        SET symbol=?, quantity=?, buy_price=?
-        WHERE id=?
-    """, (symbol, quantity, buy_price, holding_id))
+    cur.execute("DELETE FROM holdings WHERE portfolio_id=?", (portfolio_id,))
+    cur.execute("DELETE FROM portfolios WHERE id=?", (portfolio_id,))
 
     conn.commit()
     conn.close()
 
     return redirect('/portfolio')
+
+
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
     init_watchlist_db()   # 🔥 MUST BE FIRST

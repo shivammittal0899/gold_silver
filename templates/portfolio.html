@@ -2,128 +2,249 @@
 <html>
 <head>
     <title>Portfolio Dashboard</title>
+
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- LOCAL Select2 -->
+    <!-- Select2 -->
     <link href="{{ url_for('static', filename='select2/select2.min.css') }}" rel="stylesheet" />
     <script src="{{ url_for('static', filename='select2/select2.min.js') }}"></script>
-    
 </head>
 
 <body>
 
-    <h2>Other Portfolio Details</h2>
-    <form method="POST" action="/create-portfolio">
-        <input type="text" name="name" placeholder="Portfolio Name" required>
-        <button type="submit">Create</button>
-    </form>
-        <form id="add-form">
-        <select name="portfolio_id">
-            {% for p in portfolios %}
-            <option value="{{ p.id }}">{{ p.name }}</option>
-            {% endfor %}
-        </select>
+<!-- ===================== MANUAL ENTRY ===================== -->
+<h2>📁 Manual Portfolio</h2>
 
-        <select id="symbolSelect-dropdown" name="symbol" required style="width:250px;"></select>
-        <input type="number" step="any" name="quantity" placeholder="Qty" required>
-        <input type="number" step="any" name="buy_price" placeholder="Buy Price" required>
+<form method="POST" action="/create-portfolio">
+    <input type="text" name="name" placeholder="Portfolio Name" required>
+    <button type="submit">Create</button>
+</form>
 
-        <button type="submit">Add</button>
-    </form>
-    {% for p in portfolios %}
-        <h3>
-            {{ p.name }}
-            <a href="/delete-portfolio/{{ p.id }}">❌ Delete</a>
-        </h3>
+<form id="add-form">
+    <select name="portfolio_id">
+        {% for p in portfolios %}
+        <option value="{{ p.id }}">{{ p.name }}</option>
+        {% endfor %}
+    </select>
 
-        <table border="1">
-            <tr>
-                <th>Symbol</th>
-                <th>Qty</th>
-                <th>Buy Price</th>
-                <th>Action</th>
-            </tr>
+    <select id="symbolSelect-dropdown" name="symbol" required style="width:250px;"></select>
 
-            {% for h in p.holdings %}
-            <tr>
-                <td>{{ h[2] }}</td>
-                <td>{{ h[3] }}</td>
-                <td>{{ h[4] }}</td>
-                <td>
-                    <!-- <a href="/edit-holding/{{ h[0] }}">Edit</a> | -->
-                    <a href="/delete-holding/{{ h[0] }}">Delete</a>
-                </td>   
-            </tr>
-            {% endfor %}
-        </table>
-    {% endfor %}
-    <h2>Portfolio Dashboard</h2>
+    <input type="number" step="any" name="quantity" placeholder="Qty" required>
+    <input type="number" step="any" name="buy_price" placeholder="Buy Price" required>
 
-    <h3>Total P&L: 
-        <span id="total-pnl" style="font-weight:bold;"></span>
-    </h3>
+    <button type="submit">Add</button>
+</form>
 
-    <table border="1" width="100%">
-        <thead>
-            <tr>
-                <th>Symbol</th>
-                <th>Type</th>
-                <th>Side</th>
-                <th>Qty</th>
-                <th>Avg Price</th>
-                <th>LTP</th>
-                <th>P&L</th>
-                <th>P&L %</th>
-            </tr>
-        </thead>
-        <tbody id="portfolio-body"></tbody>
-    </table>
+<!-- 🔥 Manual Portfolio Tables -->
+<div id="manual-container"></div>
+
+<hr>
+
+<!-- ===================== ZERODHA ===================== -->
+<h2>📊 Zerodha Positions</h2>
+
+<h3>Total P&L: 
+    <span id="zerodha-pnl"></span>
+</h3>
+
+<table border="1" width="100%">
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>Type</th>
+            <th>Side</th>
+            <th>Qty</th>
+            <th>Avg</th>
+            <th>LTP</th>
+            <th>P&L</th>
+            <th>P&L %</th>
+        </tr>
+    </thead>
+    <tbody id="zerodha-body"></tbody>
+</table>
+
+<hr>
+
+<!-- ===================== COMBINED ===================== -->
+<h2>📊 Combined Portfolio (All Holdings)</h2>
+
+<h3>Total P&L: 
+    <span id="combined-pnl"></span>
+</h3>
+
+<table border="1" width="100%">
+    <thead>
+        <tr>
+            <th>Source</th>
+            <th>Symbol</th>
+            <th>Type</th>
+            <th>Side</th>
+            <th>Qty</th>
+            <th>Avg</th>
+            <th>LTP</th>
+            <th>P&L</th>
+            <th>P&L %</th>
+        </tr>
+    </thead>
+    <tbody id="combined-body"></tbody>
+</table>
 
 </body>
+
 <script>
-function fetchData() {
+/* ===================== ZERODHA ===================== */
+function fetchZerodha(data) {
+
+    let tbody = document.getElementById("zerodha-body");
+    tbody.innerHTML = "";
+
+    let total = 0;
+
+    data.positions
+    .filter(p => p.source === "zerodha")
+    .forEach(p => {
+
+        total += p.pnl;
+
+        let row = `
+            <tr>
+                <td>${p.tradingsymbol}</td>
+                <td>${p.type}</td>
+                <td>${p.side}</td>
+                <td>${p.quantity}</td>
+                <td>${(p.average_price || 0).toFixed(2)}</td>
+                <td>${p.ltp}</td>
+                <td style="color:${p.pnl > 0 ? 'green':'red'}">${p.pnl.toFixed(2)}</td>
+                <td style="color:${p.pnl_percent > 0 ? 'green':'red'}">${p.pnl_percent.toFixed(2)}%</td>
+            </tr>
+        `;
+
+        tbody.innerHTML += row;
+    });
+
+    document.getElementById("zerodha-pnl").innerHTML = total.toFixed(2);
+}
+
+
+/* ===================== MANUAL ===================== */
+function fetchManual() {
+
+    fetch('/manual-portfolio-data')
+    .then(res => res.json())
+    .then(data => {
+
+        let container = document.getElementById("manual-container");
+        container.innerHTML = "";
+
+        data.forEach(p => {
+
+            let html = `
+                <h3>${p.name}</h3>
+                <table border="1" width="100%">
+                <tr>
+                    <th>Symbol</th>
+                    <th>Qty</th>
+                    <th>Buy</th>
+                    <th>LTP</th>
+                    <th>P&L</th>
+                    <th>P&L %</th>
+                    <th>Action</th>
+                </tr>
+            `;
+
+            p.holdings.forEach(h => {
+                html += `
+                    <tr>
+                        <td>${h.symbol}</td>
+                        <td>${h.quantity}</td>
+                        <td>${h.buy_price}</td>
+                        <td>${h.ltp}</td>
+                        <td style="color:${h.pnl > 0 ? 'green':'red'}">${h.pnl.toFixed(2)}</td>
+                        <td style="color:${h.pnl_percent > 0 ? 'green':'red'}">${h.pnl_percent.toFixed(2)}%</td>
+                        <td><a href="/delete-holding/${h.id}">❌</a></td>
+                    </tr>
+                `;
+            });
+
+            html += `</table>`;
+            container.innerHTML += html;
+        });
+    });
+}
+
+
+/* ===================== COMBINED ===================== */
+function fetchCombined(data) {
+
+    let tbody = document.getElementById("combined-body");
+    tbody.innerHTML = "";
+
+    let total = 0;
+
+    data.positions.forEach(p => {
+
+        total += p.pnl;
+
+        let row = `
+            <tr>
+                <td>${p.source}</td>
+                <td>${p.tradingsymbol}</td>
+                <td>${p.type}</td>
+                <td>${p.side}</td>
+                <td>${p.quantity}</td>
+                <td>${(p.average_price || 0).toFixed(2)}</td>
+                <td>${p.ltp}</td>
+                <td style="color:${p.pnl > 0 ? 'green':'red'}">${p.pnl.toFixed(2)}</td>
+                <td style="color:${p.pnl_percent > 0 ? 'green':'red'}">${p.pnl_percent.toFixed(2)}%</td>
+            </tr>
+        `;
+
+        tbody.innerHTML += row;
+    });
+
+    document.getElementById("combined-pnl").innerHTML = total.toFixed(2);
+}
+
+
+/* ===================== MAIN FETCH ===================== */
+function fetchAll() {
+
     fetch('/portfolio-data')
     .then(res => res.json())
     .then(data => {
 
-        let tbody = document.getElementById("portfolio-body");
-        tbody.innerHTML = "";
+        fetchZerodha(data);
+        fetchCombined(data);
 
-        data.positions.forEach(p => {
-
-            let row = `
-                <tr>
-                    <td>${p.tradingsymbol}</td>
-                    <td>${p.type}</td>
-                    <td>${p.side}</td>
-                    <td>${p.quantity}</td>
-                    <td>${(p.average_price || 0).toFixed(2)}</td>
-                    <td>${p.ltp}</td>
-                    <td style="color:${p.pnl > 0 ? 'green' : 'red'}">
-                        ${p.pnl.toFixed(2)}
-                    </td>
-                    <td style="color:${p.pnl_percent > 0 ? 'green' : 'red'}">
-                        ${p.pnl_percent.toFixed(2)}%
-                    </td>
-                </tr>
-            `;
-
-            tbody.innerHTML += row;
-        });
-
-        document.getElementById("total-pnl").innerHTML =
-            data.total_pnl.toFixed(2);
     });
+
+    fetchManual();
 }
 
-setInterval(fetchData, 3000);
-</script>
-<script>
 
+/* ===================== ADD STOCK ===================== */
+document.getElementById("add-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    fetch('/add-holding', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(() => {
+        fetchManual();
+        this.reset();
+        $('#symbolSelect-dropdown').val(null).trigger('change');
+    });
+});
+
+
+/* ===================== SELECT2 ===================== */
 $(document).ready(function() {
 
-    // 🔹 Select2 init (KEEP THIS ONE ONLY)
     $('#symbolSelect-dropdown').select2({
         placeholder: "Search stocks...",
         minimumInputLength: 1,
@@ -132,95 +253,21 @@ $(document).ready(function() {
             dataType: 'json',
             delay: 250,
             data: function (params) {
-                return { 
-                    q: params.term || '' 
-                };
+                return { q: params.term || '' };
             },
             processResults: function (data) {
-                // ✅ Safe handling
-                if (!data || !data.results) {
-                    return { results: [] };
-                }
-
-                return {
-                    results: data.results
-                };
-            },
-            cache: true
+                return { results: data.results || [] };
+            }
         }
     });
 
-
 });
-// document.getElementById("add-form").addEventListener("submit", function(e) {
-//     e.preventDefault();
 
-//     let formData = new FormData(this);
 
-//     fetch('/add-holding', {
-//         method: 'POST',
-//         body: formData
-//     })
-//     .then(res => res.json())
-//     .then(() => {
-//         // alert("Stock added");
-//         // location.reload(); // or better: refresh only table
-//         // 🔥 Re-fetch only portfolio data
-//         fetchData();
+/* ===================== AUTO REFRESH ===================== */
+setInterval(fetchAll, 3000);
 
-//         // 🔥 Optional: reset form
-//         document.getElementById("add-form").reset();
-
-//         // 🔥 Optional: clear Select2
-//         $('#symbolSelect-dropdown').val(null).trigger('change');
-//     })
-//     .catch(err => console.error(err));
-// });
-
-document.getElementById("add-form").addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    let form = this;
-    let formData = new FormData(form);
-
-    fetch('/add-holding', {
-        method: 'POST',
-        body: formData
-    })
-    .then(res => {
-        // ✅ Handle non-JSON / server errors safely
-        if (!res.ok) {
-            throw new Error("Server error while adding stock");
-        }
-        return res.json();
-    })
-    .then(data => {
-        if (data.status === "success") {
-
-            // 🔥 Refresh only table (Zerodha positions)
-            fetchData();
-
-            // 🔥 OPTIONAL: if you later add manual refresh API
-            // refreshManualPortfolio();
-
-            // 🔥 Reset form fields
-            form.reset();
-
-            // 🔥 Reset Select2 dropdown properly
-            $('#symbolSelect-dropdown').val(null).trigger('change');
-
-        } else {
-            alert(data.error || "Failed to add stock");
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Something went wrong");
-    });
-});
-window.onload = function() {
-    fetchData();
-}
+window.onload = fetchAll;
 
 </script>
 </html>

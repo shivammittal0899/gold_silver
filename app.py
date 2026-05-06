@@ -199,22 +199,6 @@ def stop_trailing():
 
 
 
-# @app.route('/start_trailing_row', methods=['POST'])
-# def start_trailing_row():
-#     data = request.json
-
-#     config = {
-#         "id": str(uuid.uuid4()),
-#         "indicator": data['indicator'],
-#         "min": int(data['min']),
-#         "multiplier": float(data['multiplier']),
-#         "max": int(data['max']),
-#         "running": True
-#     }
-
-#     TRAILING_CONFIGS.append(config)
-
-#     return config
 
 
 import threading
@@ -1836,6 +1820,9 @@ log.disabled = True
 @app.route('/portfolio')
 def portfolio():
     try:
+        access_token = read_access_token()
+        # kite = KiteConnect(api_key=API_KEY)
+        kite.set_access_token(access_token)
         positions_data = kite.positions()['net']
         active_positions = [p for p in positions_data if p['quantity'] != 0]
 
@@ -1876,6 +1863,9 @@ def portfolio():
 
 @app.route('/portfolio-data')
 def portfolio_data():
+    access_token = read_access_token()
+    # kite = KiteConnect(api_key=API_KEY)
+    kite.set_access_token(access_token)
     positions_data = kite.positions()['net']
     active_positions = [p for p in positions_data if p['quantity'] != 0]
 

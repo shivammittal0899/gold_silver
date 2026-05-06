@@ -1885,10 +1885,31 @@ def portfolio():
                 p['type'] = 'Other'
 
             total_pnl += p['pnl']
+        
+        
+        conn = sqlite3.connect('portfolio.db')
+        cur = conn.cursor()
 
+        cur.execute("SELECT * FROM portfolios")
+        portfolios = cur.fetchall()
+
+        result = []
+
+        for p in portfolios:
+            cur.execute("SELECT * FROM holdings WHERE portfolio_id=?", (p[0],))
+            holdings = cur.fetchall()
+
+            result.append({
+                "id": p[0],
+                "name": p[1],
+                "holdings": holdings
+            })
+
+        conn.close()
         return render_template('portfolio.html',
-                               positions=active_positions,
-                               total_pnl=total_pnl)
+                        positions=active_positions,
+                        total_pnl=total_pnl,
+                        portfolios=result)
 
     except Exception as e:
         return str(e)
@@ -1956,7 +1977,7 @@ def manual_portfolio():
         })
 
     conn.close()
-    return render_template('manual_portfolio.html', portfolios=result)
+    return render_template('portfolio.html', portfolios=result)
 
 @app.route('/create-portfolio', methods=['POST'])
 def create_portfolio():
@@ -1970,7 +1991,7 @@ def create_portfolio():
     conn.commit()
     conn.close()
 
-    return redirect('/manual-portfolio')
+    return redirect('/portfolio')
 
 @app.route('/delete-portfolio/<int:portfolio_id>')
 def delete_portfolio(portfolio_id):
@@ -1986,7 +2007,7 @@ def delete_portfolio(portfolio_id):
     conn.commit()
     conn.close()
 
-    return redirect('/manual-portfolio')
+    return redirect('/portfolio')
 
 @app.route('/add-holding', methods=['POST'])
 def add_holding():
@@ -2006,7 +2027,7 @@ def add_holding():
     conn.commit()
     conn.close()
 
-    return redirect('/manual-portfolio')
+    return redirect('/portfolio')
 
 @app.route('/delete-holding/<int:holding_id>')
 def delete_holding(holding_id):
@@ -2018,7 +2039,7 @@ def delete_holding(holding_id):
     conn.commit()
     conn.close()
 
-    return redirect('/manual-portfolio')
+    return redirect('/portfolio')
 
 @app.route('/edit-holding/<int:holding_id>')
 def edit_holding(holding_id):

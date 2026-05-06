@@ -1849,66 +1849,6 @@ def init_portfolio_db():
     conn.close()
 init_portfolio_db()
 
-@app.route('/get-symbols')
-def get_symbols():
-    conn = sqlite3.connect('instruments.db')  # or your table
-    cur = conn.cursor()
-
-    # Fetch EQ + FUT
-    cur.execute("""
-        SELECT tradingsymbol, exchange
-        FROM instruments
-        WHERE exchange IN ('NSE', 'NFO')
-        LIMIT 1000
-    """)
-
-    data = cur.fetchall()
-    conn.close()
-
-    symbols = [
-        {
-            "symbol": row[0],
-            "exchange": row[1]
-        } for row in data
-    ]
-
-    return jsonify(symbols)
-
-# @app.route('/search-symbol')
-# def search_symbol():
-#     query = request.args.get('q', '').upper()
-
-#     try:
-#         conn = sqlite3.connect(DB_PATH)
-#         cur = conn.cursor()
-
-#         cur.execute("""
-#             SELECT tradingsymbol, exchange
-#             FROM instruments
-#             WHERE tradingsymbol LIKE ?
-#             AND exchange IN ('NSE', 'NFO')
-#             AND (
-#                 exchange = 'NSE'
-#                 OR (exchange = 'NFO' AND instrument_type = 'FUT')
-#             )
-#             LIMIT 20
-#         """, (f"%{query}%",))
-
-#         data = cur.fetchall()
-#         conn.close()
-
-#         return jsonify({
-#             "results": [
-#                 {
-#                     "id": r[0],   # required by Select2
-#                     "text": f"{r[0]} ({r[1]})"
-#                 } for r in data
-#             ]
-#         })
-
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
-
 
 @app.route('/portfolio')
 def portfolio():
@@ -2137,7 +2077,7 @@ def update_holding(holding_id):
     conn.commit()
     conn.close()
 
-    return redirect('/manual-portfolio')
+    return redirect('/portfolio')
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
     init_watchlist_db()   # 🔥 MUST BE FIRST

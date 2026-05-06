@@ -1877,7 +1877,6 @@ def portfolio():
 
 @app.route('/portfolio-data')
 def portfolio_data():
-
     access_token = read_access_token()
     kite.set_access_token(access_token)
 
@@ -1887,28 +1886,38 @@ def portfolio_data():
     positions_data = kite.positions()['net']
     active_positions = [p for p in positions_data if p['quantity'] != 0]
 
-    ####################################
-    # 🔹 MANUAL HOLDINGS
-    ####################################
-    conn = sqlite3.connect('portfolio.db')
-    cur = conn.cursor()
-
-    cur.execute("SELECT symbol, quantity, buy_price FROM holdings")
-    manual_db = cur.fetchall()
-    conn.close()
-
-    ####################################
-    # 🔹 BUILD SYMBOL LIST
-    ####################################
     symbols = []
 
     for p in active_positions:
         symbols.append(f"{p['exchange']}:{p['tradingsymbol']}")
 
+        # ✅ Add portfolio label
+        p['portfolio'] = "Zerodha"
+        p['source'] = "zerodha"
+
+    ####################################
+    # 🔹 MANUAL HOLDINGS (UPDATED QUERY)
+    ####################################
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT h.id, h.symbol, h.quantity, h.buy_price, p.name
+        FROM holdings h
+        JOIN portfolios p ON h.portfolio_id = p.id
+    """)
+    holdings = cur.fetchall()
+    conn.close()
+
     manual_positions = []
 
-    for symbol, qty, price in manual_db:
+    ####################################
+    # 🔹 BUILD MANUAL POSITIONS
+    ####################################
+    for h in holdings:
+        holding_id, symbol, qty, price, portfolio_name = h
 
+        # 🔥 Detect exchange
         exchange = "NSE"
         if "FUT" in symbol or "-" in symbol:
             exchange = "NFO"
@@ -1916,26 +1925,27 @@ def portfolio_data():
         symbols.append(f"{exchange}:{symbol}")
 
         manual_positions.append({
+            "id": holding_id,
             "tradingsymbol": symbol,
             "quantity": qty,
             "average_price": price,
             "exchange": exchange,
             "multiplier": 1,
+            "portfolio": portfolio_name,   # ✅ Portfolio name
             "source": "manual"
         })
 
     ####################################
-    # 🔹 FETCH LTP
+    # 🔹 FETCH LTP (COMMON)
     ####################################
     ltp_data = kite.ltp(symbols) if symbols else {}
 
     total_pnl = 0
 
     ####################################
-    # 🔹 PROCESS ZERODHA
+    # 🔹 PROCESS ZERODHA POSITIONS
     ####################################
     for p in active_positions:
-
         key = f"{p['exchange']}:{p['tradingsymbol']}"
         ltp = ltp_data.get(key, {}).get('last_price', 0)
 
@@ -1946,6 +1956,7 @@ def portfolio_data():
         invested = p['average_price'] * abs(p['quantity'])
         p['pnl_percent'] = (p['pnl'] / invested * 100) if invested else 0
 
+        # ✅ Type classification
         if p['exchange'] == 'NSE':
             p['type'] = 'Equity'
         elif p['exchange'] == 'NFO':
@@ -1955,15 +1966,12 @@ def portfolio_data():
         else:
             p['type'] = 'Other'
 
-        p['source'] = 'zerodha'
-
         total_pnl += p['pnl']
 
     ####################################
-    # 🔹 PROCESS MANUAL
+    # 🔹 PROCESS MANUAL POSITIONS
     ####################################
     for p in manual_positions:
-
         key = f"{p['exchange']}:{p['tradingsymbol']}"
         ltp = ltp_data.get(key, {}).get('last_price', 0)
 
@@ -1974,17 +1982,13 @@ def portfolio_data():
         invested = p['average_price'] * abs(p['quantity'])
         p['pnl_percent'] = (p['pnl'] / invested * 100) if invested else 0
 
-        if p['exchange'] == 'NSE':
-            p['type'] = 'Equity'
-        elif p['exchange'] == 'NFO':
-            p['type'] = 'Futures'
-        else:
-            p['type'] = 'Manual'
+        # 🔥 IMPORTANT: show portfolio name instead of "Manual"
+        p['type'] = p['portfolio']
 
         total_pnl += p['pnl']
 
     ####################################
-    # 🔹 COMBINE
+    # 🔹 COMBINE BOTH
     ####################################
     all_positions = active_positions + manual_positions
 
@@ -2108,7 +2112,7 @@ def delete_holding(holding_id):
     conn.commit()
     conn.close()
 
-    return redirect('/portfolio')
+    return jsonify({"status": "success"})
 
 @app.route('/delete-portfolio/<int:portfolio_id>')
 def delete_portfolio(portfolio_id):

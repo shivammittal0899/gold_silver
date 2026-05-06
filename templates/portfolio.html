@@ -162,7 +162,7 @@ function fetchManual() {
                         <td>${h.ltp}</td>
                         <td style="color:${h.pnl > 0 ? 'green':'red'}">${h.pnl.toFixed(2)}</td>
                         <td style="color:${h.pnl_percent > 0 ? 'green':'red'}">${h.pnl_percent.toFixed(2)}%</td>
-                        <td><a href="/delete-holding/${h.id}">❌</a></td>
+                        <td><button onclick="deleteHolding({{ h[0] }})">Delete</button></td>
                     </tr>
                 `;
             });
@@ -263,6 +263,30 @@ $(document).ready(function() {
 
 });
 
+function deleteHolding(id) {
+
+    if (!confirm("Delete this stock?")) return;
+
+    fetch(`/delete-holding/${id}`, {
+        method: 'POST'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+
+            // 🔥 Refresh both tables
+            fetchData();
+            fetchManualData();  // if you made separate table
+
+        } else {
+            alert("Delete failed");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Error deleting");
+    });
+}
 
 /* ===================== AUTO REFRESH ===================== */
 setInterval(fetchAll, 3000);

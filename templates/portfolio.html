@@ -151,8 +151,16 @@ document.getElementById("add-form").addEventListener("submit", function(e) {
     })
     .then(res => res.json())
     .then(() => {
-        alert("Stock added");
-        location.reload(); // or better: refresh only table
+        // alert("Stock added");
+        // location.reload(); // or better: refresh only table
+        // 🔥 Re-fetch only portfolio data
+        fetchData();
+
+        // 🔥 Optional: reset form
+        document.getElementById("add-form").reset();
+
+        // 🔥 Optional: clear Select2
+        $('#symbolSelect-dropdown').val(null).trigger('change');
     })
     .catch(err => console.error(err));
 });

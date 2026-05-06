@@ -1313,7 +1313,7 @@ def search_symbols():
     return jsonify({"results": results})
 
 @app.route('/searchfno_symbols')
-def search_symbols():
+def searchfno_symbols():
     query = request.args.get('q', '')
 
     conn = sqlite3.connect("instruments.db")

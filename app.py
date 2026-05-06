@@ -1299,34 +1299,17 @@ def search_symbols():
     conn = sqlite3.connect("instruments.db")
     c = conn.cursor()
 
+    # rows = c.execute("""
+    #     SELECT tradingsymbol FROM instruments
+    #     WHERE segment='EQ' AND tradingsymbol LIKE ?
+    #     LIMIT 50
+    # """, (f"%{query}%",)).fetchall()
     rows = c.execute("""
         SELECT tradingsymbol FROM instruments
-        WHERE segment='EQ' AND tradingsymbol LIKE ?
+        WHERE (segment = 'EQ' OR segment = 'FUT') AND tradingsymbol LIKE ?
         LIMIT 50
     """, (f"%{query}%",)).fetchall()
     
-
-    conn.close()
-
-    results = [{"id": r[0], "text": r[0]} for r in rows]
-
-    return jsonify({"results": results})
-
-@app.route('/searchfno_symbols')
-def searchfno_symbols():
-    query = request.args.get('q', '')
-
-    conn = sqlite3.connect("instruments.db")
-    c = conn.cursor()
-
-    rows = c.execute("""
-        SELECT tradingsymbol FROM instruments
-        WHERE segment='NFO' AND tradingsymbol LIKE ?
-        LIMIT 50
-    """, (f"%{query}%",)).fetchall()
-    
-
-    conn.close()
 
     results = [{"id": r[0], "text": r[0]} for r in rows]
 

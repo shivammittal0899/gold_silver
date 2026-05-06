@@ -1312,6 +1312,26 @@ def search_symbols():
 
     return jsonify({"results": results})
 
+@app.route('/searchfno_symbols')
+def search_symbols():
+    query = request.args.get('q', '')
+
+    conn = sqlite3.connect("instruments.db")
+    c = conn.cursor()
+
+    rows = c.execute("""
+        SELECT tradingsymbol FROM instruments
+        WHERE segment='NFO-FUT' AND tradingsymbol LIKE ?
+        LIMIT 50
+    """, (f"%{query}%",)).fetchall()
+    
+
+    conn.close()
+
+    results = [{"id": r[0], "text": r[0]} for r in rows]
+
+    return jsonify({"results": results})
+
 @app.route('/get_watchlist_items')
 def get_watchlist_items():
     wid = request.args.get("id")

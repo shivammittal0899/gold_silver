@@ -2023,11 +2023,22 @@ def portfolio_data():
                 "exchange": p['exchange'],
                 "total_qty": 0,
                 "total_value": 0,
-                "ltp": ltp
+                "ltp": ltp,
+
+                # 🔥 NEW
+                "sources": set(),
+                "portfolios": set()
             }
 
         combined_map[key]["total_qty"] += qty
         combined_map[key]["total_value"] += avg * qty
+
+        # 🔥 Track sources
+        combined_map[key]["sources"].add(p.get("source", ""))
+
+        # 🔥 Track portfolio names
+        if p.get("portfolio"):
+            combined_map[key]["portfolios"].add(p["portfolio"])
 
     ####################################
     # 🔹 FINAL COMBINED
@@ -2064,7 +2075,15 @@ def portfolio_data():
 
             "pnl": pnl,
 
-            "pnl_percent": pnl_percent
+            "pnl_percent": pnl_percent,
+
+            "sources_count": len(v["sources"]),
+            "portfolio_count": len(v["portfolios"]),
+
+            "highlight": (
+                len(v["sources"]) > 1
+                or len(v["portfolios"]) > 1
+            )
         })
 
     ####################################

@@ -228,9 +228,12 @@ function fetchCombined(data) {
         let row = `
             <tr style="background:${rowColor}">
                 <td>
-                    <b>${p.tradingsymbol}</b>
+                    <b style="
+                        color:${p.highlight ? '#1976d2' : 'black'};
+                    ">
+                        ${p.tradingsymbol}
+                    </b>
                 </td>
-
                 <td>${p.quantity}</td>
 
                 <td>

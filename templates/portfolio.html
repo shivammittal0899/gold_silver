@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Portfolio Dashboard</title>
+
+    <script>
+        function fetchData() {
+            fetch('/portfolio-data')
+            .then(res => res.json())
+            .then(data => {
+                let tbody = document.getElementById("portfolio-body");
+                tbody.innerHTML = "";
+
+                data.positions.forEach(p => {
+                    let row = `
+                        <tr>
+                            <td>${p.tradingsymbol}</td>
+                            <td>${p.type}</td>
+                            <td>${p.side}</td>
+                            <td>${p.quantity}</td>
+                            <td>${p.average_price}</td>
+                            <td>${p.ltp}</td>
+                            <td style="color:${p.pnl > 0 ? 'green' : 'red'}">
+                                ${p.pnl.toFixed(2)}
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+                document.getElementById("total-pnl").innerHTML =
+                    data.total_pnl.toFixed(2);
+            });
+        }
+
+        setInterval(fetchData, 3000);
+    </script>
+</head>
+
+<body onload="fetchData()">
+
+    <h2>Portfolio Dashboard</h2>
+
+    <h3>Total P&L: 
+        <span id="total-pnl" style="font-weight:bold;"></span>
+    </h3>
+
+    <table border="1" width="100%">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Type</th>
+                <th>Side</th>
+                <th>Qty</th>
+                <th>Avg Price</th>
+                <th>LTP</th>
+                <th>P&L</th>
+            </tr>
+        </thead>
+        <tbody id="portfolio-body"></tbody>
+    </table>
+
+</body>
+</html>

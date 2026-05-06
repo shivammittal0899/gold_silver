@@ -1833,6 +1833,81 @@ log.disabled = True
 
 
 
+@app.route('/portfolio')
+def portfolio():
+    try:
+        positions_data = kite.positions()['net']
+        active_positions = [p for p in positions_data if p['quantity'] != 0]
+
+        symbols = []
+        for p in active_positions:
+            symbols.append(f"{p['exchange']}:{p['tradingsymbol']}")
+
+        ltp_data = kite.ltp(symbols) if symbols else {}
+
+        total_pnl = 0
+
+        for p in active_positions:
+            key = f"{p['exchange']}:{p['tradingsymbol']}"
+            ltp = ltp_data.get(key, {}).get('last_price', 0)
+
+            p['ltp'] = ltp
+            p['pnl'] = (ltp - p['average_price']) * p['quantity']
+            p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
+
+            # Classification
+            if p['exchange'] == 'NSE' and p['product'] in ['CNC', 'MIS']:
+                p['type'] = 'Equity'
+            elif p['exchange'] == 'NSE':
+                p['type'] = 'Futures'
+            elif p['exchange'] == 'MCX':
+                p['type'] = 'Commodity'
+            else:
+                p['type'] = 'Other'
+
+            total_pnl += p['pnl']
+
+        return render_template('portfolio.html',
+                               positions=active_positions,
+                               total_pnl=total_pnl)
+
+    except Exception as e:
+        return str(e)
+
+@app.route('/portfolio-data')
+def portfolio_data():
+    positions_data = kite.positions()['net']
+    active_positions = [p for p in positions_data if p['quantity'] != 0]
+
+    symbols = [f"{p['exchange']}:{p['tradingsymbol']}" for p in active_positions]
+    ltp_data = kite.ltp(symbols) if symbols else {}
+
+    total_pnl = 0
+
+    for p in active_positions:
+        key = f"{p['exchange']}:{p['tradingsymbol']}"
+        ltp = ltp_data.get(key, {}).get('last_price', 0)
+
+        p['ltp'] = ltp
+        p['pnl'] = (ltp - p['average_price']) * p['quantity']
+        p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
+
+        if p['exchange'] == 'NSE' and p['product'] in ['CNC', 'MIS']:
+            p['type'] = 'Equity'
+        elif p['exchange'] == 'NSE':
+            p['type'] = 'Futures'
+        elif p['exchange'] == 'MCX':
+            p['type'] = 'Commodity'
+        else:
+            p['type'] = 'Other'
+
+        total_pnl += p['pnl']
+
+    return jsonify({
+        "positions": active_positions,
+        "total_pnl": total_pnl
+    })
+
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
     init_watchlist_db()   # 🔥 MUST BE FIRST

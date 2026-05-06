@@ -11,7 +11,7 @@
     
 </head>
 
-<body onload="fetchData()">
+<body>
 
     <h2>Other Portfolio Details</h2>
     <form method="POST" action="/create-portfolio">
@@ -96,7 +96,7 @@ function fetchData() {
                     <td>${p.type}</td>
                     <td>${p.side}</td>
                     <td>${p.quantity}</td>
-                    <td>${p.average_price.toFixed(2)}</td>
+                    <td>${(p.average_price || 0).toFixed(2)}</td>
                     <td>${p.ltp}</td>
                     <td style="color:${p.pnl > 0 ? 'green' : 'red'}">
                         ${p.pnl.toFixed(2)}
@@ -119,15 +119,25 @@ setInterval(fetchData, 3000);
 <script>
 function loadSymbols() {
     fetch('/get-symbols')
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) throw new Error("API error");
+        return res.json();
+    })
     .then(data => {
         let dropdown = document.getElementById("symbol-dropdown");
+        dropdown.innerHTML = "";  // clear
 
         data.forEach(s => {
             let option = document.createElement("option");
             option.value = s.symbol;
             option.text = `${s.symbol} (${s.exchange})`;
             dropdown.appendChild(option);
+        });
+
+        // ✅ Initialize Select2 AFTER data is loaded
+        $('#symbol-dropdown').select2({
+            placeholder: "Search symbol",
+            width: '250px'
         });
     });
 }
@@ -136,9 +146,6 @@ window.onload = function() {
     fetchData();
     loadSymbols();
 }
-$('#symbol-dropdown').select2({
-    placeholder: "Search symbol",
-    width: '200px'
-});
+
 </script>
 </html>

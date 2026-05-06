@@ -25,7 +25,7 @@
             {% endfor %}
         </select>
 
-        <select id="symbol-dropdown" name="symbol" required style="width:250px;"></select>
+        <select id="symbolSelect-dropdown" select name="symbol" required style="width:250px;"></select>
         <input type="number" step="any" name="quantity" placeholder="Qty" required>
         <input type="number" step="any" name="buy_price" placeholder="Buy Price" required>
 
@@ -117,27 +117,28 @@ function fetchData() {
 setInterval(fetchData, 3000);
 </script>
 <script>
+
 $(document).ready(function() {
-    $('#symbol-dropdown').select2({
-        placeholder: "Search symbol (EQ + FUT)",
-        minimumInputLength: 2,   // avoid heavy load
+
+    // 🔹 Select2 init (KEEP THIS ONE ONLY)
+    $('#symbolSelect-dropdown').select2({
+        placeholder: "Search stocks...",
+        minimumInputLength: 1,
         ajax: {
-            url: '/search-symbol',
+            url: '/search_symbols',
             dataType: 'json',
-            delay: 250,   // debounce
+            delay: 250,
             data: function (params) {
-                return {
-                    q: params.term   // search query
-                };
+                return { q: params.term };
             },
             processResults: function (data) {
-                return {
-                    results: data.results
-                };
+                return { results: data.results };
             },
             cache: true
         }
     });
+
+
 });
 
 window.onload = function() {

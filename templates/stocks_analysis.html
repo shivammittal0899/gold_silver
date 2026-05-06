@@ -363,12 +363,7 @@ function updateSelectedDisplay() {
 }
 
 // 🔥 REMOVE STOCK
-// function removeStock(symbol) {
-//     let selected = getSelectedStocks();
-//     selected = selected.filter(s => s !== symbol);
 
-//     $('#stockSelect').val(selected).trigger('change');
-// }
 function removeStock(symbol) {
     let selected = getSelectedStocks().filter(s => s !== symbol);
 

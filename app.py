@@ -1870,6 +1870,41 @@ def get_symbols():
 
     return jsonify(symbols)
 
+# @app.route('/search-symbol')
+# def search_symbol():
+#     query = request.args.get('q', '').upper()
+
+#     try:
+#         conn = sqlite3.connect(DB_PATH)
+#         cur = conn.cursor()
+
+#         cur.execute("""
+#             SELECT tradingsymbol, exchange
+#             FROM instruments
+#             WHERE tradingsymbol LIKE ?
+#             AND exchange IN ('NSE', 'NFO')
+#             AND (
+#                 exchange = 'NSE'
+#                 OR (exchange = 'NFO' AND instrument_type = 'FUT')
+#             )
+#             LIMIT 20
+#         """, (f"%{query}%",))
+
+#         data = cur.fetchall()
+#         conn.close()
+
+#         return jsonify({
+#             "results": [
+#                 {
+#                     "id": r[0],   # required by Select2
+#                     "text": f"{r[0]} ({r[1]})"
+#                 } for r in data
+#             ]
+#         })
+
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/portfolio')
 def portfolio():

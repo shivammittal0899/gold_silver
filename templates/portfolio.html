@@ -25,7 +25,7 @@
             {% endfor %}
         </select>
 
-        <select id="symbol-dropdown" name="symbol" required></select>
+        <select id="symbol-dropdown" name="symbol" required style="width:250px;"></select>
         <input type="number" step="any" name="quantity" placeholder="Qty" required>
         <input type="number" step="any" name="buy_price" placeholder="Buy Price" required>
 
@@ -117,34 +117,31 @@ function fetchData() {
 setInterval(fetchData, 3000);
 </script>
 <script>
-function loadSymbols() {
-    fetch('/get-symbols')
-    .then(res => {
-        if (!res.ok) throw new Error("API error");
-        return res.json();
-    })
-    .then(data => {
-        let dropdown = document.getElementById("symbol-dropdown");
-        dropdown.innerHTML = "";  // clear
-
-        data.forEach(s => {
-            let option = document.createElement("option");
-            option.value = s.symbol;
-            option.text = `${s.symbol} (${s.exchange})`;
-            dropdown.appendChild(option);
-        });
-
-        // ✅ Initialize Select2 AFTER data is loaded
-        $('#symbol-dropdown').select2({
-            placeholder: "Search symbol",
-            width: '250px'
-        });
+$(document).ready(function() {
+    $('#symbol-dropdown').select2({
+        placeholder: "Search symbol (EQ + FUT)",
+        minimumInputLength: 2,   // avoid heavy load
+        ajax: {
+            url: '/search-symbol',
+            dataType: 'json',
+            delay: 250,   // debounce
+            data: function (params) {
+                return {
+                    q: params.term   // search query
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: data.results
+                };
+            },
+            cache: true
+        }
     });
-}
+});
 
 window.onload = function() {
     fetchData();
-    loadSymbols();
 }
 
 </script>

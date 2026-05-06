@@ -1321,7 +1321,7 @@ def searchfno_symbols():
 
     rows = c.execute("""
         SELECT tradingsymbol FROM instruments
-        WHERE segment='NFO-FUT' AND tradingsymbol LIKE ?
+        WHERE segment='NFO' AND tradingsymbol LIKE ?
         LIMIT 50
     """, (f"%{query}%",)).fetchall()
     

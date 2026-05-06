@@ -129,10 +129,19 @@ $(document).ready(function() {
             dataType: 'json',
             delay: 250,
             data: function (params) {
-                return { q: params.term };
+                return { 
+                    q: params.term || '' 
+                };
             },
             processResults: function (data) {
-                return { results: data.results };
+                // ✅ Safe handling
+                if (!data || !data.results) {
+                    return { results: [] };
+                }
+
+                return {
+                    results: data.results
+                };
             },
             cache: true
         }
@@ -140,31 +149,72 @@ $(document).ready(function() {
 
 
 });
+// document.getElementById("add-form").addEventListener("submit", function(e) {
+//     e.preventDefault();
+
+//     let formData = new FormData(this);
+
+//     fetch('/add-holding', {
+//         method: 'POST',
+//         body: formData
+//     })
+//     .then(res => res.json())
+//     .then(() => {
+//         // alert("Stock added");
+//         // location.reload(); // or better: refresh only table
+//         // 🔥 Re-fetch only portfolio data
+//         fetchData();
+
+//         // 🔥 Optional: reset form
+//         document.getElementById("add-form").reset();
+
+//         // 🔥 Optional: clear Select2
+//         $('#symbolSelect-dropdown').val(null).trigger('change');
+//     })
+//     .catch(err => console.error(err));
+// });
+
 document.getElementById("add-form").addEventListener("submit", function(e) {
     e.preventDefault();
 
-    let formData = new FormData(this);
+    let form = this;
+    let formData = new FormData(form);
 
     fetch('/add-holding', {
         method: 'POST',
         body: formData
     })
-    .then(res => res.json())
-    .then(() => {
-        // alert("Stock added");
-        // location.reload(); // or better: refresh only table
-        // 🔥 Re-fetch only portfolio data
-        fetchData();
-
-        // 🔥 Optional: reset form
-        document.getElementById("add-form").reset();
-
-        // 🔥 Optional: clear Select2
-        $('#symbolSelect-dropdown').val(null).trigger('change');
+    .then(res => {
+        // ✅ Handle non-JSON / server errors safely
+        if (!res.ok) {
+            throw new Error("Server error while adding stock");
+        }
+        return res.json();
     })
-    .catch(err => console.error(err));
-});
+    .then(data => {
+        if (data.status === "success") {
 
+            // 🔥 Refresh only table (Zerodha positions)
+            fetchData();
+
+            // 🔥 OPTIONAL: if you later add manual refresh API
+            // refreshManualPortfolio();
+
+            // 🔥 Reset form fields
+            form.reset();
+
+            // 🔥 Reset Select2 dropdown properly
+            $('#symbolSelect-dropdown').val(null).trigger('change');
+
+        } else {
+            alert(data.error || "Failed to add stock");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Something went wrong");
+    });
+});
 window.onload = function() {
     fetchData();
 }

@@ -1299,21 +1299,21 @@ def search_symbols():
     conn = sqlite3.connect("instruments.db")
     c = conn.cursor()
 
-    # rows = c.execute("""
-    #     SELECT tradingsymbol FROM instruments
-    #     WHERE segment='EQ' AND tradingsymbol LIKE ?
-    #     LIMIT 50
-    # """, (f"%{query}%",)).fetchall()
     rows = c.execute("""
-    SELECT tradingsymbol, exchange
-    FROM instruments
-    WHERE tradingsymbol LIKE ?
-    AND (
-        segment = 'EQ'
-        OR (segment = 'NFO' AND instrument_type = 'FUT')
-    )
-    LIMIT 50
-""", (f"%{query}%",)).fetchall()
+        SELECT tradingsymbol FROM instruments
+        WHERE segment='EQ' OR segment = 'NFO-FUT' AND tradingsymbol LIKE ?
+        LIMIT 50
+    """, (f"%{query}%",)).fetchall()
+#     rows = c.execute("""
+#     SELECT tradingsymbol, exchange
+#     FROM instruments
+#     WHERE tradingsymbol LIKE ?
+#     AND (
+#         segment = 'EQ'
+#         OR (segment = 'NFO' AND instrument_type = 'FUT')
+#     )
+#     LIMIT 50
+# """, (f"%{query}%",)).fetchall()
 
     conn.close()
 

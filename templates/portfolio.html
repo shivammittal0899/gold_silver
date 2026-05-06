@@ -18,10 +18,13 @@
                             <td>${p.type}</td>
                             <td>${p.side}</td>
                             <td>${p.quantity}</td>
-                            <td>${p.average_price}</td>
+                            <td>${p.average_price.toFixed(2)}</td>
                             <td>${p.ltp}</td>
                             <td style="color:${p.pnl > 0 ? 'green' : 'red'}">
                                 ${p.pnl.toFixed(2)}
+                            </td>
+                            <td style="color:${p.pnl_percent > 0 ? 'green' : 'red'}">
+                                ${p.pnl_percent.toFixed(2)}%
                             </td>
                         </tr>
                     `;
@@ -55,6 +58,7 @@
                 <th>Avg Price</th>
                 <th>LTP</th>
                 <th>P&L</th>
+                <th>P&L %</th>
             </tr>
         </thead>
         <tbody id="portfolio-body"></tbody>

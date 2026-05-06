@@ -1841,6 +1841,11 @@ def portfolio():
             p['ltp'] = ltp
             p['pnl'] = (ltp - p['average_price']) * p['quantity'] * p['multiplier']
             p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
+            # 👉 Invested value
+            invested = p['average_price'] * abs(p['quantity'])
+
+            # 👉 P&L %
+            p['pnl_percent'] = (p['pnl'] / invested * 100) if invested != 0 else 0
 
             # Classification
             if p['exchange'] == 'NSE' and p['product'] in ['CNC', 'MIS']:
@@ -1882,6 +1887,11 @@ def portfolio_data():
         p['ltp'] = ltp
         p['pnl'] = (ltp - p['average_price']) * p['quantity'] * p['multiplier']
         p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
+        # 👉 Invested value
+        invested = p['average_price'] * abs(p['quantity'])
+
+        # 👉 P&L %
+        p['pnl_percent'] = (p['pnl'] / invested * 100) if invested != 0 else 0
 
         if p['exchange'] == 'NSE' and p['product'] in ['CNC', 'MIS']:
             p['type'] = 'Equity'

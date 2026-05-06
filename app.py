@@ -1875,6 +1875,7 @@ def portfolio_data():
     total_pnl = 0
 
     for p in active_positions:
+        log1(p)
         key = f"{p['exchange']}:{p['tradingsymbol']}"
         ltp = ltp_data.get(key, {}).get('last_price', 0)
 

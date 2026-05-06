@@ -1839,13 +1839,13 @@ def portfolio():
             ltp = ltp_data.get(key, {}).get('last_price', 0)
 
             p['ltp'] = ltp
-            p['pnl'] = (ltp - p['average_price']) * p['quantity']
+            p['pnl'] = (ltp - p['average_price']) * p['quantity'] * p['multiplier']
             p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
 
             # Classification
             if p['exchange'] == 'NSE' and p['product'] in ['CNC', 'MIS']:
                 p['type'] = 'Equity'
-            elif p['exchange'] == 'NSE':
+            elif p['exchange'] == 'NFO':
                 p['type'] = 'Futures'
             elif p['exchange'] == 'MCX':
                 p['type'] = 'Commodity'
@@ -1880,12 +1880,12 @@ def portfolio_data():
         ltp = ltp_data.get(key, {}).get('last_price', 0)
 
         p['ltp'] = ltp
-        p['pnl'] = (ltp - p['average_price']) * p['quantity']
+        p['pnl'] = (ltp - p['average_price']) * p['quantity'] * p['multiplier']
         p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
 
         if p['exchange'] == 'NSE' and p['product'] in ['CNC', 'MIS']:
             p['type'] = 'Equity'
-        elif p['exchange'] == 'NSE':
+        elif p['exchange'] == 'NFO':
             p['type'] = 'Futures'
         elif p['exchange'] == 'MCX':
             p['type'] = 'Commodity'

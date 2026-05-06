@@ -2021,6 +2021,7 @@ def portfolio_data():
             combined_map[key] = {
                 "tradingsymbol": symbol,
                 "exchange": p['exchange'],
+                "multiplier": p['multiplier'],
                 "total_qty": 0,
                 "total_value": 0,
                 "ltp": ltp,
@@ -2055,7 +2056,7 @@ def portfolio_data():
         avg_price = v["total_value"] / qty
         ltp = v["ltp"]
 
-        pnl = (ltp - avg_price) * qty
+        pnl = (ltp - avg_price) * qty * v["multiplier"]
 
         invested = avg_price * qty
 

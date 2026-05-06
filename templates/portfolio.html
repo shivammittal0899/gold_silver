@@ -42,6 +42,51 @@
 
 <body onload="fetchData()">
 
+    <h2>Other Portfolio Details</h2>
+    <form method="POST" action="/create-portfolio">
+        <input type="text" name="name" placeholder="Portfolio Name" required>
+        <button type="submit">Create</button>
+    </form>
+        <form method="POST" action="/add-holding">
+        <select name="portfolio_id">
+            {% for p in portfolios %}
+            <option value="{{ p.id }}">{{ p.name }}</option>
+            {% endfor %}
+        </select>
+
+        <input type="text" name="symbol" placeholder="Symbol" required>
+        <input type="number" step="any" name="quantity" placeholder="Qty" required>
+        <input type="number" step="any" name="buy_price" placeholder="Buy Price" required>
+
+        <button type="submit">Add</button>
+    </form>
+    {% for p in portfolios %}
+        <h3>
+            {{ p.name }}
+            <a href="/delete-portfolio/{{ p.id }}">❌ Delete</a>
+        </h3>
+
+        <table border="1">
+            <tr>
+                <th>Symbol</th>
+                <th>Qty</th>
+                <th>Buy Price</th>
+                <th>Action</th>
+            </tr>
+
+            {% for h in p.holdings %}
+            <tr>
+                <td>{{ h[2] }}</td>
+                <td>{{ h[3] }}</td>
+                <td>{{ h[4] }}</td>
+                <td>
+                    <!-- <a href="/edit-holding/{{ h[0] }}">Edit</a> | -->
+                    <a href="/delete-holding/{{ h[0] }}">Delete</a>
+                </td>   
+            </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
     <h2>Portfolio Dashboard</h2>
 
     <h3>Total P&L: 

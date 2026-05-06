@@ -1817,6 +1817,33 @@ log.disabled = True
 
 
 
+def init_portfolio_db():
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
+
+    # Portfolio table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS portfolios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL
+    )
+    """)
+
+    # Holdings table
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS holdings (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        portfolio_id INTEGER,
+        symbol TEXT,
+        quantity REAL,
+        buy_price REAL,
+        FOREIGN KEY(portfolio_id) REFERENCES portfolios(id)
+    )
+    """)
+
+    conn.commit()
+    conn.close()
+init_portfolio_db()
 @app.route('/portfolio')
 def portfolio():
     try:
@@ -1908,7 +1935,122 @@ def portfolio_data():
         "positions": active_positions,
         "total_pnl": total_pnl
     })
+@app.route('/manual-portfolio')
+def manual_portfolio():
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
 
+    cur.execute("SELECT * FROM portfolios")
+    portfolios = cur.fetchall()
+
+    result = []
+
+    for p in portfolios:
+        cur.execute("SELECT * FROM holdings WHERE portfolio_id=?", (p[0],))
+        holdings = cur.fetchall()
+
+        result.append({
+            "id": p[0],
+            "name": p[1],
+            "holdings": holdings
+        })
+
+    conn.close()
+    return render_template('manual_portfolio.html', portfolios=result)
+
+@app.route('/create-portfolio', methods=['POST'])
+def create_portfolio():
+    name = request.form['name']
+
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
+
+    cur.execute("INSERT INTO portfolios (name) VALUES (?)", (name,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/manual-portfolio')
+
+@app.route('/delete-portfolio/<int:portfolio_id>')
+def delete_portfolio(portfolio_id):
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
+
+    # Delete holdings first (important)
+    cur.execute("DELETE FROM holdings WHERE portfolio_id=?", (portfolio_id,))
+    
+    # Then delete portfolio
+    cur.execute("DELETE FROM portfolios WHERE id=?", (portfolio_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/manual-portfolio')
+
+@app.route('/add-holding', methods=['POST'])
+def add_holding():
+    portfolio_id = request.form['portfolio_id']
+    symbol = request.form['symbol'].upper()
+    quantity = float(request.form['quantity'])
+    buy_price = float(request.form['buy_price'])
+
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
+
+    cur.execute("""
+        INSERT INTO holdings (portfolio_id, symbol, quantity, buy_price)
+        VALUES (?, ?, ?, ?)
+    """, (portfolio_id, symbol, quantity, buy_price))
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/manual-portfolio')
+
+@app.route('/delete-holding/<int:holding_id>')
+def delete_holding(holding_id):
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
+
+    cur.execute("DELETE FROM holdings WHERE id=?", (holding_id,))
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/manual-portfolio')
+
+@app.route('/edit-holding/<int:holding_id>')
+def edit_holding(holding_id):
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM holdings WHERE id=?", (holding_id,))
+    holding = cur.fetchone()
+
+    conn.close()
+
+    return render_template('edit_holding.html', holding=holding)
+
+@app.route('/update-holding/<int:holding_id>', methods=['POST'])
+def update_holding(holding_id):
+    symbol = request.form['symbol'].upper()
+    quantity = float(request.form['quantity'])
+    buy_price = float(request.form['buy_price'])
+
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE holdings
+        SET symbol=?, quantity=?, buy_price=?
+        WHERE id=?
+    """, (symbol, quantity, buy_price, holding_id))
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/manual-portfolio')
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
     init_watchlist_db()   # 🔥 MUST BE FIRST

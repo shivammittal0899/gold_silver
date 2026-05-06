@@ -86,10 +86,12 @@ function fetchData() {
     fetch('/portfolio-data')
     .then(res => res.json())
     .then(data => {
+
         let tbody = document.getElementById("portfolio-body");
         tbody.innerHTML = "";
 
         data.positions.forEach(p => {
+
             let row = `
                 <tr>
                     <td>${p.tradingsymbol}</td>
@@ -106,6 +108,7 @@ function fetchData() {
                     </td>
                 </tr>
             `;
+
             tbody.innerHTML += row;
         });
 

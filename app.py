@@ -1854,15 +1854,12 @@ init_portfolio_db()
 def portfolio():
     try:
         access_token = read_access_token()
-        # kite = KiteConnect(api_key=API_KEY)
         kite.set_access_token(access_token)
+        
         positions_data = kite.positions()['net']
         active_positions = [p for p in positions_data if p['quantity'] != 0]
 
-        symbols = []
-        for p in active_positions:
-            symbols.append(f"{p['exchange']}:{p['tradingsymbol']}")
-
+        symbols = [f"{p['exchange']}:{p['tradingsymbol']}" for p in active_positions]
         ltp_data = kite.ltp(symbols) if symbols else {}
 
         total_pnl = 0
@@ -1899,6 +1896,7 @@ def portfolio():
         cur.execute("SELECT * FROM portfolios")
         portfolios = cur.fetchall()
 
+        
         result = []
 
         for p in portfolios:
@@ -1923,31 +1921,70 @@ def portfolio():
 @app.route('/portfolio-data')
 def portfolio_data():
     access_token = read_access_token()
-    # kite = KiteConnect(api_key=API_KEY)
     kite.set_access_token(access_token)
+
+    ####################################
+    # 🔹 ZERODHA POSITIONS
+    ####################################
     positions_data = kite.positions()['net']
     active_positions = [p for p in positions_data if p['quantity'] != 0]
 
     symbols = [f"{p['exchange']}:{p['tradingsymbol']}" for p in active_positions]
+
+    ####################################
+    # 🔹 MANUAL HOLDINGS
+    ####################################
+    conn = sqlite3.connect('portfolio.db')
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM holdings")
+    holdings = cur.fetchall()
+    conn.close()
+
+    manual_positions = []
+
+    for h in holdings:
+        symbol = h[2]
+        qty = h[3]
+        price = h[4]
+
+        # 👉 detect exchange (simple logic)
+        exchange = "NSE"
+        if "FUT" in symbol or "-" in symbol:
+            exchange = "NFO"
+
+        symbols.append(f"{exchange}:{symbol}")
+
+        manual_positions.append({
+            "tradingsymbol": symbol,
+            "quantity": qty,
+            "average_price": price,
+            "exchange": exchange,
+            "multiplier": 1
+        })
+
+    ####################################
+    # 🔹 FETCH LTP (COMMON)
+    ####################################
     ltp_data = kite.ltp(symbols) if symbols else {}
 
     total_pnl = 0
 
+    ####################################
+    # 🔹 PROCESS ZERODHA
+    ####################################
     for p in active_positions:
-        log1(p)
         key = f"{p['exchange']}:{p['tradingsymbol']}"
         ltp = ltp_data.get(key, {}).get('last_price', 0)
 
         p['ltp'] = ltp
         p['pnl'] = (ltp - p['average_price']) * p['quantity'] * p['multiplier']
         p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
-        # 👉 Invested value
+
         invested = p['average_price'] * abs(p['quantity'])
+        p['pnl_percent'] = (p['pnl'] / invested * 100) if invested else 0
 
-        # 👉 P&L %
-        p['pnl_percent'] = (p['pnl'] / invested * 100) if invested != 0 else 0
-
-        if p['exchange'] == 'NSE' and p['product'] in ['CNC', 'MIS']:
+        if p['exchange'] == 'NSE':
             p['type'] = 'Equity'
         elif p['exchange'] == 'NFO':
             p['type'] = 'Futures'
@@ -1958,8 +1995,36 @@ def portfolio_data():
 
         total_pnl += p['pnl']
 
+    ####################################
+    # 🔹 PROCESS MANUAL
+    ####################################
+    for p in manual_positions:
+        key = f"{p['exchange']}:{p['tradingsymbol']}"
+        ltp = ltp_data.get(key, {}).get('last_price', 0)
+
+        p['ltp'] = ltp
+        p['pnl'] = (ltp - p['average_price']) * p['quantity']
+        p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
+
+        invested = p['average_price'] * abs(p['quantity'])
+        p['pnl_percent'] = (p['pnl'] / invested * 100) if invested else 0
+
+        if p['exchange'] == 'NSE':
+            p['type'] = 'Equity'
+        elif p['exchange'] == 'NFO':
+            p['type'] = 'Futures'
+        else:
+            p['type'] = 'Manual'
+
+        total_pnl += p['pnl']
+
+    ####################################
+    # 🔹 MERGE BOTH
+    ####################################
+    all_positions = active_positions + manual_positions
+
     return jsonify({
-        "positions": active_positions,
+        "positions": all_positions,
         "total_pnl": total_pnl
     })
 @app.route('/manual-portfolio')

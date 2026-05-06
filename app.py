@@ -1983,7 +1983,16 @@ def portfolio_data():
         p['pnl_percent'] = (p['pnl'] / invested * 100) if invested else 0
 
         # 🔥 IMPORTANT: show portfolio name instead of "Manual"
-        p['type'] = p['portfolio']
+        # p['type'] = p['portfolio']
+        # ✅ Type classification
+        if p['exchange'] == 'NSE':
+            p['type'] = 'Equity'
+        elif p['exchange'] == 'NFO':
+            p['type'] = 'Futures'
+        elif p['exchange'] == 'MCX':
+            p['type'] = 'Commodity'
+        else:
+            p['type'] = 'Other'
 
         total_pnl += p['pnl']
 

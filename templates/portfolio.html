@@ -188,7 +188,7 @@ function fetchCombined(data) {
 
         let row = `
             <tr>
-                <td>${p.source}</td>
+                <td>${p.source === 'manual' ? p.portfolio : 'Zerodha'}</td>
                 <td>${p.tradingsymbol}</td>
                 <td>${p.type}</td>
                 <td>${p.side}</td>

@@ -2033,7 +2033,7 @@ def add_holding():
     conn.commit()
     conn.close()
 
-    return redirect('/portfolio')
+    return jsonify({"status": "success"})
 
 @app.route('/delete-holding/<int:holding_id>')
 def delete_holding(holding_id):

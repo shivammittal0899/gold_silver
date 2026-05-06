@@ -18,14 +18,14 @@
         <input type="text" name="name" placeholder="Portfolio Name" required>
         <button type="submit">Create</button>
     </form>
-        <form method="POST" action="/add-holding">
+        <form id="add-form">
         <select name="portfolio_id">
             {% for p in portfolios %}
             <option value="{{ p.id }}">{{ p.name }}</option>
             {% endfor %}
         </select>
 
-        <select id="symbolSelect-dropdown" select required style="width:250px;"></select>
+        <select id="symbolSelect-dropdown" name="symbol" required style="width:250px;"></select>
         <input type="number" step="any" name="quantity" placeholder="Qty" required>
         <input type="number" step="any" name="buy_price" placeholder="Buy Price" required>
 
@@ -139,6 +139,22 @@ $(document).ready(function() {
     });
 
 
+});
+document.getElementById("add-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    fetch('/add-holding', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(() => {
+        alert("Stock added");
+        location.reload(); // or better: refresh only table
+    })
+    .catch(err => console.error(err));
 });
 
 window.onload = function() {

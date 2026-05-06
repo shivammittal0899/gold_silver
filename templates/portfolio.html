@@ -2,42 +2,13 @@
 <html>
 <head>
     <title>Portfolio Dashboard</title>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <script>
-        function fetchData() {
-            fetch('/portfolio-data')
-            .then(res => res.json())
-            .then(data => {
-                let tbody = document.getElementById("portfolio-body");
-                tbody.innerHTML = "";
-
-                data.positions.forEach(p => {
-                    let row = `
-                        <tr>
-                            <td>${p.tradingsymbol}</td>
-                            <td>${p.type}</td>
-                            <td>${p.side}</td>
-                            <td>${p.quantity}</td>
-                            <td>${p.average_price.toFixed(2)}</td>
-                            <td>${p.ltp}</td>
-                            <td style="color:${p.pnl > 0 ? 'green' : 'red'}">
-                                ${p.pnl.toFixed(2)}
-                            </td>
-                            <td style="color:${p.pnl_percent > 0 ? 'green' : 'red'}">
-                                ${p.pnl_percent.toFixed(2)}%
-                            </td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
-                });
-
-                document.getElementById("total-pnl").innerHTML =
-                    data.total_pnl.toFixed(2);
-            });
-        }
-
-        setInterval(fetchData, 3000);
-    </script>
+    <!-- LOCAL Select2 -->
+    <link href="{{ url_for('static', filename='select2/select2.min.css') }}" rel="stylesheet" />
+    <script src="{{ url_for('static', filename='select2/select2.min.js') }}"></script>
+    
 </head>
 
 <body onload="fetchData()">
@@ -54,7 +25,7 @@
             {% endfor %}
         </select>
 
-        <input type="text" name="symbol" placeholder="Symbol" required>
+        <select id="symbol-dropdown" name="symbol" required></select>
         <input type="number" step="any" name="quantity" placeholder="Qty" required>
         <input type="number" step="any" name="buy_price" placeholder="Buy Price" required>
 
@@ -110,4 +81,64 @@
     </table>
 
 </body>
+<script>
+function fetchData() {
+    fetch('/portfolio-data')
+    .then(res => res.json())
+    .then(data => {
+        let tbody = document.getElementById("portfolio-body");
+        tbody.innerHTML = "";
+
+        data.positions.forEach(p => {
+            let row = `
+                <tr>
+                    <td>${p.tradingsymbol}</td>
+                    <td>${p.type}</td>
+                    <td>${p.side}</td>
+                    <td>${p.quantity}</td>
+                    <td>${p.average_price.toFixed(2)}</td>
+                    <td>${p.ltp}</td>
+                    <td style="color:${p.pnl > 0 ? 'green' : 'red'}">
+                        ${p.pnl.toFixed(2)}
+                    </td>
+                    <td style="color:${p.pnl_percent > 0 ? 'green' : 'red'}">
+                        ${p.pnl_percent.toFixed(2)}%
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+
+        document.getElementById("total-pnl").innerHTML =
+            data.total_pnl.toFixed(2);
+    });
+}
+
+setInterval(fetchData, 3000);
+</script>
+<script>
+function loadSymbols() {
+    fetch('/get-symbols')
+    .then(res => res.json())
+    .then(data => {
+        let dropdown = document.getElementById("symbol-dropdown");
+
+        data.forEach(s => {
+            let option = document.createElement("option");
+            option.value = s.symbol;
+            option.text = `${s.symbol} (${s.exchange})`;
+            dropdown.appendChild(option);
+        });
+    });
+}
+
+window.onload = function() {
+    fetchData();
+    loadSymbols();
+}
+$('#symbol-dropdown').select2({
+    placeholder: "Search symbol",
+    width: '200px'
+});
+</script>
 </html>

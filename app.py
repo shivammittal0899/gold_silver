@@ -1844,6 +1844,33 @@ def init_portfolio_db():
     conn.commit()
     conn.close()
 init_portfolio_db()
+
+@app.route('/get-symbols')
+def get_symbols():
+    conn = sqlite3.connect('instruments.db')  # or your table
+    cur = conn.cursor()
+
+    # Fetch EQ + FUT
+    cur.execute("""
+        SELECT tradingsymbol, exchange
+        FROM instruments
+        WHERE exchange IN ('NSE', 'NFO')
+        LIMIT 1000
+    """)
+
+    data = cur.fetchall()
+    conn.close()
+
+    symbols = [
+        {
+            "symbol": row[0],
+            "exchange": row[1]
+        } for row in data
+    ]
+
+    return jsonify(symbols)
+
+
 @app.route('/portfolio')
 def portfolio():
     try:

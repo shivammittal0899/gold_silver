@@ -1996,13 +1996,83 @@ def portfolio_data():
 
         total_pnl += p['pnl']
 
-    ####################################
+        ####################################
     # 🔹 COMBINE BOTH
     ####################################
     all_positions = active_positions + manual_positions
 
+    ####################################
+    # 🔹 MERGE SAME SYMBOLS
+    ####################################
+    combined_map = {}
+
+    for p in all_positions:
+
+        symbol = p['tradingsymbol']
+        qty = p['quantity']
+        avg = p['average_price']
+        ltp = p.get('ltp', 0)
+
+        # 🔥 NSE:INFY ≠ NFO:INFY
+        key = f"{p['exchange']}:{symbol}"
+
+        if key not in combined_map:
+
+            combined_map[key] = {
+                "tradingsymbol": symbol,
+                "exchange": p['exchange'],
+                "total_qty": 0,
+                "total_value": 0,
+                "ltp": ltp
+            }
+
+        combined_map[key]["total_qty"] += qty
+        combined_map[key]["total_value"] += avg * qty
+
+    ####################################
+    # 🔹 FINAL COMBINED
+    ####################################
+    combined_positions = []
+
+    for key, v in combined_map.items():
+
+        qty = v["total_qty"]
+
+        if qty == 0:
+            continue
+
+        avg_price = v["total_value"] / qty
+        ltp = v["ltp"]
+
+        pnl = (ltp - avg_price) * qty
+
+        invested = avg_price * qty
+
+        pnl_percent = (
+            pnl / invested * 100
+        ) if invested else 0
+
+        combined_positions.append({
+
+            "tradingsymbol": v["tradingsymbol"],
+
+            "quantity": qty,
+
+            "average_price": avg_price,
+
+            "ltp": ltp,
+
+            "pnl": pnl,
+
+            "pnl_percent": pnl_percent
+        })
+
+    ####################################
+    # 🔹 RETURN
+    ####################################
     return jsonify({
         "positions": all_positions,
+        "combined": combined_positions,
         "total_pnl": total_pnl
     })
 

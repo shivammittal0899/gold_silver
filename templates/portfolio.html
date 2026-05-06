@@ -66,27 +66,27 @@
 
 <hr>
 
-<!-- ===================== COMBINED ===================== -->
-<h2>📊 Combined Portfolio (All Holdings)</h2>
+<!-- ===================== COMBINED PORTFOLIO ===================== -->
+<h2>📊 Combined Portfolio (Merged Holdings)</h2>
 
-<h3>Total P&L: 
-    <span id="combined-pnl"></span>
+<h3>
+    Total P&L:
+    <span id="combined-pnl" style="font-weight:bold;"></span>
 </h3>
 
-<table border="1" width="100%">
-    <thead>
+<table border="1" width="100%" cellspacing="0" cellpadding="6">
+    <thead style="background:#222;color:white;">
         <tr>
-            <th>Source</th>
             <th>Symbol</th>
-            <th>Type</th>
-            <th>Side</th>
-            <th>Qty</th>
-            <th>Avg</th>
+            <th>Total Qty</th>
+            <th>Avg Price</th>
             <th>LTP</th>
             <th>P&L</th>
             <th>P&L %</th>
+            <th>Analysis</th>
         </tr>
     </thead>
+
     <tbody id="combined-body"></tbody>
 </table>
 
@@ -175,6 +175,7 @@ function fetchManual() {
 
 
 /* ===================== COMBINED ===================== */
+/* ===================== COMBINED ===================== */
 function fetchCombined(data) {
 
     let tbody = document.getElementById("combined-body");
@@ -182,28 +183,83 @@ function fetchCombined(data) {
 
     let total = 0;
 
-    data.positions.forEach(p => {
+    data.combined.forEach(p => {
 
         total += p.pnl;
 
+        // 🔥 Row highlight
+        let rowColor = "";
+
+        if (p.pnl_percent >= 5) {
+            rowColor = "#d4edda";   // strong green
+        }
+        else if (p.pnl_percent > 0) {
+            rowColor = "#f1f8e9";   // light green
+        }
+        else if (p.pnl_percent <= -5) {
+            rowColor = "#f8d7da";   // strong red
+        }
+        else {
+            rowColor = "#fff3cd";   // yellow
+        }
+
+        // 🔥 Analysis
+        let analysis = "";
+
+        if (p.pnl_percent >= 10) {
+            analysis = "🔥 Strong Profit";
+        }
+        else if (p.pnl_percent >= 5) {
+            analysis = "✅ Bullish";
+        }
+        else if (p.pnl_percent > 0) {
+            analysis = "📈 Positive";
+        }
+        else if (p.pnl_percent <= -10) {
+            analysis = "⚠ Heavy Loss";
+        }
+        else if (p.pnl_percent < 0) {
+            analysis = "🔻 Weak";
+        }
+        else {
+            analysis = "➖ Neutral";
+        }
+
         let row = `
-            <tr>
-                <td>${p.source === 'manual' ? p.portfolio : 'Zerodha'}</td>
-                <td>${p.tradingsymbol}</td>
-                <td>${p.type}</td>
-                <td>${p.side}</td>
+            <tr style="background:${rowColor}">
+                <td>
+                    <b>${p.tradingsymbol}</b>
+                </td>
+
                 <td>${p.quantity}</td>
-                <td>${(p.average_price || 0).toFixed(2)}</td>
-                <td>${p.ltp}</td>
-                <td style="color:${p.pnl > 0 ? 'green':'red'}">${p.pnl.toFixed(2)}</td>
-                <td style="color:${p.pnl_percent > 0 ? 'green':'red'}">${p.pnl_percent.toFixed(2)}%</td>
+
+                <td>
+                    ${p.average_price.toFixed(2)}
+                </td>
+
+                <td>
+                    ${p.ltp}
+                </td>
+
+                <td style="color:${p.pnl > 0 ? 'green':'red'};font-weight:bold;">
+                    ${p.pnl.toFixed(2)}
+                </td>
+
+                <td style="color:${p.pnl_percent > 0 ? 'green':'red'};font-weight:bold;">
+                    ${p.pnl_percent.toFixed(2)}%
+                </td>
+
+                <td>
+                    ${analysis}
+                </td>
             </tr>
         `;
 
         tbody.innerHTML += row;
     });
 
-    document.getElementById("combined-pnl").innerHTML = total.toFixed(2);
+    document.getElementById("combined-pnl").innerHTML =
+        total.toFixed(2);
 }
 
 

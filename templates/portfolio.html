@@ -162,7 +162,7 @@ function fetchManual() {
                         <td>${h.ltp}</td>
                         <td style="color:${h.pnl > 0 ? 'green':'red'}">${h.pnl.toFixed(2)}</td>
                         <td style="color:${h.pnl_percent > 0 ? 'green':'red'}">${h.pnl_percent.toFixed(2)}%</td>
-                        <td><button onclick="deleteHolding({{ h[0] }})">Delete</button></td>
+                        <td><button onclick="deleteHolding(${h.id})">Delete</button></td>
                     </tr>
                 `;
             });
@@ -235,7 +235,8 @@ document.getElementById("add-form").addEventListener("submit", function(e) {
     })
     .then(res => res.json())
     .then(() => {
-        fetchManual();
+        // fetchManual();
+        fetchAll();
         this.reset();
         $('#symbolSelect-dropdown').val(null).trigger('change');
     });
@@ -274,9 +275,8 @@ function deleteHolding(id) {
     .then(data => {
         if (data.status === "success") {
 
-            // 🔥 Refresh both tables
-            fetchData();
-            fetchManualData();  // if you made separate table
+            // ✅ Refresh everything properly
+            fetchAll();
 
         } else {
             alert("Delete failed");

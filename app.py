@@ -2101,7 +2101,7 @@ def create_portfolio():
 
     return redirect('/portfolio')
 
-@app.route('/delete-holding/<int:holding_id>')
+@app.route('/delete-holding/<int:holding_id>', methods=['POST'])
 def delete_holding(holding_id):
 
     conn = sqlite3.connect('portfolio.db')

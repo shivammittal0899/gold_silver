@@ -166,6 +166,15 @@ function fetchManual() {
 
             let html = `
                 <h3>${p.name}</h3>
+                <div style="margin:10px 0;padding:10px;background:#f5f5f5;">
+                    <b>Invested:</b> ₹${p.summary.invested.toFixed(2)}
+                    &nbsp;&nbsp;
+                    <b>Present:</b> ₹${p.summary.present.toFixed(2)}
+                    &nbsp;&nbsp;
+                    <b>P&L:</b> ₹${p.summary.pnl.toFixed(2)}
+                    &nbsp;&nbsp;
+                    <b>Positions:</b> ${p.summary.total_positions}
+                </div>
                 <table border="1" width="100%">
                 <tr>
                     <th>Symbol</th>

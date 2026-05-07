@@ -2269,14 +2269,23 @@ def manual_portfolio_data():
 
     for p in portfolios:
 
-        cur.execute("SELECT * FROM holdings WHERE portfolio_id=?", (p[0],))
+        cur.execute(
+            "SELECT * FROM holdings WHERE portfolio_id=?",
+            (p[0],)
+        )
+
         holdings = cur.fetchall()
 
         symbols = []
         enriched = []
 
+        ####################################
+        # 🔥 BUILD SYMBOL LIST
+        ####################################
         for h in holdings:
+
             symbol = h[2]
+
             exchange = "NSE"
 
             if "FUT" in symbol or "-" in symbol:
@@ -2284,38 +2293,154 @@ def manual_portfolio_data():
 
             symbols.append(f"{exchange}:{symbol}")
 
+        ####################################
+        # 🔥 FETCH LTP
+        ####################################
         ltp_data = kite.ltp(symbols) if symbols else {}
 
+        ####################################
+        # 🔥 PORTFOLIO TOTAL
+        ####################################
+        total_invested = 0
+
+        ####################################
+        # 🔥 FIRST PASS
+        ####################################
         for h in holdings:
+
+            symbol = h[2]
+            qty = abs(h[3])
+            buy_price = h[4]
+
+            total_invested += qty * buy_price
+
+        ####################################
+        # 🔥 SECOND PASS
+        ####################################
+        for h in holdings:
+
+            holding_id = h[0]
             symbol = h[2]
             qty = h[3]
             buy_price = h[4]
 
             exchange = "NSE"
+
             if "FUT" in symbol or "-" in symbol:
                 exchange = "NFO"
 
+            ####################################
+            # 🔥 LTP
+            ####################################
             key = f"{exchange}:{symbol}"
-            ltp = ltp_data.get(key, {}).get('last_price', 0)
 
-            pnl = (ltp - buy_price) * qty
-            invested = buy_price * qty
-            pnl_percent = (pnl / invested * 100) if invested else 0
+            ltp = ltp_data.get(key, {}).get(
+                'last_price',
+                0
+            )
 
+            ####################################
+            # 🔥 LOTS
+            ####################################
+            lots = "-"
+
+            if exchange == "NFO":
+
+                db = sqlite3.connect("instruments.db")
+                c = db.cursor()
+
+                c.execute("""
+                    SELECT lot_size
+                    FROM instruments
+                    WHERE tradingsymbol=?
+                    LIMIT 1
+                """, (symbol,))
+
+                row = c.fetchone()
+
+                db.close()
+
+                lot_size = row[0] if row else 1
+
+                lots = round(abs(qty) / lot_size, 2)
+
+            ####################################
+            # 🔥 VALUES
+            ####################################
+            invested_value = abs(qty) * buy_price
+
+            present_value = abs(qty) * ltp
+
+            pnl = present_value - invested_value
+
+            pnl_percent = (
+                pnl / invested_value * 100
+            ) if invested_value else 0
+
+            allocation_percent = (
+                invested_value / total_invested * 100
+            ) if total_invested else 0
+
+            ####################################
+            # 🔥 FINAL OBJECT
+            ####################################
             enriched.append({
-                "id": h[0],
+
+                "id": holding_id,
+
                 "symbol": symbol,
+
                 "quantity": qty,
+
                 "buy_price": buy_price,
+
                 "ltp": ltp,
+
+                "lots": lots,
+
+                "invested_value": invested_value,
+
+                "present_value": present_value,
+
+                "allocation_percent": allocation_percent,
+
                 "pnl": pnl,
+
                 "pnl_percent": pnl_percent
             })
 
+        ####################################
+        # 🔥 PORTFOLIO SUMMARY
+        ####################################
+        total_present = sum(
+            x["present_value"] for x in enriched
+        )
+
+        total_pnl = sum(
+            x["pnl"] for x in enriched
+        )
+
+        ####################################
+        # 🔥 FINAL PORTFOLIO
+        ####################################
         result.append({
+
             "id": p[0],
+
             "name": p[1],
-            "holdings": enriched
+
+            "holdings": enriched,
+
+            "summary": {
+
+                "invested": total_invested,
+
+                "present": total_present,
+
+                "pnl": total_pnl,
+
+                "total_positions": len(enriched)
+            }
         })
 
     conn.close()

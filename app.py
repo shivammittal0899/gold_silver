@@ -1879,13 +1879,30 @@ def portfolio():
 def portfolio_data():
     access_token = read_access_token()
     kite.set_access_token(access_token)
+    ####################################
+    # 🔹 LOAD LOT SIZES ONCE
+    ####################################
+    conn = sqlite3.connect("instruments.db")
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT tradingsymbol, lot_size
+        FROM instruments
+    """)
+
+    lot_size_map = {
+        row[0]: row[1]
+        for row in cur.fetchall()
+    }
+
+    conn.close()
 
     ####################################
     # 🔹 ZERODHA POSITIONS
     ####################################
     positions_data = kite.positions()['net']
     active_positions = [p for p in positions_data if p['quantity'] != 0]
-
+    
     symbols = []
 
     for p in active_positions:
@@ -1957,10 +1974,15 @@ def portfolio_data():
         p['ltp'] = ltp
 
         # 🔥 LOTS
-        lot_size = p.get('lot_size', 1)
-
         if p['exchange'] == 'NFO':
+
+            lot_size = lot_size_map.get(
+                p['tradingsymbol'],
+                1
+            )
+
             p['lots'] = round(qty / lot_size, 2)
+
         else:
             p['lots'] = '-'
 
@@ -2022,20 +2044,12 @@ def portfolio_data():
         # 🔥 LOTS
         if p['exchange'] == 'NFO':
 
-            conn = sqlite3.connect("instruments.db")
-            cur = conn.cursor()
+            lot_size = lot_size_map.get(
+                p['tradingsymbol'],
+                1
+            )
 
-            cur.execute("""
-                SELECT lot_size
-                FROM instruments
-                WHERE tradingsymbol=?
-                LIMIT 1
-            """, (p['tradingsymbol'],))
-
-            row = cur.fetchone()
-            conn.close()
-
-            lot_size = row[0] if row else 1
+            # lot_size = row[0] if row else 1
 
             p['lots'] = round(qty / lot_size, 2)
 
@@ -2201,21 +2215,12 @@ def portfolio_data():
 
         if v["exchange"] == "NFO":
 
-            conn = sqlite3.connect("instruments.db")
-            cur = conn.cursor()
+            lot_size = lot_size_map.get(
+                v['tradingsymbol'],
+                1
+            )
 
-            cur.execute("""
-                SELECT lot_size
-                FROM instruments
-                WHERE tradingsymbol=?
-                LIMIT 1
-            """, (v["tradingsymbol"],))
-
-            row = cur.fetchone()
-
-            conn.close()
-
-            lot_size = row[0] if row else 1
+            # lot_size = row[0] if row else 1
 
             lots = round(abs(qty) / lot_size, 2)
 

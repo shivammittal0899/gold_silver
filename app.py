@@ -1941,22 +1941,48 @@ def portfolio_data():
     ltp_data = kite.ltp(symbols) if symbols else {}
 
     total_pnl = 0
-
     ####################################
     # 🔹 PROCESS ZERODHA POSITIONS
     ####################################
+    total_present_value = 0
+    total_invested_value = 0
+
     for p in active_positions:
+
         key = f"{p['exchange']}:{p['tradingsymbol']}"
         ltp = ltp_data.get(key, {}).get('last_price', 0)
 
+        qty = abs(p['quantity'])
+
         p['ltp'] = ltp
-        p['pnl'] = (ltp - p['average_price']) * p['quantity'] * p['multiplier']
+
+        # 🔥 LOTS
+        lot_size = p.get('lot_size', 1)
+
+        if p['exchange'] == 'NFO':
+            p['lots'] = round(qty / lot_size, 2)
+        else:
+            p['lots'] = '-'
+
+        # 🔥 VALUES
+        invested_value = qty * p['average_price']
+        present_value = qty * ltp
+
+        p['invested_value'] = invested_value
+        p['present_value'] = present_value
+
+        # 🔥 PNL
+        p['pnl'] = (
+            present_value - invested_value
+        ) * p['multiplier']
+
         p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
 
-        invested = p['average_price'] * abs(p['quantity'])
-        p['pnl_percent'] = (p['pnl'] / invested * 100) if invested else 0
+        p['pnl_percent'] = (
+            p['pnl'] / invested_value * 100
+        ) if invested_value else 0
 
-        # ✅ Type classification
+        # 🔥 TYPE
         if p['exchange'] == 'NSE':
             p['type'] = 'Equity'
         elif p['exchange'] == 'NFO':
@@ -1966,37 +1992,90 @@ def portfolio_data():
         else:
             p['type'] = 'Other'
 
+        total_present_value += present_value
+        total_invested_value += invested_value
+
         total_pnl += p['pnl']
+
+    # 🔥 Allocation %
+    for p in active_positions:
+
+        p['allocation_percent'] = (
+            p['invested_value'] / total_invested_value * 100
+        ) if total_invested_value else 0
 
     ####################################
     # 🔹 PROCESS MANUAL POSITIONS
     ####################################
+    manual_total_present = 0
+    manual_total_invested = 0
+
     for p in manual_positions:
+
         key = f"{p['exchange']}:{p['tradingsymbol']}"
         ltp = ltp_data.get(key, {}).get('last_price', 0)
 
+        qty = abs(p['quantity'])
+
         p['ltp'] = ltp
-        p['pnl'] = (ltp - p['average_price']) * p['quantity']
+
+        # 🔥 LOTS
+        if p['exchange'] == 'NFO':
+
+            conn = sqlite3.connect("instruments.db")
+            cur = conn.cursor()
+
+            cur.execute("""
+                SELECT lot_size
+                FROM instruments
+                WHERE tradingsymbol=?
+                LIMIT 1
+            """, (p['tradingsymbol'],))
+
+            row = cur.fetchone()
+            conn.close()
+
+            lot_size = row[0] if row else 1
+
+            p['lots'] = round(qty / lot_size, 2)
+
+        else:
+            p['lots'] = '-'
+
+        invested_value = qty * p['average_price']
+        present_value = qty * ltp
+
+        p['invested_value'] = invested_value
+        p['present_value'] = present_value
+
+        p['pnl'] = present_value - invested_value
+
         p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
 
-        invested = p['average_price'] * abs(p['quantity'])
-        p['pnl_percent'] = (p['pnl'] / invested * 100) if invested else 0
+        p['pnl_percent'] = (
+            p['pnl'] / invested_value * 100
+        ) if invested_value else 0
 
-        # 🔥 IMPORTANT: show portfolio name instead of "Manual"
-        # p['type'] = p['portfolio']
-        # ✅ Type classification
         if p['exchange'] == 'NSE':
             p['type'] = 'Equity'
         elif p['exchange'] == 'NFO':
             p['type'] = 'Futures'
-        elif p['exchange'] == 'MCX':
-            p['type'] = 'Commodity'
         else:
             p['type'] = 'Other'
 
+        manual_total_present += present_value
+        manual_total_invested += invested_value
+
         total_pnl += p['pnl']
 
-        ####################################
+    # 🔥 Allocation %
+    for p in manual_positions:
+
+        p['allocation_percent'] = (
+            p['invested_value'] / manual_total_invested * 100
+        ) if manual_total_invested else 0
+
+    ####################################
     # 🔹 COMBINE BOTH
     ####################################
     all_positions = active_positions + manual_positions
@@ -2091,9 +2170,27 @@ def portfolio_data():
     # 🔹 RETURN
     ####################################
     return jsonify({
+
         "positions": all_positions,
+
         "combined": combined_positions,
-        "total_pnl": total_pnl
+
+        "total_pnl": total_pnl,
+
+        "summary": {
+
+            "invested_value":
+                total_invested_value + manual_total_invested,
+
+            "present_value":
+                total_present_value + manual_total_present,
+
+            "total_positions":
+                len(all_positions),
+
+            "total_pnl":
+                total_pnl
+        }
     })
 
 @app.route('/manual-portfolio-data')

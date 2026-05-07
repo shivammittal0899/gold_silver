@@ -47,7 +47,7 @@
 <h3>Total P&L: 
     <span id="zerodha-pnl"></span>
 </h3>
-
+<div id="zerodha-summary"></div>
 <table border="1" width="100%">
     <thead>
         <tr>
@@ -55,10 +55,14 @@
             <th>Type</th>
             <th>Side</th>
             <th>Qty</th>
+            <th>Lots</th>
             <th>Avg</th>
             <th>LTP</th>
             <th>P&L</th>
             <th>P&L %</th>
+            <th>Invested</th>
+            <th>Present</th>
+            <th>Allocation %</th>
         </tr>
     </thead>
     <tbody id="zerodha-body"></tbody>
@@ -79,11 +83,15 @@
         <tr>
             <th>Symbol</th>
             <th>Total Qty</th>
+            <th>Lots</th>
             <th>Avg Price</th>
             <th>LTP</th>
             <th>P&L</th>
             <th>P&L %</th>
             <th>Analysis</th>
+            <th>Invested</th>
+            <th>Present</th>
+            <th>Allocation %</th>
         </tr>
     </thead>
 
@@ -100,6 +108,9 @@ function fetchZerodha(data) {
     tbody.innerHTML = "";
 
     let total = 0;
+    let invested = 0;
+    let present = 0;
+    let total_qty = 0;
 
     data.positions
     .filter(p => p.source === "zerodha")
@@ -113,17 +124,31 @@ function fetchZerodha(data) {
                 <td>${p.type}</td>
                 <td>${p.side}</td>
                 <td>${p.quantity}</td>
+                <td>${p.lots}</td>
                 <td>${(p.average_price || 0).toFixed(2)}</td>
                 <td>${p.ltp}</td>
                 <td style="color:${p.pnl > 0 ? 'green':'red'}">${p.pnl.toFixed(2)}</td>
                 <td style="color:${p.pnl_percent > 0 ? 'green':'red'}">${p.pnl_percent.toFixed(2)}%</td>
+                <td>${p.invested_value.toFixed(2)}</td>
+                <td>${p.present_value.toFixed(2)}</td>
+                <td>${p.allocation_percent.toFixed(2)}%</td>
             </tr>
         `;
 
         tbody.innerHTML += row;
+        invested += p.invested_value;
+        present += p.present_value;
+        total_qty += Math.abs(p.quantity);
     });
-
+    
     document.getElementById("zerodha-pnl").innerHTML = total.toFixed(2);
+    document.getElementById("zerodha-summary").innerHTML = `
+        <b>Total Invested:</b> ₹${invested.toFixed(2)}
+        &nbsp;&nbsp;
+        <b>Present Value:</b> ₹${present.toFixed(2)}
+        &nbsp;&nbsp;
+        <b>Total Qty:</b> ${total_qty}
+    `;
 }
 
 
@@ -145,10 +170,14 @@ function fetchManual() {
                 <tr>
                     <th>Symbol</th>
                     <th>Qty</th>
+                    <th>Lots</th>
                     <th>Buy</th>
                     <th>LTP</th>
                     <th>P&L</th>
                     <th>P&L %</th>
+                    <th>Invested</th>
+                    <th>Present</th>
+                    <th>Allocation %</th>
                     <th>Action</th>
                 </tr>
             `;
@@ -158,10 +187,14 @@ function fetchManual() {
                     <tr>
                         <td>${h.symbol}</td>
                         <td>${h.quantity}</td>
+                        <td>${h.lots}</td>
                         <td>${h.buy_price}</td>
                         <td>${h.ltp}</td>
                         <td style="color:${h.pnl > 0 ? 'green':'red'}">${h.pnl.toFixed(2)}</td>
                         <td style="color:${h.pnl_percent > 0 ? 'green':'red'}">${h.pnl_percent.toFixed(2)}%</td>
+                        <td>${h.invested_value.toFixed(2)}</td>
+                        <td>${h.present_value.toFixed(2)}</td>
+                        <td>${h.allocation_percent.toFixed(2)}%</td>
                         <td><button onclick="deleteHolding(${h.id})">Delete</button></td>
                     </tr>
                 `;
@@ -235,26 +268,15 @@ function fetchCombined(data) {
                     </b>
                 </td>
                 <td>${p.quantity}</td>
-
-                <td>
-                    ${p.average_price.toFixed(2)}
-                </td>
-
-                <td>
-                    ${p.ltp}
-                </td>
-
-                <td style="color:${p.pnl > 0 ? 'green':'red'};font-weight:bold;">
-                    ${p.pnl.toFixed(2)}
-                </td>
-
-                <td style="color:${p.pnl_percent > 0 ? 'green':'red'};font-weight:bold;">
-                    ${p.pnl_percent.toFixed(2)}%
-                </td>
-
-                <td>
-                    ${analysis}
-                </td>
+                <td>${p.lots}</td>
+                <td>${p.average_price.toFixed(2)}</td>
+                <td>${p.ltp}</td>
+                <td style="color:${p.pnl > 0 ? 'green':'red'};font-weight:bold;">${p.pnl.toFixed(2)}</td>
+                <td style="color:${p.pnl_percent > 0 ? 'green':'red'};font-weight:bold;">${p.pnl_percent.toFixed(2)}%</td>
+                <td>${analysis}</td>
+                <td>${p.invested_value.toFixed(2)}</td>
+                <td>${p.present_value.toFixed(2)}</td>
+                <td>${p.allocation_percent.toFixed(2)}%</td>
             </tr>
         `;
 

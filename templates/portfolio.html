@@ -192,11 +192,11 @@ function fetchManual(data) {
         p.holdings.forEach(h => {
             html += `
                 <tr>
-                    <td>${h.symbol}</td>
+                    <td>${h.tradingsymbol}</td>
                     <td>${h.quantity}</td>
                     <td>${h.lots}</td>
-                    <td>${h.buy_price}</td>
-                    <td>${h.ltp}</td>
+                    <td>${h.average_price.toFixed(2)}</td>
+                    <td>${h.ltp.toFixed(2)}</td>
                     <td style="color:${h.pnl > 0 ? 'green':'red'}">${h.pnl.toFixed(2)}</td>
                     <td style="color:${h.pnl_percent > 0 ? 'green':'red'}">${h.pnl_percent.toFixed(2)}%</td>
                     <td>${h.invested_value.toFixed(2)}</td>

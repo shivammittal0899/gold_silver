@@ -2076,6 +2076,46 @@ def portfolio_data():
         ) if manual_total_invested else 0
 
     ####################################
+    # 🔹 BUILD MANUAL PORTFOLIOS
+    ####################################
+    manual_portfolios = {}
+
+    for p in manual_positions:
+
+        portfolio_name = p["portfolio"]
+
+        if portfolio_name not in manual_portfolios:
+
+            manual_portfolios[portfolio_name] = {
+
+                "name": portfolio_name,
+
+                "holdings": [],
+
+                "summary": {
+
+                    "invested": 0,
+                    "present": 0,
+                    "pnl": 0,
+                    "total_positions": 0
+                }
+            }
+
+        manual_portfolios[portfolio_name]["holdings"].append(p)
+
+        manual_portfolios[portfolio_name]["summary"]["invested"] += \
+            p["invested_value"]
+
+        manual_portfolios[portfolio_name]["summary"]["present"] += \
+            p["present_value"]
+
+        manual_portfolios[portfolio_name]["summary"]["pnl"] += \
+            p["pnl"]
+
+        manual_portfolios[portfolio_name]["summary"]["total_positions"] += 1
+
+    manual_portfolios = list(manual_portfolios.values())
+    ####################################
     # 🔹 COMBINE BOTH
     ####################################
     all_positions = active_positions + manual_positions
@@ -2119,6 +2159,8 @@ def portfolio_data():
         if p.get("portfolio"):
             combined_map[key]["portfolios"].add(p["portfolio"])
 
+    
+    
     ####################################
     # 🔹 FINAL COMBINED
     ####################################
@@ -2235,6 +2277,8 @@ def portfolio_data():
 
         "combined": combined_positions,
 
+        "manual_portfolios": manual_portfolios,
+
         "total_pnl": total_pnl,
 
         "summary": {
@@ -2253,199 +2297,199 @@ def portfolio_data():
         }
     })
 
-@app.route('/manual-portfolio-data')
-def manual_portfolio_data():
+# @app.route('/manual-portfolio-data')
+# def manual_portfolio_data():
 
-    access_token = read_access_token()
-    kite.set_access_token(access_token)
+#     access_token = read_access_token()
+#     kite.set_access_token(access_token)
 
-    conn = sqlite3.connect('portfolio.db')
-    cur = conn.cursor()
+#     conn = sqlite3.connect('portfolio.db')
+#     cur = conn.cursor()
 
-    cur.execute("SELECT * FROM portfolios")
-    portfolios = cur.fetchall()
+#     cur.execute("SELECT * FROM portfolios")
+#     portfolios = cur.fetchall()
 
-    result = []
+#     result = []
 
-    for p in portfolios:
+#     for p in portfolios:
 
-        cur.execute(
-            "SELECT * FROM holdings WHERE portfolio_id=?",
-            (p[0],)
-        )
+#         cur.execute(
+#             "SELECT * FROM holdings WHERE portfolio_id=?",
+#             (p[0],)
+#         )
 
-        holdings = cur.fetchall()
+#         holdings = cur.fetchall()
 
-        symbols = []
-        enriched = []
+#         symbols = []
+#         enriched = []
 
-        ####################################
-        # 🔥 BUILD SYMBOL LIST
-        ####################################
-        for h in holdings:
+#         ####################################
+#         # 🔥 BUILD SYMBOL LIST
+#         ####################################
+#         for h in holdings:
 
-            symbol = h[2]
+#             symbol = h[2]
 
-            exchange = "NSE"
+#             exchange = "NSE"
 
-            if "FUT" in symbol or "-" in symbol:
-                exchange = "NFO"
+#             if "FUT" in symbol or "-" in symbol:
+#                 exchange = "NFO"
 
-            symbols.append(f"{exchange}:{symbol}")
+#             symbols.append(f"{exchange}:{symbol}")
 
-        ####################################
-        # 🔥 FETCH LTP
-        ####################################
-        ltp_data = kite.ltp(symbols) if symbols else {}
+#         ####################################
+#         # 🔥 FETCH LTP
+#         ####################################
+#         ltp_data = kite.ltp(symbols) if symbols else {}
 
-        ####################################
-        # 🔥 PORTFOLIO TOTAL
-        ####################################
-        total_invested = 0
+#         ####################################
+#         # 🔥 PORTFOLIO TOTAL
+#         ####################################
+#         total_invested = 0
 
-        ####################################
-        # 🔥 FIRST PASS
-        ####################################
-        for h in holdings:
+#         ####################################
+#         # 🔥 FIRST PASS
+#         ####################################
+#         for h in holdings:
 
-            symbol = h[2]
-            qty = abs(h[3])
-            buy_price = h[4]
+#             symbol = h[2]
+#             qty = abs(h[3])
+#             buy_price = h[4]
 
-            total_invested += qty * buy_price
+#             total_invested += qty * buy_price
 
-        ####################################
-        # 🔥 SECOND PASS
-        ####################################
-        for h in holdings:
+#         ####################################
+#         # 🔥 SECOND PASS
+#         ####################################
+#         for h in holdings:
 
-            holding_id = h[0]
-            symbol = h[2]
-            qty = h[3]
-            buy_price = h[4]
+#             holding_id = h[0]
+#             symbol = h[2]
+#             qty = h[3]
+#             buy_price = h[4]
 
-            exchange = "NSE"
+#             exchange = "NSE"
 
-            if "FUT" in symbol or "-" in symbol:
-                exchange = "NFO"
+#             if "FUT" in symbol or "-" in symbol:
+#                 exchange = "NFO"
 
-            ####################################
-            # 🔥 LTP
-            ####################################
-            key = f"{exchange}:{symbol}"
+#             ####################################
+#             # 🔥 LTP
+#             ####################################
+#             key = f"{exchange}:{symbol}"
 
-            ltp = ltp_data.get(key, {}).get(
-                'last_price',
-                0
-            )
+#             ltp = ltp_data.get(key, {}).get(
+#                 'last_price',
+#                 0
+#             )
 
-            ####################################
-            # 🔥 LOTS
-            ####################################
-            lots = "-"
+#             ####################################
+#             # 🔥 LOTS
+#             ####################################
+#             lots = "-"
 
-            if exchange == "NFO":
+#             if exchange == "NFO":
 
-                db = sqlite3.connect("instruments.db")
-                c = db.cursor()
+#                 db = sqlite3.connect("instruments.db")
+#                 c = db.cursor()
 
-                c.execute("""
-                    SELECT lot_size
-                    FROM instruments
-                    WHERE tradingsymbol=?
-                    LIMIT 1
-                """, (symbol,))
+#                 c.execute("""
+#                     SELECT lot_size
+#                     FROM instruments
+#                     WHERE tradingsymbol=?
+#                     LIMIT 1
+#                 """, (symbol,))
 
-                row = c.fetchone()
+#                 row = c.fetchone()
 
-                db.close()
+#                 db.close()
 
-                lot_size = row[0] if row else 1
+#                 lot_size = row[0] if row else 1
 
-                lots = round(abs(qty) / lot_size, 2)
+#                 lots = round(abs(qty) / lot_size, 2)
 
-            ####################################
-            # 🔥 VALUES
-            ####################################
-            invested_value = abs(qty) * buy_price
+#             ####################################
+#             # 🔥 VALUES
+#             ####################################
+#             invested_value = abs(qty) * buy_price
 
-            present_value = abs(qty) * ltp
+#             present_value = abs(qty) * ltp
 
-            pnl = present_value - invested_value
+#             pnl = present_value - invested_value
 
-            pnl_percent = (
-                pnl / invested_value * 100
-            ) if invested_value else 0
+#             pnl_percent = (
+#                 pnl / invested_value * 100
+#             ) if invested_value else 0
 
-            allocation_percent = (
-                invested_value / total_invested * 100
-            ) if total_invested else 0
+#             allocation_percent = (
+#                 invested_value / total_invested * 100
+#             ) if total_invested else 0
 
-            ####################################
-            # 🔥 FINAL OBJECT
-            ####################################
-            enriched.append({
+#             ####################################
+#             # 🔥 FINAL OBJECT
+#             ####################################
+#             enriched.append({
 
-                "id": holding_id,
+#                 "id": holding_id,
 
-                "symbol": symbol,
+#                 "symbol": symbol,
 
-                "quantity": qty,
+#                 "quantity": qty,
 
-                "buy_price": buy_price,
+#                 "buy_price": buy_price,
 
-                "ltp": ltp,
+#                 "ltp": ltp,
 
-                "lots": lots,
+#                 "lots": lots,
 
-                "invested_value": invested_value,
+#                 "invested_value": invested_value,
 
-                "present_value": present_value,
+#                 "present_value": present_value,
 
-                "allocation_percent": allocation_percent,
+#                 "allocation_percent": allocation_percent,
 
-                "pnl": pnl,
+#                 "pnl": pnl,
 
-                "pnl_percent": pnl_percent
-            })
+#                 "pnl_percent": pnl_percent
+#             })
 
-        ####################################
-        # 🔥 PORTFOLIO SUMMARY
-        ####################################
-        total_present = sum(
-            x["present_value"] for x in enriched
-        )
+#         ####################################
+#         # 🔥 PORTFOLIO SUMMARY
+#         ####################################
+#         total_present = sum(
+#             x["present_value"] for x in enriched
+#         )
 
-        total_pnl = sum(
-            x["pnl"] for x in enriched
-        )
+#         total_pnl = sum(
+#             x["pnl"] for x in enriched
+#         )
 
-        ####################################
-        # 🔥 FINAL PORTFOLIO
-        ####################################
-        result.append({
+#         ####################################
+#         # 🔥 FINAL PORTFOLIO
+#         ####################################
+#         result.append({
 
-            "id": p[0],
+#             "id": p[0],
 
-            "name": p[1],
+#             "name": p[1],
 
-            "holdings": enriched,
+#             "holdings": enriched,
 
-            "summary": {
+#             "summary": {
 
-                "invested": total_invested,
+#                 "invested": total_invested,
 
-                "present": total_present,
+#                 "present": total_present,
 
-                "pnl": total_pnl,
+#                 "pnl": total_pnl,
 
-                "total_positions": len(enriched)
-            }
-        })
+#                 "total_positions": len(enriched)
+#             }
+#         })
 
-    conn.close()
+#     conn.close()
 
-    return jsonify(result)
+#     return jsonify(result)
 
 @app.route('/add-holding', methods=['POST'])
 def add_holding():

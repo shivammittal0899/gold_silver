@@ -2104,8 +2104,7 @@ def portfolio_data():
                 "total_qty": 0,
                 "total_value": 0,
                 "ltp": ltp,
-
-                # 🔥 NEW
+                "lot_size": 1,
                 "sources": set(),
                 "portfolios": set()
             }
@@ -2125,6 +2124,9 @@ def portfolio_data():
     ####################################
     combined_positions = []
 
+    combined_total_invested = 0
+    combined_total_present = 0
+
     for key, v in combined_map.items():
 
         qty = v["total_qty"]
@@ -2133,31 +2135,75 @@ def portfolio_data():
             continue
 
         avg_price = v["total_value"] / qty
+
         ltp = v["ltp"]
 
-        pnl = (ltp - avg_price) * qty * v["multiplier"]
+        # 🔥 INVESTED & PRESENT VALUE
+        invested_value = abs(qty) * avg_price
 
-        invested = avg_price * qty
+        present_value = abs(qty) * ltp
+
+        # 🔥 PNL
+        pnl = (
+            present_value - invested_value
+        ) * v["multiplier"]
 
         pnl_percent = (
-            pnl / invested * 100
-        ) if invested else 0
+            pnl / invested_value * 100
+        ) if invested_value else 0
 
+        ####################################
+        # 🔥 LOTS CALCULATION
+        ####################################
+        lots = "-"
+
+        if v["exchange"] == "NFO":
+
+            conn = sqlite3.connect("instruments.db")
+            cur = conn.cursor()
+
+            cur.execute("""
+                SELECT lot_size
+                FROM instruments
+                WHERE tradingsymbol=?
+                LIMIT 1
+            """, (v["tradingsymbol"],))
+
+            row = cur.fetchone()
+
+            conn.close()
+
+            lot_size = row[0] if row else 1
+
+            lots = round(abs(qty) / lot_size, 2)
+
+        ####################################
+        # 🔥 BUILD OBJECT
+        ####################################
         combined_positions.append({
 
             "tradingsymbol": v["tradingsymbol"],
 
+            "exchange": v["exchange"],
+
             "quantity": qty,
+
+            "lots": lots,
 
             "average_price": avg_price,
 
             "ltp": ltp,
+
+            "invested_value": invested_value,
+
+            "present_value": present_value,
 
             "pnl": pnl,
 
             "pnl_percent": pnl_percent,
 
             "sources_count": len(v["sources"]),
+
             "portfolio_count": len(v["portfolios"]),
 
             "highlight": (
@@ -2165,6 +2211,20 @@ def portfolio_data():
                 or len(v["portfolios"]) > 1
             )
         })
+
+        combined_total_invested += invested_value
+
+        combined_total_present += present_value
+
+
+    ####################################
+    # 🔥 ALLOCATION %
+    ####################################
+    for p in combined_positions:
+
+        p["allocation_percent"] = (
+            p["invested_value"] / combined_total_invested * 100
+        ) if combined_total_invested else 0
 
     ####################################
     # 🔹 RETURN

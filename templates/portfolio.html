@@ -111,6 +111,7 @@ function fetchZerodha(data) {
     let invested = 0;
     let present = 0;
     let total_qty = 0;
+    let total_pos = 0;
 
     data.positions
     .filter(p => p.source === "zerodha")
@@ -139,6 +140,7 @@ function fetchZerodha(data) {
         invested += p.invested_value;
         present += p.present_value;
         total_qty += Math.abs(p.quantity);
+        total_pos+=1;
     });
     
     document.getElementById("zerodha-pnl").innerHTML = total.toFixed(2);
@@ -147,7 +149,7 @@ function fetchZerodha(data) {
         &nbsp;&nbsp;
         <b>Present Value:</b> ₹${present.toFixed(2)}
         &nbsp;&nbsp;
-        <b>Total Qty:</b> ${total_qty}
+        <b>Total Positions:</b> ${total_pos}
     `;
 }
 

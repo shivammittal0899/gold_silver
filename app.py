@@ -348,6 +348,8 @@ INSTRUMENT_MAP = {}
 TRAILING_THREADS = {}
 SL_ORDERS = {}   # task_id → order_id
 LIVE_SL = {}
+LIVE_LTP = {}
+LIVE_LTP_LOCK = Lock()
 
 WS_RUNNING = False
 WS_THREAD = None
@@ -357,14 +359,28 @@ threads_lock = Lock()
 orders_lock = Lock()
 
 def load_instruments_once():
-    global INSTRUMENT_MAP
-    with open("instruments.json") as f:
-        data = json.load(f)
 
+    global INSTRUMENT_MAP
+
+    conn = sqlite3.connect("instruments.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT tradingsymbol, instrument_token
+        FROM instruments
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    # 🔥 BUILD MAP
     INSTRUMENT_MAP = {
-        i["tradingsymbol"]: i["instrument_token"]
-        for i in data
+        row[0]: row[1]
+        for row in rows
     }
+
+    log1(f"✅ Loaded {len(INSTRUMENT_MAP)} instruments into memory")
 
 load_instruments_once()
 
@@ -462,18 +478,35 @@ def start_ws(api_key, access_token, kite):
     KWS = kws   # ✅ STORE INSTANCE
 
     def on_connect(ws, response):
+
         print("✅ WebSocket Connected")
 
-        tokens = list(set(INSTRUMENT_MAP.values()))
-        ws.subscribe(tokens)
-        ws.set_mode(ws.MODE_LTP, tokens)
+        tokens = list(set(
+            int(v)
+            for v in INSTRUMENT_MAP.values()
+            if v
+        ))
+
+        log1(f"📡 Subscribing {len(tokens)} tokens")
+
+        # 🔥 Chunking (VERY IMPORTANT)
+        chunk_size = 3000
+
+        for i in range(0, len(tokens), chunk_size):
+
+            chunk = tokens[i:i + chunk_size]
+
+            ws.subscribe(chunk)
+
+            ws.set_mode(ws.MODE_LTP, chunk)
+
+        log1("✅ WebSocket subscription completed")
 
     def on_ticks(ws, ticks):
         # log1("in on_ticks loop")
         for tick in ticks:
             token = tick["instrument_token"]
             ltp = tick["last_price"]
-
             with sl_lock:
                 items = list(LIVE_SL.items())  # copy for safe iteration
 
@@ -521,7 +554,15 @@ def start_ws(api_key, access_token, kite):
 
     kws.on_close = on_close
     kws.on_connect = on_connect
-    kws.on_ticks = on_ticks
+    def combined_ticks(ws, ticks):
+
+        # 🔥 LIVE LTP
+        on_ticks_ltp(ws, ticks)
+
+        # 🔥 SL LOGIC
+        on_ticks(ws, ticks)
+
+    kws.on_ticks = combined_ticks
 
     kws.connect(threaded=True)
 def exit_market(kite, symbol, qty, side):
@@ -1538,6 +1579,68 @@ def empty_stock_result(symbol, e):
         "signal_60m": None,
         "signal_1d": None,
     }
+
+def on_ticks_ltp(ws, ticks):
+
+    try:
+
+        with LIVE_LTP_LOCK:
+
+            for tick in ticks:
+
+                token = tick["instrument_token"]
+                ltp = tick["last_price"]
+
+                LIVE_LTP[token] = ltp
+
+    except Exception as e:
+        log1(f"LTP Tick Error: {e}")
+
+
+@app.route('/start_market_ws')
+def start_market_ws():
+
+    start_ws_if_needed()
+
+    return jsonify({
+        "status": "started"
+    })
+
+@app.route('/live-ltp')
+def live_ltp():
+
+    symbols = request.args.get("symbols", "")
+
+    if not symbols:
+        return jsonify({})
+
+    symbols = symbols.split(",")
+
+    conn = sqlite3.connect("instruments.db")
+    c = conn.cursor()
+
+    result = {}
+
+    for symbol in symbols:
+
+        row = c.execute("""
+            SELECT instrument_token
+            FROM instruments
+            WHERE tradingsymbol=?
+            LIMIT 1
+        """, (symbol,)).fetchone()
+
+        if not row:
+            continue
+
+        token = row[0]
+
+        with LIVE_LTP_LOCK:
+            result[symbol] = LIVE_LTP.get(token, 0)
+
+    conn.close()
+
+    return jsonify(result)
 def analyze_one_stock(symbol, access_token):
     try:
         kite_local = KiteConnect(api_key=API_KEY)
@@ -1593,9 +1696,25 @@ def analyze_one_stock(symbol, access_token):
         result2, df2 = stock_data_analysis(df2, "60m")
         result3, df3 = stock_data_analysis(df3, "1d")
         result_ret = stock_data_analysis_common(df3)
+        # 🔥 LIVE LTP
+        with LIVE_LTP_LOCK:
+            live_ltp = LIVE_LTP.get(token, 0)
+
+        # fallback
+        if not live_ltp:
+            try:
+                ltp_data = kite_local.ltp([f"NSE:{symbol}"])
+                live_ltp = ltp_data.get(
+                    f"NSE:{symbol}",
+                    {}
+                ).get("last_price", result1['price'])
+            except:
+                live_ltp = result1['price']
+
         result = {
-            # 'symbol': result1['symbol'],
-            'price': result1['price'],
+
+            'ltp': live_ltp,
+            'price': live_ltp,
             'ret1': result_ret['ret1'],
             'ret5': result_ret['ret5'],
             'ret15': result_ret['ret15'],
@@ -2302,199 +2421,6 @@ def portfolio_data():
         }
     })
 
-# @app.route('/manual-portfolio-data')
-# def manual_portfolio_data():
-
-#     access_token = read_access_token()
-#     kite.set_access_token(access_token)
-
-#     conn = sqlite3.connect('portfolio.db')
-#     cur = conn.cursor()
-
-#     cur.execute("SELECT * FROM portfolios")
-#     portfolios = cur.fetchall()
-
-#     result = []
-
-#     for p in portfolios:
-
-#         cur.execute(
-#             "SELECT * FROM holdings WHERE portfolio_id=?",
-#             (p[0],)
-#         )
-
-#         holdings = cur.fetchall()
-
-#         symbols = []
-#         enriched = []
-
-#         ####################################
-#         # 🔥 BUILD SYMBOL LIST
-#         ####################################
-#         for h in holdings:
-
-#             symbol = h[2]
-
-#             exchange = "NSE"
-
-#             if "FUT" in symbol or "-" in symbol:
-#                 exchange = "NFO"
-
-#             symbols.append(f"{exchange}:{symbol}")
-
-#         ####################################
-#         # 🔥 FETCH LTP
-#         ####################################
-#         ltp_data = kite.ltp(symbols) if symbols else {}
-
-#         ####################################
-#         # 🔥 PORTFOLIO TOTAL
-#         ####################################
-#         total_invested = 0
-
-#         ####################################
-#         # 🔥 FIRST PASS
-#         ####################################
-#         for h in holdings:
-
-#             symbol = h[2]
-#             qty = abs(h[3])
-#             buy_price = h[4]
-
-#             total_invested += qty * buy_price
-
-#         ####################################
-#         # 🔥 SECOND PASS
-#         ####################################
-#         for h in holdings:
-
-#             holding_id = h[0]
-#             symbol = h[2]
-#             qty = h[3]
-#             buy_price = h[4]
-
-#             exchange = "NSE"
-
-#             if "FUT" in symbol or "-" in symbol:
-#                 exchange = "NFO"
-
-#             ####################################
-#             # 🔥 LTP
-#             ####################################
-#             key = f"{exchange}:{symbol}"
-
-#             ltp = ltp_data.get(key, {}).get(
-#                 'last_price',
-#                 0
-#             )
-
-#             ####################################
-#             # 🔥 LOTS
-#             ####################################
-#             lots = "-"
-
-#             if exchange == "NFO":
-
-#                 db = sqlite3.connect("instruments.db")
-#                 c = db.cursor()
-
-#                 c.execute("""
-#                     SELECT lot_size
-#                     FROM instruments
-#                     WHERE tradingsymbol=?
-#                     LIMIT 1
-#                 """, (symbol,))
-
-#                 row = c.fetchone()
-
-#                 db.close()
-
-#                 lot_size = row[0] if row else 1
-
-#                 lots = round(abs(qty) / lot_size, 2)
-
-#             ####################################
-#             # 🔥 VALUES
-#             ####################################
-#             invested_value = abs(qty) * buy_price
-
-#             present_value = abs(qty) * ltp
-
-#             pnl = present_value - invested_value
-
-#             pnl_percent = (
-#                 pnl / invested_value * 100
-#             ) if invested_value else 0
-
-#             allocation_percent = (
-#                 invested_value / total_invested * 100
-#             ) if total_invested else 0
-
-#             ####################################
-#             # 🔥 FINAL OBJECT
-#             ####################################
-#             enriched.append({
-
-#                 "id": holding_id,
-
-#                 "symbol": symbol,
-
-#                 "quantity": qty,
-
-#                 "buy_price": buy_price,
-
-#                 "ltp": ltp,
-
-#                 "lots": lots,
-
-#                 "invested_value": invested_value,
-
-#                 "present_value": present_value,
-
-#                 "allocation_percent": allocation_percent,
-
-#                 "pnl": pnl,
-
-#                 "pnl_percent": pnl_percent
-#             })
-
-#         ####################################
-#         # 🔥 PORTFOLIO SUMMARY
-#         ####################################
-#         total_present = sum(
-#             x["present_value"] for x in enriched
-#         )
-
-#         total_pnl = sum(
-#             x["pnl"] for x in enriched
-#         )
-
-#         ####################################
-#         # 🔥 FINAL PORTFOLIO
-#         ####################################
-#         result.append({
-
-#             "id": p[0],
-
-#             "name": p[1],
-
-#             "holdings": enriched,
-
-#             "summary": {
-
-#                 "invested": total_invested,
-
-#                 "present": total_present,
-
-#                 "pnl": total_pnl,
-
-#                 "total_positions": len(enriched)
-#             }
-#         })
-
-#     conn.close()
-
-#     return jsonify(result)
 
 @app.route('/add-holding', methods=['POST'])
 def add_holding():

@@ -159,7 +159,13 @@ function technical_table1(data){
                 <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
                     ${d.symbol}
                 </td>
-                <td>${d.price?.toFixed(2) || '-'}</td>
+                
+                <td class="ltp-cell"
+                    data-symbol="${d.symbol}"
+                    data-ltp="${d.ltp || 0}"
+                    style="font-weight:bold;">
+                    ${d.ltp?.toFixed(2) || '-'}
+                </td>
                 <td style="${getReturnColor(d.ret1)}">${d.ret1?.toFixed(2) || '-'}</td>
                 <td style="${getReturnColor(d.ret5)}">${d.ret5?.toFixed(2) || '-'}</td>
                 <td style="${getReturnColor(d.ret15)}">${d.ret15?.toFixed(2) || '-'}</td>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <title>Nifty Index Master Dashboard</title>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <link rel="stylesheet"
+          href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <style>
+
+        body {
+            font-family: Arial;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        .yes {
+            color: green;
+            font-weight: bold;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<h2>Nifty Index Master Dashboard</h2>
+
+<button onclick="refreshIndices()">
+    🔄 Refresh Indices
+</button>
+
+<table id="indicesTable" class="display nowrap">
+
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>Company</th>
+            <th>Industry</th>
+            <th>Indices</th>
+            <th>Index Count</th>
+            <th>Large Cap</th>
+            <th>Mid Cap</th>
+            <th>Small Cap</th>
+            <th>Banking</th>
+            <th>IT</th>
+            <th>Pharma</th>
+            <th>Auto</th>
+            <th>Momentum</th>
+            <th>Quality</th>
+            <th>Value</th>
+            <th>Low Volatility</th>
+        </tr>
+    </thead>
+
+    <tbody></tbody>
+
+</table>
+
+<script>
+let table = null;
+
+function yesNo(v) {
+
+    if (v === true) {
+        return '<span class="yes">YES</span>';
+    }
+
+    return '-';
+}
+
+function loadTable() {
+
+    fetch('/get_indices_data')
+    .then(res => res.json())
+    .then(data => {
+
+        if (table) {
+            table.clear().destroy();
+        }
+
+        let html = '';
+
+        data.forEach(d => {
+
+            html += `
+                <tr>
+                    <td>${d.Symbol || ''}</td>
+                    <td>${d['Company Name'] || ''}</td>
+                    <td>${d.Industry || ''}</td>
+                    <td>${d.Index || ''}</td>
+                    <td>${d['Index Count'] || ''}</td>
+                    <td>${yesNo(d['Large Cap'])}</td>
+                    <td>${yesNo(d['Mid Cap'])}</td>
+                    <td>${yesNo(d['Small Cap'])}</td>
+                    <td>${yesNo(d['Banking'])}</td>
+                    <td>${yesNo(d['IT'])}</td>
+                    <td>${yesNo(d['Pharma'])}</td>
+                    <td>${yesNo(d['Auto'])}</td>
+                    <td>${yesNo(d['Momentum'])}</td>
+                    <td>${yesNo(d['Quality'])}</td>
+                    <td>${yesNo(d['Value'])}</td>
+                    <td>${yesNo(d['Low Volatility'])}</td>
+                </tr>
+            `;
+
+        });
+
+        $('#indicesTable tbody').html(html);
+
+        table = $('#indicesTable').DataTable({
+            pageLength: 50,
+            scrollX: true,
+            scrollY: '75vh',
+            scrollCollapse: true,
+            stateSave: true
+        });
+
+    });
+}
+
+function refreshIndices() {
+
+    fetch('/refresh_indices')
+    .then(res => res.json())
+    .then(data => {
+
+        alert('Updated ' + data.rows + ' rows');
+
+        loadTable();
+
+    });
+}
+
+loadTable();
+
+</script>
+
+</body>
+</html>
+
+

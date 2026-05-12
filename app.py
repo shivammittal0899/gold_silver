@@ -2491,6 +2491,58 @@ def delete_portfolio(portfolio_id):
     conn.close()
 
     return redirect('/portfolio')
+from indices_data import *
+
+# =========================
+# GLOBAL CACHE
+# =========================
+
+MASTER_TABLE = pd.DataFrame()
+
+# =========================
+# REFRESH DATA
+# =========================
+
+@app.route('/refresh_indices')
+def refresh_indices():
+
+    global MASTER_TABLE
+
+    raw_df = download_all_indices()
+
+    MASTER_TABLE = create_master_table(raw_df)
+
+    MASTER_TABLE.to_csv('master_indices.csv', index=False)
+
+    return {
+        "status": "success",
+        "rows": len(MASTER_TABLE)
+    }
+
+# =========================
+# GET DATA API
+# =========================
+
+@app.route('/get_indices_data')
+def get_indices_data():
+
+    global MASTER_TABLE
+
+    if MASTER_TABLE.empty:
+
+        raw_df = download_all_indices()
+
+        MASTER_TABLE = create_master_table(raw_df)
+
+    return jsonify(MASTER_TABLE.fillna('').to_dict(orient='records'))
+
+# =========================
+# PAGE
+# =========================
+
+@app.route('/indices_dashboard')
+def indices_dashboard():
+    return render_template('indices_dashboard.html')
 
 
 # ---------------------- MAIN ----------------------

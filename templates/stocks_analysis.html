@@ -139,6 +139,10 @@
 <button onclick="addStocks()">Add to Watchlist</button>
 <button onclick="toggleWatchlistPanel()">➕ Add to Watchlist</button>
 <button onclick="analyze()">📊 Analyze</button>
+<button onclick="clearSelectedStocks()" 
+        style="background:#e74c3c;">
+    ❌ Clear Selection
+</button>
 <div id="watchlistPanel" style="display:none; border:1px solid #ddd; padding:12px; margin-top:10px; border-radius:6px; background:#fafafa;">
 
     <h4>Add to Watchlist</h4>
@@ -199,7 +203,7 @@
                 <th><input type="checkbox" onclick="toggleAll(this)"></th>
                 <th>Symbol</th>
                 <th>Price</th>
-                <th>RetDay</th>
+                <th>Day</th>
                 <th>DayHigh</th>
                 <th>DayLow</th>
                 <th>WeekHigh</th>
@@ -396,7 +400,32 @@ function removeStock(symbol) {
 
     $('#stockSelect').val(selected).trigger('change');
 }
+function clearSelectedStocks() {
 
+    // clear select2
+    $('#stockSelect').val(null).trigger('change');
+
+    // clear manual input
+    document.getElementById("manualStocks").value = "";
+
+    // clear selected display
+    document.getElementById("selectedStocks").innerHTML =
+        "<span style='color:#888'>No stocks selected</span>";
+
+    // clear session storage
+    sessionStorage.removeItem("selectedStocks");
+
+    // clear current stocks
+    currentStocks = [];
+
+    // optional: clear tables
+    document.getElementById("stocks_table").innerHTML = "";
+    document.getElementById("stockshighlow_table").innerHTML = "";
+    document.getElementById("stocksfundamental_table").innerHTML = "";
+    document.getElementById("stocksgrowth_table").innerHTML = "";
+    document.getElementById("priceTarget_table").innerHTML = "";
+
+}
 // 🔥 ADD STOCKS
 function addStocks() {
     let selectedStocks = getSelectedStocks();
@@ -848,7 +877,7 @@ function updateTableWithAnalysis(data) {
         $('#stockshighlow_table tr')
     ).draw(false);
 
-    highLowTable.rows.add(
+    fundamentalTable.rows.add(
         $('#stocksfundamental_table tr')
     ).draw(false);
 
@@ -929,7 +958,7 @@ function initDataTable() {
         });
     }
 
-    if (!FundamentalTable) {
+    if (!fundamentalTable) {
         fundamentalTable = $('#FundamentalTable').DataTable({
             pageLength: 50,
             ordering: true,

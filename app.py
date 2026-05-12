@@ -2491,59 +2491,61 @@ def delete_portfolio(portfolio_id):
     conn.close()
 
     return redirect('/portfolio')
+
 from indices_data import *
+# ============================================
+# INDICES DASHBOARD
+# ============================================
 
-# =========================
-# GLOBAL CACHE
-# =========================
+@app.route('/indices_dashboard')
+def indices_dashboard():
 
-MASTER_TABLE = pd.DataFrame()
+    return render_template(
+        'indices_dashboard.html'
+    )
 
-# =========================
-# REFRESH DATA
-# =========================
+# ============================================
+# REFRESH INDICES DATA
+# ============================================
 
 @app.route('/refresh_indices')
 def refresh_indices():
 
-    global MASTER_TABLE
+    try:
 
-    raw_df = download_all_indices()
+        rows = refresh_indices_data()
 
-    MASTER_TABLE = create_master_table(raw_df)
+        return jsonify({
+            "status": "success",
+            "rows": rows
+        })
 
-    MASTER_TABLE.to_csv('master_indices.csv', index=False)
+    except Exception as e:
 
-    return {
-        "status": "success",
-        "rows": len(MASTER_TABLE)
-    }
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        })
 
-# =========================
-# GET DATA API
-# =========================
+# ============================================
+# GET INDICES DATA
+# ============================================
 
 @app.route('/get_indices_data')
-def get_indices_data():
+def get_indices_data_route():
 
-    global MASTER_TABLE
+    try:
 
-    if MASTER_TABLE.empty:
+        data = get_indices_data()
 
-        raw_df = download_all_indices()
+        return jsonify(data)
 
-        MASTER_TABLE = create_master_table(raw_df)
+    except Exception as e:
 
-    return jsonify(MASTER_TABLE.fillna('').to_dict(orient='records'))
-
-# =========================
-# PAGE
-# =========================
-
-@app.route('/indices_dashboard')
-def indices_dashboard():
-    return render_template('indices_dashboard.html')
-
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        })
 
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":

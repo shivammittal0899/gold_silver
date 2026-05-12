@@ -216,6 +216,7 @@ function highlow_table(data){
             </tr>
         `;
     });
+    return html
 }
 function fundamental_table(data){
     let html = ""

@@ -731,56 +731,124 @@ function deleteSelectedStocks() {
     });
 }
 function updateTableWithAnalysis(data) {
-    let table = document.getElementById("stocks_table");
-    let table1 = document.getElementById("stockshighlow_table");
-    let table2 = document.getElementById("stocksgrowth_table");
-    let table3 = document.getElementById("priceTarget_table");
-    // // ✅ Proper destroy
-    // if ($.fn.DataTable.isDataTable('#analysisTable')) {
-    //     $('#analysisTable').DataTable().clear().destroy();
-    // }
-    // if ($.fn.DataTable.isDataTable('#HighLowTable')) {
-    //     $('#HighLowTable').DataTable().clear().destroy();
-    // }
-    // if ($.fn.DataTable.isDataTable('#GrowthTable')) {
-    //     $('#GrowthTable').DataTable().clear().destroy();
-    // }
-    // if ($.fn.DataTable.isDataTable('#priceTargetTable')) {
-    //     $('#priceTargetTable').DataTable().clear().destroy();
-    // }
-    if (!data || data.length === 0) {
-        table.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
-        table1.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
-        table2.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
-        table3.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
+
+    if (!data || data.length === 0) return;
+
+    // =========================
+    // FIRST TIME LOAD
+    // =========================
+    if (!analysisTable) {
+
+        // render html first time
+        document.getElementById("stocks_table").innerHTML =
+            technical_table1(data);
+
+        document.getElementById("stockshighlow_table").innerHTML =
+            fundamental_table(data);
+
+        document.getElementById("stocksgrowth_table").innerHTML =
+            fundamentalgrowth_table(data);
+
+        document.getElementById("priceTarget_table").innerHTML =
+            priceTarget_table(data);
+
+        // init datatables
+        initDataTable();
+
         return;
     }
-    // initialize once
-    initDataTable();
 
-    // preserve current page
-    let page1 = analysisTable.page();
-    let page2 = highLowTable.page();
-    let page3 = growthTable.page();
-    let page4 = priceTargetTable.page();
+    // =========================
+    // SAVE CURRENT STATE
+    // =========================
+    let analysisOrder = analysisTable.order();
+    let analysisPage = analysisTable.page();
+    let analysisSearch = analysisTable.search();
 
-    // update html
-    table.innerHTML = technical_table1(data);
-    table1.innerHTML = fundamental_table(data);
-    table2.innerHTML = fundamentalgrowth_table(data);
-    table3.innerHTML = priceTarget_table(data);
+    let highOrder = highLowTable.order();
+    let highPage = highLowTable.page();
+    let highSearch = highLowTable.search();
 
-    // redraw WITHOUT resetting paging
-    analysisTable.rows().invalidate().draw(false);
-    highLowTable.rows().invalidate().draw(false);
-    growthTable.rows().invalidate().draw(false);
-    priceTargetTable.rows().invalidate().draw(false);
+    let growthOrder = growthTable.order();
+    let growthPage = growthTable.page();
+    let growthSearch = growthTable.search();
 
-    // restore page
-    analysisTable.page(page1).draw(false);
-    highLowTable.page(page2).draw(false);
-    growthTable.page(page3).draw(false);
-    priceTargetTable.page(page4).draw(false);
+    let targetOrder = priceTargetTable.order();
+    let targetPage = priceTargetTable.page();
+    let targetSearch = priceTargetTable.search();
+
+    // =========================
+    // CLEAR OLD DATA
+    // =========================
+    analysisTable.clear();
+    highLowTable.clear();
+    growthTable.clear();
+    priceTargetTable.clear();
+
+    // =========================
+    // UPDATE TBODY HTML
+    // =========================
+    $('#stocks_table').html(
+        technical_table1(data)
+    );
+
+    $('#stockshighlow_table').html(
+        fundamental_table(data)
+    );
+
+    $('#stocksgrowth_table').html(
+        fundamentalgrowth_table(data)
+    );
+
+    $('#priceTarget_table').html(
+        priceTarget_table(data)
+    );
+
+    // =========================
+    // RELOAD FROM DOM
+    // =========================
+    analysisTable.rows.add(
+        $('#stocks_table tr')
+    ).draw(false);
+
+    highLowTable.rows.add(
+        $('#stockshighlow_table tr')
+    ).draw(false);
+
+    growthTable.rows.add(
+        $('#stocksgrowth_table tr')
+    ).draw(false);
+
+    priceTargetTable.rows.add(
+        $('#priceTarget_table tr')
+    ).draw(false);
+
+    // =========================
+    // RESTORE STATE
+    // =========================
+    analysisTable
+        .search(analysisSearch)
+        .order(analysisOrder)
+        .page(analysisPage)
+        .draw(false);
+
+    highLowTable
+        .search(highSearch)
+        .order(highOrder)
+        .page(highPage)
+        .draw(false);
+
+    growthTable
+        .search(growthSearch)
+        .order(growthOrder)
+        .page(growthPage)
+        .draw(false);
+
+    priceTargetTable
+        .search(targetSearch)
+        .order(targetOrder)
+        .page(targetPage)
+        .draw(false);
 }
 // let dataTable = null;
 let analysisTable = null;

@@ -735,19 +735,19 @@ function updateTableWithAnalysis(data) {
     let table1 = document.getElementById("stockshighlow_table");
     let table2 = document.getElementById("stocksgrowth_table");
     let table3 = document.getElementById("priceTarget_table");
-    // ✅ Proper destroy
-    if ($.fn.DataTable.isDataTable('#analysisTable')) {
-        $('#analysisTable').DataTable().clear().destroy();
-    }
-    if ($.fn.DataTable.isDataTable('#HighLowTable')) {
-        $('#HighLowTable').DataTable().clear().destroy();
-    }
-    if ($.fn.DataTable.isDataTable('#GrowthTable')) {
-        $('#GrowthTable').DataTable().clear().destroy();
-    }
-    if ($.fn.DataTable.isDataTable('#priceTargetTable')) {
-        $('#priceTargetTable').DataTable().clear().destroy();
-    }
+    // // ✅ Proper destroy
+    // if ($.fn.DataTable.isDataTable('#analysisTable')) {
+    //     $('#analysisTable').DataTable().clear().destroy();
+    // }
+    // if ($.fn.DataTable.isDataTable('#HighLowTable')) {
+    //     $('#HighLowTable').DataTable().clear().destroy();
+    // }
+    // if ($.fn.DataTable.isDataTable('#GrowthTable')) {
+    //     $('#GrowthTable').DataTable().clear().destroy();
+    // }
+    // if ($.fn.DataTable.isDataTable('#priceTargetTable')) {
+    //     $('#priceTargetTable').DataTable().clear().destroy();
+    // }
     if (!data || data.length === 0) {
         table.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
         table1.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
@@ -755,120 +755,91 @@ function updateTableWithAnalysis(data) {
         table3.innerHTML = "<tr><td colspan='13'>No data</td></tr>";
         return;
     }
+    // initialize once
+    initDataTable();
 
-    // let html = ""
-    // data.forEach(d => {
-    //     let sig30 = d.signal_30m || "";
-    //     let sig60 = d.signal_60m || "";
-    //     let sig1d = d.signal_1d || "";
+    // preserve current page
+    let page1 = analysisTable.page();
+    let page2 = highLowTable.page();
+    let page3 = growthTable.page();
+    let page4 = priceTargetTable.page();
 
-    //     let color30 =
-    //         sig30.includes("Strong Buy") ? "darkgreen" :
-    //         sig30.includes("Strong Sell") ? "darkred" :
-    //         sig30.includes("Buy") ? "lightgreen" :
-    //         sig30.includes("Sell") ? "red" : "black";
-    //     let color60 =
-    //         sig60.includes("Strong Buy") ? "darkgreen" :
-    //         sig60.includes("Strong Sell") ? "darkred" :
-    //         sig60.includes("Buy") ? "green" :
-    //         sig60.includes("Sell") ? "red" : "black";
-    //     let color1d =
-    //         sig1d.includes("Strong Buy") ? "darkgreen" :
-    //         sig1d.includes("Strong Sell") ? "darkred" :
-    //         sig1d.includes("Buy") ? "green" :
-    //         sig1d.includes("Sell") ? "red" : "black";
-
-    //     html += `
-    //         <tr>
-    //             <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
-                
-    //             <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
-    //                 ${d.symbol}
-    //             </td>
-    //             <td>${d.price?.toFixed(2) || '-'}</td>
-    //             <td style="${getReturnColor(d.ret1)}">${d.ret1?.toFixed(2) || '-'}</td>
-    //             <td style="${getReturnColor(d.ret5)}">${d.ret5?.toFixed(2) || '-'}</td>
-    //             <td style="${getReturnColor(d.ret15)}">${d.ret15?.toFixed(2) || '-'}</td>
-    //             <td style="${getReturnColor(d.ret30)}">${d.ret30?.toFixed(2) || '-'}</td>
-    //             <td style="${getReturnColor(d.ret90)}">${d.ret90?.toFixed(2) || '-'}</td>
-    //             <td style="color:${color30}; font-weight:bold;">${sig30 || '-'}</td>
-    //             <td style="color:${color60}; font-weight:bold;">${sig60 || '-'}</td>
-    //             <td style="color:${color1d}; font-weight:bold;">${sig1d || '-'}</td>
-    //             <td style="${getRSIColor(d.rsi_30m)}">${d.rsi_30m || '-'}</td>
-    //             <td style="${getRSIColor(d.rsi_60m)}">${d.rsi_60m || '-'}</td>
-    //             <td style="${getRSIColor(d.rsi_1d)}">${d.rsi_1d || '-'}</td>
-    //             <td>${d.price_tenkan_30m || '-'}</td>
-    //             <td>${d.price_tenkan_60m || '-'}</td>
-    //             <td>${d.price_tenkan_1d || '-'}</td>
-    //             <td>${d.tenkan_kijun_30m || '-'}</td>
-    //             <td>${d.tenkan_kijun_60m || '-'}</td>
-    //             <td>${d.tenkan_kijun_1d || '-'}</td>
-    //         </tr>
-    //     `;
-    // });
+    // update html
     table.innerHTML = technical_table1(data);
-    // table.innerHTML = html;
     table1.innerHTML = fundamental_table(data);
     table2.innerHTML = fundamentalgrowth_table(data);
     table3.innerHTML = priceTarget_table(data);
 
-    initDataTable();
+    // redraw WITHOUT resetting paging
+    analysisTable.rows().invalidate().draw(false);
+    highLowTable.rows().invalidate().draw(false);
+    growthTable.rows().invalidate().draw(false);
+    priceTargetTable.rows().invalidate().draw(false);
+
+    // restore page
+    analysisTable.page(page1).draw(false);
+    highLowTable.page(page2).draw(false);
+    growthTable.page(page3).draw(false);
+    priceTargetTable.page(page4).draw(false);
 }
-let dataTable = null;
+// let dataTable = null;
+let analysisTable = null;
+let highLowTable = null;
+let growthTable = null;
+let priceTargetTable = null;
 
 function initDataTable() {
-    // if (dataTable) {
-    //     dataTable.destroy();   // 🔥 destroy old instance
-    // }
 
-    dataTable = $('#analysisTable').DataTable({
-        pageLength: 50,
-        ordering: true,
-        searching: true,
-        // destroy: true,  // 🔥 safety
-        scrollY: "80vh",     // 🔥 vertical scroll
-        scrollX: true,        // 🔥 horizontal scroll
-        scrollCollapse: true, // shrink if less data
-        columnDefs: [
-            { orderable: false, targets: 0 }
-        ]
-    });
-    dataTable = $('#HighLowTable').DataTable({
-        pageLength: 50,
-        ordering: true,
-        searching: true,
-        // destroy: true,  // 🔥 safety
-        scrollY: "80vh",     // 🔥 vertical scroll
-        scrollX: true,        // 🔥 horizontal scroll
-        scrollCollapse: true, // shrink if less data
-        columnDefs: [
-            { orderable: false, targets: 0 }
-        ]
-    });
-    dataTable = $('#GrowthTable').DataTable({
-        pageLength: 50,
-        ordering: true,
-        searching: true,
-        // destroy: true,  // 🔥 safety
-        scrollY: "80vh",     // 🔥 vertical scroll
-        scrollX: true,        // 🔥 horizontal scroll
-        scrollCollapse: true, // shrink if less data
-        columnDefs: [
-            { orderable: false, targets: 0 }
-        ]
-    });
-    dataTable = $('#priceTargetTable').DataTable({
-        pageLength: 50,
-        ordering: true,
-        searching: true,
-        // destroy: true,  // 🔥 safety
-        scrollY: "80vh",     // 🔥 vertical scroll
-        scrollX: true,        // 🔥 horizontal scroll
-        scrollCollapse: true, // shrink if less data
-        columnDefs: [
-            { orderable: false, targets: 0 }
-        ]
-    });
+    if (!analysisTable) {
+        analysisTable = $('#analysisTable').DataTable({
+            pageLength: 50,
+            ordering: true,
+            searching: true,
+            scrollY: "80vh",
+            scrollX: true,
+            scrollCollapse: true,
+            stateSave: true,
+            columnDefs: [
+                { orderable: false, targets: 0 }
+            ]
+        });
+    }
+
+    if (!highLowTable) {
+        highLowTable = $('#HighLowTable').DataTable({
+            pageLength: 50,
+            ordering: true,
+            searching: true,
+            scrollY: "80vh",
+            scrollX: true,
+            scrollCollapse: true,
+            stateSave: true
+        });
+    }
+
+    if (!growthTable) {
+        growthTable = $('#GrowthTable').DataTable({
+            pageLength: 50,
+            ordering: true,
+            searching: true,
+            scrollY: "80vh",
+            scrollX: true,
+            scrollCollapse: true,
+            stateSave: true
+        });
+    }
+
+    if (!priceTargetTable) {
+        priceTargetTable = $('#priceTargetTable').DataTable({
+            pageLength: 50,
+            ordering: true,
+            searching: true,
+            scrollY: "80vh",
+            scrollX: true,
+            scrollCollapse: true,
+            stateSave: true
+        });
+    }
 }
 let chart = null;
 let candleSeries = null;

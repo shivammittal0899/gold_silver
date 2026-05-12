@@ -26,79 +26,79 @@ INDEX_MAP = {
     "NIFTY LARGEMID250": "niftylargemidcap250",
     "NIFTY MIDSML 400": "niftymidsmallcap400",
 
-    # # MIDCAP / SMALLCAP
-    # "NIFTY MIDCAP 50": "niftymidcap50",
-    # "NIFTY MIDCAP 100": "niftymidcap100",
-    # "NIFTY MIDCAP 150": "niftymidcap150",
-    # "NIFTY SMALLCAP 50": "niftysmallcap50",
-    # "NIFTY SMALLCAP 100": "niftysmallcap100",
-    # "NIFTY SMALLCAP 250": "niftysmallcap250",
-    # "NIFTY MICROCAP250": "niftymicrocap250",
+    # MIDCAP / SMALLCAP
+    "NIFTY MIDCAP 50": "niftymidcap50",
+    "NIFTY MIDCAP 100": "niftymidcap100",
+    "NIFTY MIDCAP 150": "niftymidcap150",
+    "NIFTY SMALLCAP 50": "niftysmallcap50",
+    "NIFTY SMALLCAP 100": "niftysmallcap100",
+    "NIFTY SMALLCAP 250": "niftysmallcap250",
+    "NIFTY MICROCAP250": "niftymicrocap250",
 
-    # # BANKING
-    # "NIFTY BANK": "niftybank",
-    # "NIFTY PSU BANK": "niftypsubank",
-    # "NIFTY PVT BANK": "niftypvtbank",
-    # "NIFTY FIN SERVICE": "niftyfinservice",
+    # BANKING
+    "NIFTY BANK": "niftybank",
+    "NIFTY PSU BANK": "niftypsubank",
+    "NIFTY PVT BANK": "niftypvtbank",
+    "NIFTY FIN SERVICE": "niftyfinservice",
 
-    # # IT
-    # "NIFTY IT": "niftyit",
-    # "NIFTY INTERNET": "niftyinternet",
-    # "NIFTY IND DIGITAL": "niftyindiadigital",
+    # IT
+    "NIFTY IT": "niftyit",
+    "NIFTY INTERNET": "niftyinternet",
+    "NIFTY IND DIGITAL": "niftyindiadigital",
 
-    # # AUTO
-    # "NIFTY AUTO": "niftyauto",
-    # "NIFTY EV": "niftyev",
-    # "NIFTY MOBILITY": "niftymobility",
+    # AUTO
+    "NIFTY AUTO": "niftyauto",
+    "NIFTY EV": "niftyev",
+    "NIFTY MOBILITY": "niftymobility",
 
-    # # PHARMA
-    # "NIFTY PHARMA": "niftypharma",
-    # "NIFTY HEALTHCARE": "niftyhealthcare",
+    # PHARMA
+    "NIFTY PHARMA": "niftypharma",
+    "NIFTY HEALTHCARE": "niftyhealthcare",
 
-    # # ENERGY
-    # "NIFTY ENERGY": "niftyenergy",
-    # "NIFTY OIL AND GAS": "niftyoilgas",
-    # "NIFTY METAL": "niftymetal",
+    # ENERGY
+    "NIFTY ENERGY": "niftyenergy",
+    "NIFTY OIL AND GAS": "niftyoilgas",
+    "NIFTY METAL": "niftymetal",
 
-    # # INFRA
-    # "NIFTY INFRA": "niftyinfrastructure",
-    # "NIFTY INDIA MFG": "niftyindiamanufacturing",
+    # INFRA
+    "NIFTY INFRA": "niftyinfrastructure",
+    "NIFTY INDIA MFG": "niftyindiamanufacturing",
 
-    # # REALTY
-    # "NIFTY REALTY": "niftyrealty",
+    # REALTY
+    "NIFTY REALTY": "niftyrealty",
 
-    # # CONSUMPTION
-    # "NIFTY FMCG": "niftyfmcg",
-    # "NIFTY CONSUMPTION": "niftyconsumption",
+    # CONSUMPTION
+    "NIFTY FMCG": "niftyfmcg",
+    "NIFTY CONSUMPTION": "niftyconsumption",
 
-    # # DEFENCE
-    # "NIFTY IND DEFENCE": "niftyindiadefence",
+    # DEFENCE
+    "NIFTY IND DEFENCE": "niftyindiadefence",
 
-    # # MOMENTUM
-    # "NIFTY200MOMENTM30": "nifty200momentum30",
-    # "NIFTY500MOMENTM50": "nifty500momentum50",
+    # MOMENTUM
+    "NIFTY200MOMENTM30": "nifty200momentum30",
+    "NIFTY500MOMENTM50": "nifty500momentum50",
 
-    # # QUALITY
-    # "NIFTY100 QUALTY30": "nifty100quality30",
-    # "NIFTY500 QLTY50": "nifty500quality50",
+    # QUALITY
+    "NIFTY100 QUALTY30": "nifty100quality30",
+    "NIFTY500 QLTY50": "nifty500quality50",
 
-    # # VALUE
-    # "NIFTY50 VALUE 20": "nifty50value20",
-    # "NIFTY500 VALUE 50": "nifty500value50",
+    # VALUE
+    "NIFTY50 VALUE 20": "nifty50value20",
+    "NIFTY500 VALUE 50": "nifty500value50",
 
-    # # LOW VOL
-    # "NIFTY LOW VOL 50": "niftylowvolatility50",
+    # LOW VOL
+    "NIFTY LOW VOL 50": "niftylowvolatility50",
 
-    # # ALPHA
-    # "NIFTY ALPHA 50": "niftyalpha50",
+    # ALPHA
+    "NIFTY ALPHA 50": "niftyalpha50",
 
-    # # ESG
-    # "NIFTY100 ESG": "nifty100esg",
+    # ESG
+    "NIFTY100 ESG": "nifty100esg",
 
-    # # THEMATIC
-    # "NIFTY CHEMICALS": "niftychemicals",
-    # "NIFTY RURAL": "niftyrural",
-    # "NIFTY IPO": "niftyipo"
+    # THEMATIC
+    "NIFTY CHEMICALS": "niftychemicals",
+    "NIFTY RURAL": "niftyrural",
+    "NIFTY IPO": "niftyipo"
 }
 
 # ============================================
@@ -108,6 +108,9 @@ INDEX_MAP = {
 def download_all_indices():
 
     all_rows = []
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
 
     for index_name, slug in INDEX_MAP.items():
 
@@ -117,7 +120,7 @@ def download_all_indices():
 
             print("Downloading:", index_name)
 
-            response = requests.get(url, timeout=5)
+            response = requests.get(url, headers=headers, timeout=5)
 
             if response.status_code != 200:
                 continue

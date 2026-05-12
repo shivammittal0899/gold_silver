@@ -117,7 +117,7 @@ def download_all_indices():
 
             print("Downloading:", index_name)
 
-            response = requests.get(url, timeout=20)
+            response = requests.get(url, timeout=5)
 
             if response.status_code != 200:
                 continue
@@ -299,15 +299,16 @@ def get_indices_data():
             conn
         )
 
-    except:
+        conn.close()
 
-        refresh_indices_data()
-
-        df = pd.read_sql(
-            "SELECT * FROM master_indices",
-            conn
+        return df.fillna('').to_dict(
+            orient='records'
         )
 
-    conn.close()
+    except Exception as e:
 
-    return df.fillna('').to_dict(orient='records')
+        conn.close()
+
+        print("DB ERROR:", e)
+
+        return []

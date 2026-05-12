@@ -131,12 +131,12 @@ function loadTable(){
                 <td>${d['Company Name'] || ''}</td>
                 <td>${d.Industry || ''}</td>
                 <td>${d.Index || ''}</td>
-                <td>${d['Index Count'] || ''}</td>
-                <td>${d['Institutional Strength'] || ''}</td>
+                <td>${d['Index_Count'] || ''}</td>
+                
 
-                <td>${yesNo(d['Large Cap'])}</td>
-                <td>${yesNo(d['Mid Cap'])}</td>
-                <td>${yesNo(d['Small Cap'])}</td>
+                <td>${yesNo(d['Large_Cap'])}</td>
+                <td>${yesNo(d['Mid_Cap'])}</td>
+                <td>${yesNo(d['Small_Cap'])}</td>
 
                 <td>${yesNo(d['Banking'])}</td>
                 <td>${yesNo(d['IT'])}</td>
@@ -150,14 +150,8 @@ function loadTable(){
                 <td>${yesNo(d['Momentum'])}</td>
                 <td>${yesNo(d['Quality'])}</td>
                 <td>${yesNo(d['Value'])}</td>
-                <td>${yesNo(d['Low Volatility'])}</td>
-                <td>${yesNo(d['Alpha'])}</td>
-                <td>${yesNo(d['ESG'])}</td>
-
-                <td>${yesNo(d['Defence'])}</td>
-                <td>${yesNo(d['Chemical'])}</td>
-                <td>${yesNo(d['Rural'])}</td>
-                <td>${yesNo(d['IPO'])}</td>
+                <td>${yesNo(d['Low_Volatility'])}</td>
+                
 
             </tr>
 

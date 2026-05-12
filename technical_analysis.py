@@ -447,13 +447,25 @@ def stock_data_analysis_common(df):
     price = df['Close'].iat[-1]
     high = df['High'].iat[-1]
     low = df['Low'].iat[-1]
+    weekHigh = max(df['High'].tail(5))
+    weekLow = min(df['Low'].tail(5))
+    monthHigh = max(df['High'].tail(20))
+    monthLow = min(df['Low'].tail(20))
+    yearHigh = max(df['High'].tail(5*48))
+    yearLow = min(df['Low'].tail(5*48))
     data = {
         'ret1': float(((price/df['Close'].iat[-2])-1)*100),
         'ret5': float(((price/df['Open'].iat[-5])-1)*100),
         'ret15': float(((price/df['Open'].iat[-10]) - 1)*100),
         'ret30': float(((price/df['Open'].iat[-20]) - 1)*100),
         'ret90': float(((price/df['Open'].iat[-60]) - 1)*100),
-        'retDayHigh': float(((price/high) - 1)*100),
-        'retDayLow': float(((price/low) - 1)*100)
+        'retdayHigh': float(((price/high) - 1)*100),
+        'retdayLow': float(((price/low) - 1)*100),
+        'retweekHigh': float(((price/weekHigh) - 1)*100),
+        'retweekLow': float(((price/weekLow) - 1)*100),
+        'retmonthHigh': float(((price/monthHigh) - 1)*100),
+        'retmonthLow': float(((price/monthLow) - 1)*100),
+        'retyearHigh': float(((price/yearHigh) - 1)*100),
+        'retyearLow': float(((price/yearLow) - 1)*100)
     }
     return data

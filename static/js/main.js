@@ -188,7 +188,35 @@ function technical_table1(data){
     });
     return html
 }
-
+function highlow_table(data){
+    let html = ""
+    data.forEach(d => {
+        html +=`
+            <tr>
+                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+                    ${d.symbol}
+                </td>
+                <td class="ltp-cell"
+                    data-symbol="${d.symbol}"
+                    data-ltp="${d.ltp || 0}"
+                    style="font-weight:bold;">
+                    ${d.ltp?.toFixed(2) || '-'}
+                </td>
+                <td style="${getReturnColor(d.ret1)}">${d.ret1?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retdayHigh)}">${d.retdayHigh?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retdayLow)}">${d.retdayLow?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retweekHigh)}">${d.retweekHigh?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retweekLow)}">${d.retweekLow?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retmonthHigh)}">${d.retmonthHigh?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retmonthLow)}">${d.retmonthLow?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retyearHigh)}">${d.retyearHigh?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retyearLow)}">${d.retyearLow?.toFixed(2) || '-'}</td>
+            </tr>
+        `;
+    });
+}
 function fundamental_table(data){
     let html = ""
     data.forEach(d => {

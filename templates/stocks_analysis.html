@@ -198,6 +198,26 @@
             <tr>
                 <th><input type="checkbox" onclick="toggleAll(this)"></th>
                 <th>Symbol</th>
+                <th>Price</th>
+                <th>DayHigh</th>
+                <th>DayLow</th>
+                <th>WeekHigh</th>
+                <th>WeekLow</th>
+                <th>MonthHigh</th>
+                <th>MonthLow</th>
+                <th>YearHigh</th>
+                <th>YearLow</th>
+            </tr>
+        </thead>
+        <tbody id="stockshighlow_table"></tbody>
+    </table>
+</div>
+<div class = "analysis-table-container" style="width:100%;">
+    <table id="FundamentalTable" class="display">
+        <thead>
+            <tr>
+                <th><input type="checkbox" onclick="toggleAll(this)"></th>
+                <th>Symbol</th>
                 <th>Beta</th>
                 <th>TrailingPE</th>
                 <th>ForwardPE</th>
@@ -210,7 +230,7 @@
                 <th>Debt To Equity</th>
             </tr>
         </thead>
-        <tbody id="stockshighlow_table"></tbody>
+        <tbody id="stocksfundamental_table"></tbody>
     </table>
 </div>
 <div class = "growth-table-container" style="width:100%;">
@@ -744,6 +764,9 @@ function updateTableWithAnalysis(data) {
             technical_table1(data);
 
         document.getElementById("stockshighlow_table").innerHTML =
+            highlow_table(data);
+        
+        document.getElementById("stocksfundamental_table").innerHTML =
             fundamental_table(data);
 
         document.getElementById("stocksgrowth_table").innerHTML =
@@ -768,6 +791,10 @@ function updateTableWithAnalysis(data) {
     let highOrder = highLowTable.order();
     let highPage = highLowTable.page();
     let highSearch = highLowTable.search();
+    
+    let fundOrder = fundamentalTable.order();
+    let fundPage = fundamentalTable.page();
+    let fundSearch = fundamentalTable.search();
 
     let growthOrder = growthTable.order();
     let growthPage = growthTable.page();
@@ -782,6 +809,7 @@ function updateTableWithAnalysis(data) {
     // =========================
     analysisTable.clear();
     highLowTable.clear();
+    fundamentalTable.clear();
     growthTable.clear();
     priceTargetTable.clear();
 
@@ -793,6 +821,10 @@ function updateTableWithAnalysis(data) {
     );
 
     $('#stockshighlow_table').html(
+        highlow_table(data)
+    );
+
+    $('#stocksfundamental_table').html(
         fundamental_table(data)
     );
 
@@ -813,6 +845,10 @@ function updateTableWithAnalysis(data) {
 
     highLowTable.rows.add(
         $('#stockshighlow_table tr')
+    ).draw(false);
+
+    highLowTable.rows.add(
+        $('#stocksfundamental_table tr')
     ).draw(false);
 
     growthTable.rows.add(
@@ -837,6 +873,12 @@ function updateTableWithAnalysis(data) {
         .order(highOrder)
         .page(highPage)
         .draw(false);
+    
+    fundamentalTable
+        .search(fundSearch)
+        .order(fundOrder)
+        .page(fundPage)
+        .draw(false);
 
     growthTable
         .search(growthSearch)
@@ -853,6 +895,7 @@ function updateTableWithAnalysis(data) {
 // let dataTable = null;
 let analysisTable = null;
 let highLowTable = null;
+let fundamentalTable = null;
 let growthTable = null;
 let priceTargetTable = null;
 
@@ -875,6 +918,18 @@ function initDataTable() {
 
     if (!highLowTable) {
         highLowTable = $('#HighLowTable').DataTable({
+            pageLength: 50,
+            ordering: true,
+            searching: true,
+            scrollY: "80vh",
+            scrollX: true,
+            scrollCollapse: true,
+            stateSave: true
+        });
+    }
+
+    if (!FundamentalTable) {
+        fundamentalTable = $('#FundamentalTable').DataTable({
             pageLength: 50,
             ordering: true,
             searching: true,

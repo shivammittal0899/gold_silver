@@ -1,32 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
+
     <title>Index Analysis Dashboard</title>
 
+    <!-- JQUERY -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Select2 -->
+    <!-- SELECT2 -->
     <link href="{{ url_for('static', filename='select2/select2.min.css') }}" rel="stylesheet">
     <script src="{{ url_for('static', filename='select2/select2.min.js') }}"></script>
 
-    <!-- DataTables -->
+    <!-- DATATABLE -->
     <link href="{{ url_for('static', filename='datatables/jquery.datatables.min.css') }}" rel="stylesheet">
     <script src="{{ url_for('static', filename='datatables/jquery.datatables.min.js') }}"></script>
 
     <style>
 
     body{
-        font-family:Arial;
         margin:20px;
-        background:#f5f6fa;
+        font-family:Arial;
+        background:#f4f6f9;
     }
 
-    .top-bar{
+    .top-container{
         background:white;
-        padding:15px;
-        border-radius:10px;
-        margin-bottom:20px;
+        padding:20px;
+        border-radius:12px;
         box-shadow:0 2px 10px rgba(0,0,0,0.08);
+        margin-bottom:20px;
+    }
+
+    h2{
+        margin-top:0;
     }
 
     .watchlist-btn{
@@ -47,9 +53,9 @@
         padding:8px 14px;
         border:none;
         border-radius:8px;
-        cursor:pointer;
-        color:white;
         background:#3498db;
+        color:white;
+        cursor:pointer;
         margin:5px;
     }
 
@@ -59,101 +65,167 @@
 
     .table-container{
         background:white;
-        padding:15px;
+        padding:20px;
         border-radius:12px;
-        margin-top:20px;
         box-shadow:0 2px 10px rgba(0,0,0,0.08);
+        margin-top:20px;
     }
 
-    .ltp-up{
-        background:#d4edda !important;
+    .green{
+        color:green;
+        font-weight:bold;
     }
 
-    .ltp-down{
-        background:#f8d7da !important;
+    .red{
+        color:red;
+        font-weight:bold;
+    }
+
+    .neutral{
+        color:#555;
+        font-weight:bold;
+    }
+
+    .select2-container{
+        width:400px !important;
+    }
+
+    table.dataTable tbody td{
+        white-space:nowrap;
     }
 
     </style>
+
 </head>
 <body>
 
-<div class="top-bar">
+<div class="top-container">
 
     <h2>Index Analysis Dashboard</h2>
 
+    <!-- WATCHLISTS -->
     <div id="watchlists">
+
         {% for w in watchlists %}
-        <button class="watchlist-btn"
+
+            <button
+                class="watchlist-btn"
                 data-id="{{w[0]}}"
-                onclick="toggleWatchlist({{w[0]}}, this)">
-            {{w[1]}}
-        </button>
+                onclick="toggleWatchlist({{w[0]}}, this)"
+            >
+                {{w[1]}}
+            </button>
+
         {% endfor %}
+
     </div>
 
     <br>
 
-    <select id="indexSelect" multiple style="width:400px"></select>
+    <!-- INDEX SEARCH -->
+    <select id="indexSelect" multiple></select>
 
-    <input type="text"
-           id="newWatchlist"
-           placeholder="New Watchlist Name"
-           style="padding:8px; width:220px;">
+    <input
+        type="text"
+        id="newWatchlist"
+        placeholder="New Watchlist"
+        style="
+            padding:8px;
+            border-radius:8px;
+            border:1px solid #ccc;
+            width:220px;
+        "
+    >
 
     <br><br>
 
-    <button onclick="createWatchlist()">Create Watchlist</button>
-    <button onclick="saveToWatchlist()">Add To Watchlist</button>
-    <button onclick="analyze()">Analyze</button>
+    <button onclick="createWatchlist()">
+        Create Watchlist
+    </button>
+
+    <button onclick="saveToWatchlist()">
+        Add To Watchlist
+    </button>
+
+    <button onclick="analyze()">
+        Analyze
+    </button>
 
 </div>
 
+<!-- TECHNICAL TABLE -->
 <div class="table-container">
 
     <h3>Technical Analysis</h3>
 
-    <table id="analysisTable" class="display nowrap" style="width:100%">
+    <table
+        id="analysisTable"
+        class="display nowrap"
+        style="width:100%"
+    >
+
         <thead>
             <tr>
+
                 <th>Symbol</th>
                 <th>Price</th>
+
                 <th>1D %</th>
                 <th>5D %</th>
                 <th>15D %</th>
                 <th>30D %</th>
+
                 <th>Signal 30m</th>
                 <th>Signal 60m</th>
                 <th>Signal 1D</th>
+
                 <th>RSI 30m</th>
                 <th>RSI 60m</th>
                 <th>RSI 1D</th>
+
             </tr>
         </thead>
-        <tbody id="analysisBody"></tbody>
+
+        <tbody></tbody>
+
     </table>
 
 </div>
 
+<!-- HIGH LOW TABLE -->
 <div class="table-container">
 
     <h3>High Low Analysis</h3>
 
-    <table id="highLowTable" class="display nowrap" style="width:100%">
+    <table
+        id="highLowTable"
+        class="display nowrap"
+        style="width:100%"
+    >
+
         <thead>
             <tr>
+
                 <th>Symbol</th>
                 <th>Price</th>
+
                 <th>Day High</th>
                 <th>Day Low</th>
+
                 <th>Week High</th>
                 <th>Week Low</th>
+
                 <th>Month High</th>
                 <th>Month Low</th>
+
                 <th>Year High</th>
                 <th>Year Low</th>
+
             </tr>
         </thead>
-        <tbody id="highLowBody"></tbody>
+
+        <tbody></tbody>
+
     </table>
 
 </div>
@@ -168,133 +240,233 @@ let highLowTable = null;
 
 $(document).ready(function(){
 
+    // =========================
+    // SELECT2
+    // =========================
+
     $('#indexSelect').select2({
-        placeholder:'Search Index...',
+
+        placeholder:'Search Index',
+
         ajax:{
+
             url:'/search_index_symbols',
+
             dataType:'json',
+
             delay:250,
+
             data:function(params){
-                return {q:params.term}
+
+                return {
+                    q:params.term
+                }
+
             },
+
             processResults:function(data){
+
                 return {
                     results:data.results
                 }
+
             }
+
         }
+
     });
 
+    // =========================
+    // DATATABLES
+    // =========================
+
     analysisTable = $('#analysisTable').DataTable({
+
         pageLength:50,
         scrollX:true,
         scrollY:'70vh',
         scrollCollapse:true,
         stateSave:true
+
     });
 
     highLowTable = $('#highLowTable').DataTable({
+
         pageLength:50,
         scrollX:true,
         scrollY:'70vh',
         scrollCollapse:true,
         stateSave:true
+
     });
 
 });
 
+
+// =========================
+// GET SELECTED INDEXES
+// =========================
+
 function getSelectedIndexes(){
+
     return $('#indexSelect').val() || [];
+
 }
+
+
+// =========================
+// CREATE WATCHLIST
+// =========================
 
 function createWatchlist(){
 
     let name = document.getElementById('newWatchlist').value;
 
     if(!name){
+
         alert('Enter watchlist name');
         return;
+
     }
 
     fetch('/create_index_watchlist',{
+
         method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name:name})
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+        body:JSON.stringify({
+            name:name
+        })
+
     })
+
     .then(res=>res.json())
+
     .then(data=>{
 
+        if(data.status === 'error'){
+
+            alert(data.message);
+            return;
+
+        }
+
         $('#watchlists').append(`
-            <button class="watchlist-btn"
-                    data-id="${data.id}"
-                    onclick="toggleWatchlist(${data.id}, this)">
+
+            <button
+                class="watchlist-btn"
+                data-id="${data.id}"
+                onclick="toggleWatchlist(${data.id}, this)"
+            >
                 ${name}
             </button>
-        `)
+
+        `);
 
         document.getElementById('newWatchlist').value = '';
 
-    })
+    });
 
 }
+
+
+// =========================
+// SAVE TO WATCHLIST
+// =========================
 
 function saveToWatchlist(){
 
     let indexes = getSelectedIndexes();
 
     if(indexes.length === 0){
+
         alert('Select indexes');
         return;
+
     }
 
     if(!activeWatchlist){
+
         alert('Select watchlist');
         return;
+
     }
 
     fetch('/add_indexes_to_watchlist',{
+
         method:'POST',
-        headers:{'Content-Type':'application/json'},
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
         body:JSON.stringify({
+
             watchlist_id:activeWatchlist,
             symbols:indexes
+
         })
-    })
-    .then(()=>{
-        alert('Added Successfully');
+
     })
 
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        alert('Added Successfully');
+
+    });
+
 }
+
+
+// =========================
+// TOGGLE WATCHLIST
+// =========================
 
 function toggleWatchlist(id, btn){
 
     activeWatchlist = id;
 
     document.querySelectorAll('.watchlist-btn').forEach(b=>{
+
         b.classList.remove('active');
+
     });
 
     btn.classList.add('active');
 
     fetch(`/get_index_watchlist_items?id=${id}`)
+
     .then(res=>res.json())
+
     .then(data=>{
 
         currentIndexes = data;
 
         runAnalysis(data);
 
-    })
+    });
 
 }
+
+
+// =========================
+// ANALYZE
+// =========================
 
 function analyze(){
 
     let indexes = getSelectedIndexes();
 
     if(indexes.length === 0){
+
         alert('Select indexes');
         return;
+
     }
 
     currentIndexes = indexes;
@@ -303,21 +475,41 @@ function analyze(){
 
 }
 
+
+// =========================
+// RUN ANALYSIS
+// =========================
+
 function runAnalysis(indexes){
 
     fetch('/analyze_indexes',{
+
         method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({symbols:indexes})
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+        body:JSON.stringify({
+            symbols:indexes
+        })
+
     })
+
     .then(res=>res.json())
+
     .then(data=>{
 
         updateTables(data);
 
-    })
+    });
 
 }
+
+
+// =========================
+// UPDATE TABLES
+// =========================
 
 function updateTables(data){
 
@@ -327,31 +519,44 @@ function updateTables(data){
     data.forEach(row=>{
 
         analysisTable.row.add([
+
             row.symbol,
+
             row.price,
-            row.return_1d,
-            row.return_5d,
-            row.return_15d,
-            row.return_30d,
-            row.signal_30m,
-            row.signal_60m,
-            row.signal_1d,
+
+            formatReturn(row.return_1d),
+            formatReturn(row.return_5d),
+            formatReturn(row.return_15d),
+            formatReturn(row.return_30d),
+
+            formatSignal(row.signal_30m),
+            formatSignal(row.signal_60m),
+            formatSignal(row.signal_1d),
+
             row.rsi_30m,
             row.rsi_60m,
             row.rsi_1d
+
         ]);
 
         highLowTable.row.add([
+
             row.symbol,
+
             row.price,
+
             row.day_high,
             row.day_low,
+
             row.week_high,
             row.week_low,
+
             row.month_high,
             row.month_low,
+
             row.year_high,
             row.year_low
+
         ]);
 
     });
@@ -361,36 +566,100 @@ function updateTables(data){
 
 }
 
+
+// =========================
+// FORMAT RETURNS
+// =========================
+
+function formatReturn(val){
+
+    if(val > 0){
+
+        return `<span class="green">${val}%</span>`;
+
+    }
+
+    if(val < 0){
+
+        return `<span class="red">${val}%</span>`;
+
+    }
+
+    return `<span class="neutral">${val}%</span>`;
+
+}
+
+
+// =========================
+// FORMAT SIGNALS
+// =========================
+
+function formatSignal(signal){
+
+    if(signal === 'Bullish'){
+
+        return `<span class="green">${signal}</span>`;
+
+    }
+
+    if(signal === 'Bearish'){
+
+        return `<span class="red">${signal}</span>`;
+
+    }
+
+    return `<span class="neutral">${signal}</span>`;
+
+}
+
+
+// =========================
+// LIVE LTP
+// =========================
+
 function updateLiveLTP(){
 
     if(currentIndexes.length === 0) return;
 
     fetch(`/live-index-ltp?symbols=${currentIndexes.join(',')}`)
+
     .then(res=>res.json())
+
     .then(data=>{
 
         analysisTable.rows().every(function(){
 
             let row = this.data();
+
             let symbol = row[0];
 
             if(data[symbol]){
+
                 row[1] = data[symbol];
+
                 this.data(row);
+
             }
 
         });
 
-    })
+    });
 
 }
+
+
+// =========================
+// AUTO REFRESH
+// =========================
 
 setInterval(updateLiveLTP, 5000);
 
 setInterval(()=>{
 
     if(currentIndexes.length > 0){
+
         runAnalysis(currentIndexes);
+
     }
 
 }, 30000);

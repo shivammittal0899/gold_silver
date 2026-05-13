@@ -22,7 +22,7 @@ INDEX_MAP = {
     "NIFTY 100": "nifty100",
     "NIFTY 200": "nifty200",
     "NIFTY 500": "nifty500",
-    "NIFTY TOTAL MKT": "niftytotalmarket",
+    "NIFTY TOTAL MKT": "niftytotalmarket_",
     "NIFTY LARGEMID250": "niftylargemidcap250",
     "NIFTY MIDSML 400": "niftymidsmallcap400",
 
@@ -33,23 +33,23 @@ INDEX_MAP = {
     "NIFTY SMALLCAP 50": "niftysmallcap50",
     "NIFTY SMALLCAP 100": "niftysmallcap100",
     "NIFTY SMALLCAP 250": "niftysmallcap250",
-    "NIFTY MICROCAP250": "niftymicrocap250",
+    "NIFTY MICROCAP250": "niftymicrocap250_",
 
     # BANKING
     "NIFTY BANK": "niftybank",
     "NIFTY PSU BANK": "niftypsubank",
-    "NIFTY PVT BANK": "niftypvtbank",
-    "NIFTY FIN SERVICE": "niftyfinservice",
+    "NIFTY PVT BANK": "niftyprivatebank",
+    "NIFTY FIN SERVICE": "niftyfinancial",
 
     # IT
     "NIFTY IT": "niftyit",
     "NIFTY INTERNET": "niftyinternet",
-    "NIFTY IND DIGITAL": "niftyindiadigital",
+    "NIFTY IND DIGITAL": "niftyindiadigital_",
 
     # AUTO
     "NIFTY AUTO": "niftyauto",
-    "NIFTY EV": "niftyev",
-    "NIFTY MOBILITY": "niftymobility",
+    "NIFTY EV": "iftyevnewage",
+    "NIFTY MOBILITY": "niftymobility_",
 
     # PHARMA
     "NIFTY PHARMA": "niftypharma",
@@ -62,7 +62,7 @@ INDEX_MAP = {
 
     # INFRA
     "NIFTY INFRA": "niftyinfra",
-    "NIFTY INDIA MFG": "niftyindiamanufacturing",
+    "NIFTY INDIA MFG": "niftyindiamanufacturing_",
 
     # REALTY
     "NIFTY REALTY": "niftyrealty",
@@ -72,33 +72,33 @@ INDEX_MAP = {
     "NIFTY CONSUMPTION": "niftyconsumption",
 
     # DEFENCE
-    "NIFTY IND DEFENCE": "niftyindiadefence",
+    "NIFTY IND DEFENCE": "niftyindiadefence_",
 
     # MOMENTUM
-    "NIFTY200MOMENTM30": "nifty200momentum30",
-    "NIFTY500MOMENTM50": "nifty500momentum50",
+    "NIFTY200MOMENTM30": "nifty200momentum30_",
+    "NIFTY500MOMENTM50": "nifty500momentum50_",
 
     # QUALITY
     "NIFTY100 QUALTY30": "nifty100quality30",
-    "NIFTY500 QLTY50": "nifty500quality50",
+    "NIFTY500 QLTY50": "nifty500quality50_",
 
     # VALUE
     "NIFTY50 VALUE 20": "nifty50value20",
     "NIFTY500 VALUE 50": "nifty500value50",
 
     # LOW VOL
-    "NIFTY LOW VOL 50": "niftylowvolatility50",
+    # "NIFTY LOW VOL 50": "niftylowvolatility50",
 
     # ALPHA
     "NIFTY ALPHA 50": "niftyalpha50",
 
     # ESG
-    "NIFTY100 ESG": "nifty100esg",
+    # "NIFTY100 ESG": "nifty100esg",
 
     # THEMATIC
-    "NIFTY CHEMICALS": "niftychemicals",
-    "NIFTY RURAL": "niftyrural",
-    "NIFTY IPO": "niftyipo"
+    "NIFTY CHEMICALS": "niftychemicals_",
+    "NIFTY RURAL": "niftyrural_"
+    # "NIFTY IPO": "niftyipo"
 }
 
 # ============================================

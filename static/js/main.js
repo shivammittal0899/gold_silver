@@ -198,9 +198,9 @@ function highlow_table(data){
                 <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
                     ${d.symbol}
                 </td>
-                <td class="ltp-cell"
-                    data-symbol="${d.symbol}"
-                    data-ltp="${d.ltp || 0}"
+                <td class="ltp-cell1"
+                    data-symbol="${d.symbol}1"
+                    data-ltp="${d.ltp || 0}1"
                     style="font-weight:bold;">
                     ${d.ltp?.toFixed(2) || '-'}
                 </td>

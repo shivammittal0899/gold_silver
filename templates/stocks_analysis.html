@@ -527,6 +527,7 @@ function toggleWatchlist(id, btn) {
     fetch(`/get_watchlist_items?id=${id}`)
     .then(res => res.json())
     .then(data => {
+        currentStocks = data;
         fetchAndRenderAnalysis(data);   // 🔥 AUTO ANALYSIS ON LOAD
     });
 }
@@ -677,6 +678,7 @@ function autoLoadWatchlist(id) {
     fetch(`/get_watchlist_items?id=${id}`)
     .then(res => res.json())
     .then(data => {
+        currentStocks = data;
         fetchAndRenderAnalysis(data);   // 🔥 AUTO ANALYSIS ON LOAD
     });
 }

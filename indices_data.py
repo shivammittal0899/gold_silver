@@ -175,16 +175,27 @@ def create_master_table(df):
         )
     )
 
-    grouped['Mid_Cap'] = grouped['Index'].str.contains(
-        r'\bMIDCAP\b',
-        case=False,
-        regex=True
+    grouped['Mid_Cap'] = grouped['Index'].apply(
+        lambda x: any(
+            i.strip() in [
+                'NIFTY MIDCAP 50',
+                'NIFTY MIDCAP 100',
+                'NIFTY MIDCAP 150'
+            ]
+            for i in str(x).split(',')
+        )
     )
 
-    grouped['Small_Cap'] = grouped['Index'].str.contains(
-        r'\bSMALLCAP\b',
-        case=False,
-        regex=True
+    grouped['Small_Cap'] = grouped['Index'].apply(
+        lambda x: any(
+            i.strip() in [
+                'NIFTY SMALLCAP 50',
+                'NIFTY SMALLCAP 100',
+                'NIFTY SMALLCAP 250',
+                'NIFTY MICROCAP250'
+            ]
+            for i in str(x).split(',')
+        )
     )
 
     # ============================================

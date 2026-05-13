@@ -3082,10 +3082,10 @@ def analyze_one_index(symbol, access_token):
 
             "price": round(live_ltp, 2),
 
-            "return_1d": common.get("ret1"),
-            "return_5d": common.get("ret5"),
-            "return_15d": common.get("ret15"),
-            "return_30d": common.get("ret30"),
+            "return_1d": round(common.get("ret1"),2),
+            "return_5d": round(common.get("ret5"), 2),
+            "return_15d": round(common.get("ret15"), 2),
+            "return_30d": round(common.get("ret30"), 2),
 
             "signal_30m": result30.get("signal"),
             "signal_60m": result60.get("signal"),

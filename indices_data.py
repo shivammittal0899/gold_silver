@@ -61,7 +61,7 @@ INDEX_MAP = {
     "NIFTY METAL": "niftymetal",
 
     # INFRA
-    "NIFTY INFRA": "niftyinfrastructure",
+    "NIFTY INFRA": "niftyinfra",
     "NIFTY INDIA MFG": "niftyindiamanufacturing",
 
     # REALTY

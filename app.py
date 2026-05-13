@@ -2489,66 +2489,9 @@ def delete_portfolio(portfolio_id):
     return redirect('/portfolio')
 
 from indices_data import *
-# ============================================
-# INDICES DASHBOARD
-# ============================================
-
-@app.route('/indices_dashboard')
-def indices_dashboard():
-
-    return render_template(
-        'indices_dashboard.html'
-    )
-
-# ============================================
-# REFRESH INDICES DATA
-# ============================================
-
-@app.route('/refresh_indices')
-def refresh_indices():
-
-    try:
-
-        rows = refresh_indices_data()
-
-        return jsonify({
-            "status": "success",
-            "rows": rows
-        })
-
-    except Exception as e:
-
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        })
-
-# ============================================
-# GET INDICES DATA
-# ============================================
-
-@app.route('/get_indices_data')
-def get_indices_data_route():
-
-    try:
-
-        data = get_indices_data()
-
-        return jsonify(data)
-
-    except Exception as e:
-
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        })
-
-
-import random
-
 
 # =========================
-# INDEX WATCHLIST DB
+# INDEX WATCHLIST DATABASE
 # =========================
 
 def init_index_watchlist_db():
@@ -2559,17 +2502,25 @@ def init_index_watchlist_db():
 
     c.execute("""
     CREATE TABLE IF NOT EXISTS index_watchlists (
+
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+
         name TEXT UNIQUE
+
     )
     """)
 
     c.execute("""
     CREATE TABLE IF NOT EXISTS index_watchlist_items (
+
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+
         watchlist_id INTEGER,
+
         symbol TEXT,
+
         UNIQUE(watchlist_id, symbol)
+
     )
     """)
 
@@ -2579,382 +2530,245 @@ def init_index_watchlist_db():
 
 init_index_watchlist_db()
 
-def init_index_instruments():
+# =========================
+# INDEX ANALYSIS PAGE
+# =========================
+
+@app.route('/index_analysis')
+def index_analysis():
+
+    init_index_watchlist_db()
+
+    conn = sqlite3.connect("index_analysis.db")
+
+    c = conn.cursor()
+
+    watchlists = c.execute("""
+
+        SELECT *
+        FROM index_watchlists
+        ORDER BY name
+
+    """).fetchall()
+
+    conn.close()
+
+    return render_template(
+
+        "index_analysis.html",
+
+        watchlists=watchlists
+
+    )
+
+@app.route('/create_index_watchlist', methods=['POST'])
+def create_index_watchlist():
+
+    data = request.json
+
+    name = data.get("name")
 
     conn = sqlite3.connect("index_analysis.db")
 
     c = conn.cursor()
 
     c.execute("""
-    CREATE TABLE IF NOT EXISTS index_instruments (
 
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        INSERT OR IGNORE INTO index_watchlists(name)
+        VALUES(?)
 
-        symbol TEXT UNIQUE
-
-    )
-    """)
+    """, (name,))
 
     conn.commit()
-    conn.close()
-    
-# =========================
-# MAIN PAGE
-# =========================
 
-@app.route('/index-analysis')
-def index_analysis():
+    c.execute("""
 
-    conn = get_db()
-
-    watchlists = conn.execute("""
-        SELECT *
+        SELECT id
         FROM index_watchlists
-        ORDER BY name
-    """).fetchall()
+        WHERE name=?
+
+    """, (name,))
+
+    wid = c.fetchone()[0]
 
     conn.close()
 
-    return render_template(
-        'index_analysis.html',
-        watchlists=watchlists
-    )
+    return jsonify({
 
+        "status": "created",
+        "id": wid
 
-# =========================
-# CREATE WATCHLIST
-# =========================
-
-@app.route('/create_index_watchlist', methods=['POST'])
-def create_index_watchlist():
-
-    try:
-
-        data = request.get_json()
-
-        name = data.get("name", "").strip()
-
-        if not name:
-            return jsonify({
-                "status": "error",
-                "message": "Watchlist name required"
-            }), 400
-
-        conn = get_db()
-        cur = conn.cursor()
-
-        cur.execute("""
-            INSERT INTO index_watchlists(name)
-            VALUES(?)
-        """, (name,))
-
-        conn.commit()
-
-        wid = cur.lastrowid
-
-        conn.close()
-
-        return jsonify({
-            "status": "success",
-            "id": wid
-        })
-
-    except sqlite3.IntegrityError:
-
-        return jsonify({
-            "status": "error",
-            "message": "Watchlist already exists"
-        }), 400
-
-    except Exception as e:
-
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
-
-
-# =========================
-# DELETE WATCHLIST
-# =========================
+    })
 
 @app.route('/delete_index_watchlist', methods=['POST'])
 def delete_index_watchlist():
 
-    try:
+    wid = request.json.get("id")
 
-        data = request.get_json()
+    conn = sqlite3.connect("index_analysis.db")
 
-        wid = data.get("id")
+    c = conn.cursor()
 
-        conn = get_db()
-        cur = conn.cursor()
+    c.execute("""
 
-        cur.execute("""
-            DELETE FROM index_watchlist_items
-            WHERE watchlist_id=?
-        """, (wid,))
+        DELETE FROM index_watchlists
+        WHERE id=?
 
-        cur.execute("""
-            DELETE FROM index_watchlists
-            WHERE id=?
-        """, (wid,))
+    """, (wid,))
 
-        conn.commit()
-        conn.close()
+    c.execute("""
 
-        return jsonify({
-            "status": "success"
-        })
+        DELETE FROM index_watchlist_items
+        WHERE watchlist_id=?
 
-    except Exception as e:
+    """, (wid,))
 
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
+    conn.commit()
+    conn.close()
 
+    return jsonify({
 
-# =========================
-# ADD INDEXES
-# =========================
+        "status": "deleted"
 
-@app.route('/add_indexes_to_watchlist', methods=['POST'])
-def add_indexes_to_watchlist():
-
-    try:
-
-        data = request.get_json()
-
-        watchlist_id = data.get("watchlist_id")
-        symbols = data.get("symbols", [])
-
-        conn = get_db()
-        cur = conn.cursor()
-
-        for symbol in symbols:
-
-            symbol = symbol.strip().upper()
-
-            cur.execute("""
-                INSERT OR IGNORE INTO index_watchlist_items
-                (watchlist_id, symbol)
-                VALUES (?, ?)
-            """, (watchlist_id, symbol))
-
-        conn.commit()
-        conn.close()
-
-        return jsonify({
-            "status": "success"
-        })
-
-    except Exception as e:
-
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
-
-
-# =========================
-# DELETE INDEXES
-# =========================
-
-@app.route('/delete_indexes_from_watchlist', methods=['POST'])
-def delete_indexes_from_watchlist():
-
-    try:
-
-        data = request.get_json()
-
-        wid = data.get("watchlist_id")
-        symbols = data.get("symbols", [])
-
-        conn = get_db()
-        cur = conn.cursor()
-
-        for symbol in symbols:
-
-            cur.execute("""
-                DELETE FROM index_watchlist_items
-                WHERE watchlist_id=?
-                AND symbol=?
-            """, (wid, symbol))
-
-        conn.commit()
-        conn.close()
-
-        return jsonify({
-            "status": "success"
-        })
-
-    except Exception as e:
-
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        }), 500
-
-
-# =========================
-# GET WATCHLIST ITEMS
-# =========================
+    })
 
 @app.route('/get_index_watchlist_items')
 def get_index_watchlist_items():
 
-    try:
+    wid = request.args.get("id")
 
-        wid = request.args.get("id")
+    conn = sqlite3.connect("index_analysis.db")
 
-        conn = get_db()
+    c = conn.cursor()
 
-        rows = conn.execute("""
-            SELECT symbol
-            FROM index_watchlist_items
-            WHERE watchlist_id=?
-            ORDER BY symbol
-        """, (wid,)).fetchall()
+    rows = c.execute("""
 
-        conn.close()
+        SELECT symbol
+        FROM index_watchlist_items
+        WHERE watchlist_id=?
 
-        symbols = [r["symbol"] for r in rows]
+    """, (wid,)).fetchall()
 
-        return jsonify(symbols)
+    conn.close()
 
-    except Exception:
-        return jsonify([])
+    return jsonify([r[0] for r in rows])
 
+
+@app.route('/add_indexes_to_watchlist', methods=['POST'])
+def add_indexes_to_watchlist():
+
+    data = request.json
+
+    wid = data.get("watchlist_id")
+
+    symbols = data.get("symbols", [])
+
+    conn = sqlite3.connect("index_analysis.db")
+
+    c = conn.cursor()
+
+    for s in symbols:
+
+        c.execute("""
+
+            INSERT OR IGNORE INTO index_watchlist_items
+            (watchlist_id, symbol)
+
+            VALUES (?, ?)
+
+        """, (wid, s))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+
+        "status": "added"
+
+    })
+
+@app.route('/delete_indexes_from_watchlist', methods=['POST'])
+def delete_indexes_from_watchlist():
+
+    data = request.json
+
+    wid = data.get("watchlist_id")
+
+    symbols = data.get("symbols", [])
+
+    conn = sqlite3.connect("index_analysis.db")
+
+    c = conn.cursor()
+
+    c.executemany("""
+
+        DELETE FROM index_watchlist_items
+        WHERE watchlist_id=?
+        AND symbol=?
+
+    """, [(wid, s) for s in symbols])
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+
+        "status": "success"
+
+    })
 
 # =========================
-# SEARCH INDEXES
+# SEARCH ALL SYMBOLS
 # =========================
 
 @app.route('/search_index_symbols')
 def search_index_symbols():
 
-    q = request.args.get("q", "").upper()
+    query = request.args.get('q', '')
 
-    INDEXES = [
-        "NIFTY 50",
-        "NIFTY NEXT 50",
-        "NIFTY BANK",
-        "FINNIFTY",
-        "MIDCPNIFTY",
-        "NIFTY AUTO",
-        "NIFTY FMCG",
-        "NIFTY IT",
-        "NIFTY PHARMA",
-        "NIFTY METAL",
-        "NIFTY REALTY",
-        "NIFTY ENERGY",
-        "NIFTY PSU BANK",
-        "NIFTY MEDIA",
-        "NIFTY INFRA"
+    conn = sqlite3.connect("instruments.db")
+
+    c = conn.cursor()
+
+    rows = c.execute("""
+
+        SELECT tradingsymbol
+        FROM instruments
+
+        WHERE (
+
+            segment = 'EQ'
+            OR segment = 'FUT'
+            OR segment = 'INDICES'
+
+        )
+
+        AND tradingsymbol LIKE ?
+
+        ORDER BY tradingsymbol
+
+        LIMIT 100
+
+    """, (f"%{query}%",)).fetchall()
+
+    conn.close()
+
+    results = [
+
+        {
+            "id": r[0],
+            "text": r[0]
+        }
+
+        for r in rows
+
     ]
 
-    results = []
-
-    for idx in INDEXES:
-
-        if q in idx.upper():
-
-            results.append({
-                "id": idx,
-                "text": idx
-            })
-
     return jsonify({
+
         "results": results
+
     })
-
-
-# =========================
-# ANALYSIS
-# =========================
-
-@app.route('/analyze_indexes', methods=['POST'])
-def analyze_indexes():
-
-    try:
-
-        data = request.get_json()
-
-        symbols = data.get("symbols", [])
-
-        final = []
-
-        for symbol in symbols:
-
-            price = round(random.uniform(10000, 55000), 2)
-
-            row = {
-                "symbol": symbol,
-                "price": price,
-                "return_1d": round(random.uniform(-3, 3), 2),
-                "return_5d": round(random.uniform(-5, 5), 2),
-                "return_15d": round(random.uniform(-10, 10), 2),
-                "return_30d": round(random.uniform(-15, 15), 2),
-
-                "signal_30m": random.choice(["Bullish", "Bearish", "Neutral"]),
-                "signal_60m": random.choice(["Bullish", "Bearish", "Neutral"]),
-                "signal_1d": random.choice(["Bullish", "Bearish", "Neutral"]),
-
-                "rsi_30m": round(random.uniform(30, 80), 2),
-                "rsi_60m": round(random.uniform(30, 80), 2),
-                "rsi_1d": round(random.uniform(30, 80), 2),
-
-                "day_high": round(price * 1.01, 2),
-                "day_low": round(price * 0.99, 2),
-
-                "week_high": round(price * 1.04, 2),
-                "week_low": round(price * 0.96, 2),
-
-                "month_high": round(price * 1.08, 2),
-                "month_low": round(price * 0.92, 2),
-
-                "year_high": round(price * 1.20, 2),
-                "year_low": round(price * 0.80, 2)
-            }
-
-            final.append(row)
-
-        return jsonify(final)
-
-    except Exception:
-        return jsonify([])
-
-
-# =========================
-# LIVE LTP
-# =========================
-
-@app.route('/live-index-ltp')
-def live_index_ltp():
-
-    try:
-
-        symbols = request.args.get("symbols", "")
-
-        if not symbols:
-            return jsonify({})
-
-        symbols = symbols.split(",")
-
-        data = {}
-
-        for symbol in symbols:
-
-            data[symbol] = round(
-                random.uniform(10000, 55000),
-                2
-            )
-
-        return jsonify(data)
-
-    except Exception:
-        return jsonify({})
 
 
 

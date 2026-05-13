@@ -1,399 +1,205 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Index Analysis Dashboard</title>
+
+    <title>Nifty Master Dashboard</title>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Select2 -->
-    <link href="{{ url_for('static', filename='select2/select2.min.css') }}" rel="stylesheet">
-    <script src="{{ url_for('static', filename='select2/select2.min.js') }}"></script>
-
-    <!-- DataTables -->
-    <link href="{{ url_for('static', filename='datatables/jquery.datatables.min.css') }}" rel="stylesheet">
+    <!-- Datatables -->
+    <link href="{{ url_for('static', filename='datatables/jquery.datatables.min.css') }}" rel="stylesheet" />
     <script src="{{ url_for('static', filename='datatables/jquery.datatables.min.js') }}"></script>
+    
 
     <style>
 
-    body{
-        font-family:Arial;
-        margin:20px;
-        background:#f5f6fa;
-    }
+        body{
+            font-family:Arial;
+            margin:20px;
+            background:#f5f5f5;
+        }
 
-    .top-bar{
-        background:white;
-        padding:15px;
-        border-radius:10px;
-        margin-bottom:20px;
-        box-shadow:0 2px 10px rgba(0,0,0,0.08);
-    }
+        h2{
+            margin-bottom:20px;
+        }
 
-    .watchlist-btn{
-        padding:8px 14px;
-        border:none;
-        border-radius:8px;
-        background:#3498db;
-        color:white;
-        cursor:pointer;
-        margin:5px;
-    }
+        button{
+            padding:10px 15px;
+            border:none;
+            border-radius:8px;
+            background:#3498db;
+            color:white;
+            cursor:pointer;
+            margin-bottom:15px;
+        }
 
-    .watchlist-btn.active{
-        background:#2ecc71;
-    }
+        table{
+            width:100%;
+        }
 
-    button{
-        padding:8px 14px;
-        border:none;
-        border-radius:8px;
-        cursor:pointer;
-        color:white;
-        background:#3498db;
-        margin:5px;
-    }
-
-    .danger{
-        background:#e74c3c;
-    }
-
-    .table-container{
-        background:white;
-        padding:15px;
-        border-radius:12px;
-        margin-top:20px;
-        box-shadow:0 2px 10px rgba(0,0,0,0.08);
-    }
-
-    .ltp-up{
-        background:#d4edda !important;
-    }
-
-    .ltp-down{
-        background:#f8d7da !important;
-    }
+        .yes{
+            color:green;
+            font-weight:bold;
+        }
 
     </style>
+
 </head>
+
 <body>
 
-<div class="top-bar">
+<h2>Nifty Index Master Dashboard</h2>
 
-    <h2>Index Analysis Dashboard</h2>
+<button onclick="refreshIndices()">
+    🔄 Refresh Indices
+</button>
 
-    <div id="watchlists">
-        {% for w in watchlists %}
-        <button class="watchlist-btn"
-                data-id="{{w[0]}}"
-                onclick="toggleWatchlist({{w[0]}}, this)">
-            {{w[1]}}
-        </button>
-        {% endfor %}
-    </div>
+<table id="indicesTable" class="display nowrap">
 
-    <br>
+    <thead>
 
-    <select id="indexSelect" multiple style="width:400px"></select>
+        <tr>
 
-    <input type="text"
-           id="newWatchlist"
-           placeholder="New Watchlist Name"
-           style="padding:8px; width:220px;">
+            <th>Symbol</th>
+            <th>Company</th>
+            <th>Industry</th>
+            <th>Indices</th>
+            <th>Index Count</th>
 
-    <br><br>
+            <th>Large Cap</th>
+            <th>Mid Cap</th>
+            <th>Small Cap</th>
 
-    <button onclick="createWatchlist()">Create Watchlist</button>
-    <button onclick="saveToWatchlist()">Add To Watchlist</button>
-    <button onclick="analyze()">Analyze</button>
+            <th>Banking</th>
+            <th>IT</th>
+            <th>Pharma</th>
+            <th>Auto</th>
+            <th>Energy</th>
+            <th>Infra</th>
+            <th>Consumption</th>
+            <th>Realty</th>
 
-</div>
+            <th>Momentum</th>
+            <th>Quality</th>
+            <th>Value</th>
+            <th>Low Volatility</th>
 
-<div class="table-container">
+        </tr>
 
-    <h3>Technical Analysis</h3>
+    </thead>
 
-    <table id="analysisTable" class="display nowrap" style="width:100%">
-        <thead>
-            <tr>
-                <th>Symbol</th>
-                <th>Price</th>
-                <th>1D %</th>
-                <th>5D %</th>
-                <th>15D %</th>
-                <th>30D %</th>
-                <th>Signal 30m</th>
-                <th>Signal 60m</th>
-                <th>Signal 1D</th>
-                <th>RSI 30m</th>
-                <th>RSI 60m</th>
-                <th>RSI 1D</th>
-            </tr>
-        </thead>
-        <tbody id="analysisBody"></tbody>
-    </table>
+    <tbody></tbody>
 
-</div>
-
-<div class="table-container">
-
-    <h3>High Low Analysis</h3>
-
-    <table id="highLowTable" class="display nowrap" style="width:100%">
-        <thead>
-            <tr>
-                <th>Symbol</th>
-                <th>Price</th>
-                <th>Day High</th>
-                <th>Day Low</th>
-                <th>Week High</th>
-                <th>Week Low</th>
-                <th>Month High</th>
-                <th>Month Low</th>
-                <th>Year High</th>
-                <th>Year Low</th>
-            </tr>
-        </thead>
-        <tbody id="highLowBody"></tbody>
-    </table>
-
-</div>
+</table>
 
 <script>
 
-let currentIndexes = [];
-let activeWatchlist = null;
+let table = null;
 
-let analysisTable = null;
-let highLowTable = null;
+function yesNo(v){
 
-$(document).ready(function(){
+    if(v === true || v === 1 || v === "1"){
+        return '<span class="yes">YES</span>';
+    }
 
-    $('#indexSelect').select2({
-        placeholder:'Search Index...',
-        ajax:{
-            url:'/search_index_symbols',
-            dataType:'json',
-            delay:250,
-            data:function(params){
-                return {q:params.term}
-            },
-            processResults:function(data){
-                return {
-                    results:data.results
-                }
-            }
+    return '-';
+}
+
+function loadTable(){
+
+    fetch('/get_indices_data')
+    .then(res => res.json())
+    .then(data => {
+
+        let html = '';
+
+        data.forEach(d => {
+
+            html += `
+
+            <tr>
+
+                <td>${d.Symbol || ''}</td>
+                <td>${d['Company Name'] || ''}</td>
+                <td>${d.Industry || ''}</td>
+                <td>${d.Index || ''}</td>
+                <td>${d['Index_Count'] || ''}</td>
+                
+
+                <td>${yesNo(d['Large_Cap'])}</td>
+                <td>${yesNo(d['Mid_Cap'])}</td>
+                <td>${yesNo(d['Small_Cap'])}</td>
+
+                <td>${yesNo(d['Banking'])}</td>
+                <td>${yesNo(d['IT'])}</td>
+                <td>${yesNo(d['Pharma'])}</td>
+                <td>${yesNo(d['Auto'])}</td>
+                <td>${yesNo(d['Energy'])}</td>
+                <td>${yesNo(d['Infra'])}</td>
+                <td>${yesNo(d['Consumption'])}</td>
+                <td>${yesNo(d['Realty'])}</td>
+
+                <td>${yesNo(d['Momentum'])}</td>
+                <td>${yesNo(d['Quality'])}</td>
+                <td>${yesNo(d['Value'])}</td>
+                <td>${yesNo(d['Low_Volatility'])}</td>
+                
+
+            </tr>
+
+            `;
+
+        });
+
+        if ($.fn.DataTable.isDataTable('#indicesTable')) {
+            $('#indicesTable').DataTable().destroy();
         }
-    });
 
-    analysisTable = $('#analysisTable').DataTable({
-        pageLength:50,
-        scrollX:true,
-        scrollY:'70vh',
-        scrollCollapse:true,
-        stateSave:true
-    });
+        $('#indicesTable tbody').empty();
 
-    highLowTable = $('#highLowTable').DataTable({
-        pageLength:50,
-        scrollX:true,
-        scrollY:'70vh',
-        scrollCollapse:true,
-        stateSave:true
-    });
+        $('#indicesTable tbody').html(html);
 
-});
+        table = $('#indicesTable').DataTable({
 
-function getSelectedIndexes(){
-    return $('#indexSelect').val() || [];
-}
+            pageLength: 50,
 
-function createWatchlist(){
+            scrollX: true,
 
-    let name = document.getElementById('newWatchlist').value;
+            scrollY: '75vh',
 
-    if(!name){
-        alert('Enter watchlist name');
-        return;
-    }
+            scrollCollapse: true,
 
-    fetch('/create_index_watchlist',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({name:name})
-    })
-    .then(res=>res.json())
-    .then(data=>{
+            stateSave: true,
 
-        $('#watchlists').append(`
-            <button class="watchlist-btn"
-                    data-id="${data.id}"
-                    onclick="toggleWatchlist(${data.id}, this)">
-                ${name}
-            </button>
-        `)
+            deferRender: true,
 
-        document.getElementById('newWatchlist').value = '';
+            processing: true,
 
-    })
-
-}
-
-function saveToWatchlist(){
-
-    let indexes = getSelectedIndexes();
-
-    if(indexes.length === 0){
-        alert('Select indexes');
-        return;
-    }
-
-    if(!activeWatchlist){
-        alert('Select watchlist');
-        return;
-    }
-
-    fetch('/add_indexes_to_watchlist',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-            watchlist_id:activeWatchlist,
-            symbols:indexes
-        })
-    })
-    .then(()=>{
-        alert('Added Successfully');
-    })
-
-}
-
-function toggleWatchlist(id, btn){
-
-    activeWatchlist = id;
-
-    document.querySelectorAll('.watchlist-btn').forEach(b=>{
-        b.classList.remove('active');
-    });
-
-    btn.classList.add('active');
-
-    fetch(`/get_index_watchlist_items?id=${id}`)
-    .then(res=>res.json())
-    .then(data=>{
-
-        currentIndexes = data;
-
-        runAnalysis(data);
-
-    })
-
-}
-
-function analyze(){
-
-    let indexes = getSelectedIndexes();
-
-    if(indexes.length === 0){
-        alert('Select indexes');
-        return;
-    }
-
-    currentIndexes = indexes;
-
-    runAnalysis(indexes);
-
-}
-
-function runAnalysis(indexes){
-
-    fetch('/analyze_indexes',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({symbols:indexes})
-    })
-    .then(res=>res.json())
-    .then(data=>{
-
-        updateTables(data);
-
-    })
-
-}
-
-function updateTables(data){
-
-    analysisTable.clear();
-    highLowTable.clear();
-
-    data.forEach(row=>{
-
-        analysisTable.row.add([
-            row.symbol,
-            row.price,
-            row.return_1d,
-            row.return_5d,
-            row.return_15d,
-            row.return_30d,
-            row.signal_30m,
-            row.signal_60m,
-            row.signal_1d,
-            row.rsi_30m,
-            row.rsi_60m,
-            row.rsi_1d
-        ]);
-
-        highLowTable.row.add([
-            row.symbol,
-            row.price,
-            row.day_high,
-            row.day_low,
-            row.week_high,
-            row.week_low,
-            row.month_high,
-            row.month_low,
-            row.year_high,
-            row.year_low
-        ]);
-
-    });
-
-    analysisTable.draw(false);
-    highLowTable.draw(false);
-
-}
-
-function updateLiveLTP(){
-
-    if(currentIndexes.length === 0) return;
-
-    fetch(`/live-index-ltp?symbols=${currentIndexes.join(',')}`)
-    .then(res=>res.json())
-    .then(data=>{
-
-        analysisTable.rows().every(function(){
-
-            let row = this.data();
-            let symbol = row[0];
-
-            if(data[symbol]){
-                row[1] = data[symbol];
-                this.data(row);
+            fixedColumns: {
+                leftColumns: 2
             }
 
         });
 
-    })
+    });
 
 }
 
-setInterval(updateLiveLTP, 5000);
+function refreshIndices(){
 
-setInterval(()=>{
+    fetch('/refresh_indices')
+    .then(res => res.json())
+    .then(data => {
 
-    if(currentIndexes.length > 0){
-        runAnalysis(currentIndexes);
-    }
+        alert("Updated " + data.rows + " rows");
 
-}, 30000);
+        loadTable();
+
+    });
+
+}
+
+loadTable();
 
 </script>
 

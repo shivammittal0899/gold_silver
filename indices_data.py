@@ -164,10 +164,10 @@ def create_master_table(df):
     # MARKET CAP
     # ============================================
 
-    grouped['Large_Cap'] = grouped['Index'].str.contains(
-        'NIFTY 50|NIFTY 100|NIFTY NEXT 50',
-        case=False
-    )
+    # grouped['Large_Cap'] = grouped['Index'].str.contains(
+    #     'NIFTY 50|NIFTY 100|NIFTY NEXT 50',
+    #     case=False
+    # )
     grouped['Large_Cap'] = grouped['Index'].str.contains(
         r'\b(NIFTY 50|NIFTY 100|NIFTY NEXT 50)\b',
         case=False,
@@ -175,13 +175,13 @@ def create_master_table(df):
     )
 
     grouped['Mid_Cap'] = grouped['Index'].str.contains(
-        r'\b('MIDCAP')\b',
+        r'\bMIDCAP\b',
         case=False,
         regex=True
     )
 
     grouped['Small_Cap'] = grouped['Index'].str.contains(
-        r'\b('SMALLCAP')\b',
+        r'\bSMALLCAP\b',
         case=False,
         regex=True
     )

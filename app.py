@@ -2561,76 +2561,158 @@ def index_analysis():
 
     )
 
+# =========================
+# CREATE INDEX WATCHLIST
+# =========================
+
 @app.route('/create_index_watchlist', methods=['POST'])
 def create_index_watchlist():
 
-    data = request.json
+    try:
 
-    name = data.get("name")
+        data = request.json
 
-    conn = sqlite3.connect("index_analysis.db")
+        name = data.get("name", "").strip()
 
-    c = conn.cursor()
+        symbols = data.get("symbols", [])
+        # REMOVE EMPTY SYMBOLS
 
-    c.execute("""
+        symbols = [
 
-        INSERT OR IGNORE INTO index_watchlists(name)
-        VALUES(?)
+            s.strip().upper()
 
-    """, (name,))
+            for s in symbols
 
-    conn.commit()
+            if s.strip() != ""
 
-    c.execute("""
+        ]
 
-        SELECT id
-        FROM index_watchlists
-        WHERE name=?
+        # REMOVE DUPLICATES
 
-    """, (name,))
+        symbols = list(set(symbols))
 
-    wid = c.fetchone()[0]
+        if name == "":
 
-    conn.close()
+            return jsonify({
 
-    return jsonify({
+                "status":"error",
+                "message":"Watchlist name required"
 
-        "status": "created",
-        "id": wid
+            })
 
-    })
+        conn = sqlite3.connect("index_analysis.db")
+
+        c = conn.cursor()
+
+        # CREATE WATCHLIST
+
+        c.execute("""
+
+            INSERT OR IGNORE INTO index_watchlists(name)
+            VALUES(?)
+
+        """, (name,))
+
+        conn.commit()
+
+        # GET ID
+
+        c.execute("""
+
+            SELECT id
+            FROM index_watchlists
+            WHERE name=?
+
+        """, (name,))
+
+        wid = c.fetchone()[0]
+
+        # INSERT SYMBOLS
+
+        for s in symbols:
+
+            s = s.strip().upper()
+
+            if s == "":
+                continue
+
+            c.execute("""
+
+                INSERT OR IGNORE INTO index_watchlist_items
+                (watchlist_id, symbol)
+
+                VALUES (?, ?)
+
+            """, (wid, s))
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+
+            "status":"success",
+
+            "message":"Watchlist Created",
+
+            "id":wid
+
+        })
+
+    except Exception as e:
+
+        return jsonify({
+
+            "status":"error",
+            "message":str(e)
+
+        })
 
 @app.route('/delete_index_watchlist', methods=['POST'])
 def delete_index_watchlist():
 
-    wid = request.json.get("id")
+    try:
 
-    conn = sqlite3.connect("index_analysis.db")
+        wid = request.json.get("id")
 
-    c = conn.cursor()
+        conn = sqlite3.connect("index_analysis.db")
 
-    c.execute("""
+        c = conn.cursor()
 
-        DELETE FROM index_watchlists
-        WHERE id=?
+        # DELETE SYMBOLS
 
-    """, (wid,))
+        c.execute("""
 
-    c.execute("""
+            DELETE FROM index_watchlist_items
+            WHERE watchlist_id=?
 
-        DELETE FROM index_watchlist_items
-        WHERE watchlist_id=?
+        """, (wid,))
 
-    """, (wid,))
+        # DELETE WATCHLIST
 
-    conn.commit()
-    conn.close()
+        c.execute("""
 
-    return jsonify({
+            DELETE FROM index_watchlists
+            WHERE id=?
 
-        "status": "deleted"
+        """, (wid,))
 
-    })
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+
+            "status":"success"
+
+        })
+
+    except Exception as e:
+
+        return jsonify({
+
+            "status":"error",
+            "message":str(e)
+
+        })
 
 @app.route('/get_index_watchlist_items')
 def get_index_watchlist_items():
@@ -2645,7 +2727,10 @@ def get_index_watchlist_items():
 
         SELECT symbol
         FROM index_watchlist_items
+
         WHERE watchlist_id=?
+
+        ORDER BY symbol
 
     """, (wid,)).fetchall()
 
@@ -2654,38 +2739,58 @@ def get_index_watchlist_items():
     return jsonify([r[0] for r in rows])
 
 
+# =========================
+# ADD INDEXES TO WATCHLIST
+# =========================
+
 @app.route('/add_indexes_to_watchlist', methods=['POST'])
 def add_indexes_to_watchlist():
 
-    data = request.json
+    try:
 
-    wid = data.get("watchlist_id")
+        data = request.json
 
-    symbols = data.get("symbols", [])
+        wid = data.get("watchlist_id")
 
-    conn = sqlite3.connect("index_analysis.db")
+        symbols = data.get("symbols", [])
 
-    c = conn.cursor()
+        conn = sqlite3.connect("index_analysis.db")
 
-    for s in symbols:
+        c = conn.cursor()
 
-        c.execute("""
+        for s in symbols:
 
-            INSERT OR IGNORE INTO index_watchlist_items
-            (watchlist_id, symbol)
+            s = s.strip().upper()
 
-            VALUES (?, ?)
+            if s == "":
+                continue
 
-        """, (wid, s))
+            c.execute("""
 
-    conn.commit()
-    conn.close()
+                INSERT OR IGNORE INTO index_watchlist_items
+                (watchlist_id, symbol)
 
-    return jsonify({
+                VALUES (?, ?)
 
-        "status": "added"
+            """, (wid, s))
 
-    })
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+
+            "status":"success"
+
+        })
+
+    except Exception as e:
+
+        return jsonify({
+
+            "status":"error",
+            "message":str(e)
+
+        })
 
 @app.route('/delete_indexes_from_watchlist', methods=['POST'])
 def delete_indexes_from_watchlist():

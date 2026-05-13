@@ -98,12 +98,16 @@
 
 </head>
 <body>
+<!-- =========================
+WATCHLIST SECTION
+========================= -->
 
 <div class="top-container">
 
     <h2>Index Analysis Dashboard</h2>
 
-    <!-- WATCHLISTS -->
+    <!-- WATCHLIST BUTTONS -->
+
     <div id="watchlists">
 
         {% for w in watchlists %}
@@ -122,34 +126,83 @@
 
     <br>
 
-    <!-- INDEX SEARCH -->
-    <select id="indexSelect" multiple></select>
+    <!-- SEARCH + MANUAL -->
 
-    <input
-        type="text"
-        id="newWatchlist"
-        placeholder="New Watchlist"
-        style="
-            padding:8px;
-            border-radius:8px;
-            border:1px solid #ccc;
-            width:220px;
-        "
-    >
+    <div style="
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+        align-items:center;
+    ">
 
-    <br><br>
+        <!-- SELECT2 SEARCH -->
 
-    <button onclick="createWatchlist()">
-        Create Watchlist
-    </button>
+        <select
+            id="indexSelect"
+            multiple
+            style="width:400px;"
+        ></select>
 
-    <button onclick="saveToWatchlist()">
-        Add To Watchlist
-    </button>
+        <!-- MANUAL SYMBOLS -->
 
-    <button onclick="analyze()">
-        Analyze
-    </button>
+        <input
+            type="text"
+            id="manualStocks"
+            placeholder="Enter symbols (space separated)"
+            style="
+                width:350px;
+                padding:8px;
+                border-radius:8px;
+                border:1px solid #ccc;
+            "
+        >
+
+        <!-- WATCHLIST NAME -->
+
+        <input
+            type="text"
+            id="newWatchlist"
+            placeholder="Watchlist Name"
+            style="
+                width:200px;
+                padding:8px;
+                border-radius:8px;
+                border:1px solid #ccc;
+            "
+        >
+
+    </div>
+
+    <br>
+
+    <!-- ACTION BUTTONS -->
+
+    <div style="
+        display:flex;
+        gap:10px;
+        flex-wrap:wrap;
+    ">
+
+        <button onclick="createWatchlist()">
+            ➕ Create Watchlist
+        </button>
+
+        <button onclick="saveToWatchlist()">
+            💾 Add To Watchlist
+        </button>
+
+        <button onclick="analyze()">
+            📊 Analyze
+        </button>
+
+        <button
+            onclick="clearSelections()"
+            style="background:#e74c3c;"
+        >
+            ❌ Clear
+        </button>
+
+    </div>
 
 </div>
 
@@ -307,9 +360,41 @@ $(document).ready(function(){
 // GET SELECTED INDEXES
 // =========================
 
+
 function getSelectedIndexes(){
 
-    return $('#indexSelect').val() || [];
+    // SELECT2 SYMBOLS
+
+    let selected = $('#indexSelect').val() || [];
+
+    // MANUAL SYMBOLS
+
+    let manual = $('#manualStocks')
+        .val()
+        .trim();
+
+    let manualSymbols = [];
+
+    if(manual !== ''){
+
+        manualSymbols = manual
+            .split(/\s+/)
+            .map(x => x.toUpperCase());
+
+    }
+
+    // COMBINE + REMOVE DUPLICATES
+
+    let finalSymbols = [
+
+        ...new Set([
+            ...selected,
+            ...manualSymbols
+        ])
+
+    ];
+
+    return finalSymbols;
 
 }
 
@@ -317,17 +402,20 @@ function getSelectedIndexes(){
 // =========================
 // CREATE WATCHLIST
 // =========================
-
 function createWatchlist(){
 
-    let name = document.getElementById('newWatchlist').value;
+    let name = $('#newWatchlist').val().trim();
 
-    if(!name){
+    if(name === ''){
 
         alert('Enter watchlist name');
         return;
 
     }
+
+    // GET ALL SYMBOLS
+
+    let symbols = getSelectedIndexes();
 
     fetch('/create_index_watchlist',{
 
@@ -338,7 +426,11 @@ function createWatchlist(){
         },
 
         body:JSON.stringify({
-            name:name
+
+            name:name,
+
+            symbols:symbols
+
         })
 
     })
@@ -366,7 +458,7 @@ function createWatchlist(){
 
         `);
 
-        document.getElementById('newWatchlist').value = '';
+        clearSelections();
 
     });
 
@@ -426,7 +518,6 @@ function saveToWatchlist(){
 // =========================
 // TOGGLE WATCHLIST
 // =========================
-
 function toggleWatchlist(id, btn){
 
     activeWatchlist = id;
@@ -447,12 +538,51 @@ function toggleWatchlist(id, btn){
 
         currentIndexes = data;
 
+        // CLEAR OLD
+
+        $('#indexSelect').empty();
+
+        // LOAD INTO SELECT2
+
+        data.forEach(symbol => {
+
+            let option = new Option(
+                symbol,
+                symbol,
+                true,
+                true
+            );
+
+            $('#indexSelect').append(option);
+
+        });
+
+        $('#indexSelect').trigger('change');
+
         runAnalysis(data);
 
     });
 
 }
+// =========================
+// CLEAR SELECTIONS
+// =========================
 
+function clearSelections(){
+
+    // CLEAR SELECT2
+
+    $('#indexSelect').val(null).trigger('change');
+
+    // CLEAR MANUAL STOCKS
+
+    $('#manualStocks').val('');
+
+    // CLEAR WATCHLIST NAME
+
+    $('#newWatchlist').val('');
+
+}
 
 // =========================
 // ANALYZE

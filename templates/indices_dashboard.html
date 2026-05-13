@@ -98,7 +98,7 @@ let table = null;
 
 function yesNo(v){
 
-    if(v === true){
+    if(v === true || v === 1 || v === "1"){
         return '<span class="yes">YES</span>';
     }
 
@@ -151,23 +151,33 @@ function loadTable(){
 
         });
 
-        $('#indicesTable tbody').html(html);
-
-        if(table){
-            table.destroy();
+        if ($.fn.DataTable.isDataTable('#indicesTable')) {
+            $('#indicesTable').DataTable().destroy();
         }
+
+        $('#indicesTable tbody').empty();
+
+        $('#indicesTable tbody').html(html);
 
         table = $('#indicesTable').DataTable({
 
-            pageLength:50,
+            pageLength: 50,
 
-            scrollX:true,
+            scrollX: true,
 
-            scrollY:'75vh',
+            scrollY: '75vh',
 
-            scrollCollapse:true,
+            scrollCollapse: true,
 
-            stateSave:true
+            stateSave: true,
+
+            deferRender: true,
+
+            processing: true,
+
+            fixedColumns: {
+                leftColumns: 2
+            }
 
         });
 

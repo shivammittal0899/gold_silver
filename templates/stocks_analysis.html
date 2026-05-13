@@ -1167,16 +1167,16 @@ function updateLiveLTP() {
     });
 }
 // 🔥 LIVE TICKS
-setInterval(updateLiveLTP, 1000);
+setInterval(updateLiveLTP, 5000);
 
 // 🔥 FULL REFRESH
-// setInterval(() => {
+setInterval(() => {
 
-//     if (currentStocks.length > 0) {
-//         fetchAndRenderAnalysis(currentStocks);
-//     }
+    if (currentStocks.length > 0) {
+        fetchAndRenderAnalysis(currentStocks);
+    }
 
-// }, 10000);
+}, 30000);
 window.onload = function() {
 
     fetch('/start_market_ws');

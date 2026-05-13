@@ -2552,7 +2552,7 @@ def index_analysis():
     """).fetchall()
 
     conn.close()
-
+    start_ws_if_needed()
     return render_template(
 
         "index_analysis.html",
@@ -2875,8 +2875,340 @@ def search_index_symbols():
 
     })
 
+# =========================
+# INDEX TOKEN
+# =========================
 
+def get_index_instrument_token(symbol):
 
+    conn = sqlite3.connect("instruments.db")
+
+    c = conn.cursor()
+
+    row = c.execute("""
+
+        SELECT instrument_token
+
+        FROM instruments
+
+        WHERE tradingsymbol=?
+
+        LIMIT 1
+
+    """, (symbol,)).fetchone()
+
+    conn.close()
+
+    return row[0] if row else None
+
+# =========================
+# EMPTY INDEX RESULT
+# =========================
+
+def empty_index_result(symbol):
+
+    return {
+
+        "symbol": symbol,
+
+        "price": None,
+
+        "return_1d": None,
+        "return_5d": None,
+        "return_15d": None,
+        "return_30d": None,
+
+        "signal_30m": None,
+        "signal_60m": None,
+        "signal_1d": None,
+
+        "rsi_30m": None,
+        "rsi_60m": None,
+        "rsi_1d": None,
+
+        "day_high": None,
+        "day_low": None,
+
+        "week_high": None,
+        "week_low": None,
+
+        "month_high": None,
+        "month_low": None,
+
+        "year_high": None,
+        "year_low": None
+
+    }
+
+# =========================
+# ANALYZE ONE INDEX
+# =========================
+
+def analyze_one_index(symbol, access_token):
+
+    try:
+
+        kite_local = KiteConnect(api_key=API_KEY)
+
+        kite_local.set_access_token(access_token)
+
+        token = get_index_instrument_token(symbol)
+
+        if not token:
+
+            return empty_index_result(symbol)
+
+        # =========================
+        # FETCH DATA
+        # =========================
+
+        df30 = fetch_with_retry_token(
+
+            symbol,
+            token,
+            "30minute",
+            kite_local,
+            period=60
+
+        )
+
+        df60 = fetch_with_retry_token(
+
+            symbol,
+            token,
+            "60minute",
+            kite_local,
+            period=90
+
+        )
+
+        dfd = fetch_with_retry_token(
+
+            symbol,
+            token,
+            "day",
+            kite_local,
+            period=365
+
+        )
+
+        if (
+            df30 is None or
+            df60 is None or
+            dfd is None
+        ):
+
+            return empty_index_result(symbol)
+
+        # =========================
+        # RENAME
+        # =========================
+
+        for df in [df30, df60, dfd]:
+
+            df.rename(columns={
+
+                'open':'Open',
+                'high':'High',
+                'low':'Low',
+                'close':'Close',
+                'volume':'Volume',
+                'oi':'OI'
+
+            }, inplace=True)
+
+        # =========================
+        # TECHNICAL ANALYSIS
+        # =========================
+
+        result30, df30 = stock_data_analysis(
+            df30,
+            "30m"
+        )
+
+        result60, df60 = stock_data_analysis(
+            df60,
+            "60m"
+        )
+
+        result1d, dfd = stock_data_analysis(
+            dfd,
+            "1d"
+        )
+
+        # =========================
+        # RETURNS + HIGH LOW
+        # =========================
+
+        common = stock_data_analysis_common(dfd)
+
+        # =========================
+        # LIVE PRICE
+        # =========================
+
+        with LIVE_LTP_LOCK:
+
+            live_ltp = LIVE_LTP.get(token, 0)
+
+        if not live_ltp:
+
+            try:
+
+                ltp_data = kite_local.ltp([
+
+                    f"NSE:{symbol}"
+
+                ])
+
+                live_ltp = ltp_data.get(
+                    f"NSE:{symbol}",
+                    {}
+                ).get(
+                    "last_price",
+                    result1d['price']
+                )
+
+            except:
+
+                live_ltp = result1d['price']
+
+        # =========================
+        # FINAL RESULT
+        # =========================
+
+        return {
+
+            "symbol": symbol,
+
+            "price": round(live_ltp, 2),
+
+            "return_1d": common.get("ret1"),
+            "return_5d": common.get("ret5"),
+            "return_15d": common.get("ret15"),
+            "return_30d": common.get("ret30"),
+
+            "signal_30m": result30.get("signal"),
+            "signal_60m": result60.get("signal"),
+            "signal_1d": result1d.get("signal"),
+
+            "rsi_30m": result30.get("rsi"),
+            "rsi_60m": result60.get("rsi"),
+            "rsi_1d": result1d.get("rsi"),
+
+            "day_high": common.get("retdayHigh"),
+            "day_low": common.get("retdayLow"),
+
+            "week_high": common.get("retweekHigh"),
+            "week_low": common.get("retweekLow"),
+
+            "month_high": common.get("retmonthHigh"),
+            "month_low": common.get("retmonthLow"),
+
+            "year_high": common.get("retyearHigh"),
+            "year_low": common.get("retyearLow")
+
+        }
+
+    except Exception as e:
+
+        log1(f"INDEX ANALYSIS ERROR {symbol}: {e}")
+
+        return empty_index_result(symbol)
+
+# =========================
+# ANALYZE INDEXES
+# =========================
+
+@app.route('/analyze_indexes', methods=['POST'])
+def analyze_indexes():
+
+    try:
+
+        data = request.get_json(silent=True) or {}
+
+        symbols = data.get("symbols", [])
+
+        if not symbols:
+
+            return jsonify([])
+
+        access_token = read_access_token()
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+
+            output = list(
+
+                executor.map(
+
+                    lambda s: analyze_one_index(
+                        s,
+                        access_token
+                    ),
+
+                    symbols
+
+                )
+
+            )
+
+        return jsonify([
+
+            r for r in output if r
+
+        ])
+
+    except Exception as e:
+
+        log1(f"Analyze Index Error: {e}")
+
+        return jsonify([])
+    
+# =========================
+# LIVE INDEX LTP
+# =========================
+
+@app.route('/live-index-ltp')
+def live_index_ltp():
+
+    symbols = request.args.get("symbols", "")
+
+    if not symbols:
+        return jsonify({})
+
+    symbols = symbols.split(",")
+
+    conn = sqlite3.connect("instruments.db")
+
+    c = conn.cursor()
+
+    result = {}
+
+    for symbol in symbols:
+
+        row = c.execute("""
+
+            SELECT instrument_token
+
+            FROM instruments
+
+            WHERE tradingsymbol=?
+
+            LIMIT 1
+
+        """, (symbol,)).fetchone()
+
+        if not row:
+            continue
+
+        token = row[0]
+
+        with LIVE_LTP_LOCK:
+
+            result[symbol] = LIVE_LTP.get(token, 0)
+
+    conn.close()
+
+    return jsonify(result)
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
     init_watchlist_db()   # 🔥 MUST BE FIRST

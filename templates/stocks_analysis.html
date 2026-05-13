@@ -1170,13 +1170,13 @@ function updateLiveLTP() {
 setInterval(updateLiveLTP, 1000);
 
 // 🔥 FULL REFRESH
-setInterval(() => {
+// setInterval(() => {
 
-    if (currentStocks.length > 0) {
-        fetchAndRenderAnalysis(currentStocks);
-    }
+//     if (currentStocks.length > 0) {
+//         fetchAndRenderAnalysis(currentStocks);
+//     }
 
-}, 10000);
+// }, 10000);
 window.onload = function() {
 
     fetch('/start_market_ws');

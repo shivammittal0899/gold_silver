@@ -168,10 +168,11 @@ def create_master_table(df):
     #     'NIFTY 50|NIFTY 100|NIFTY NEXT 50',
     #     case=False
     # )
-    grouped['Large_Cap'] = grouped['Index'].str.contains(
-        r'\b(NIFTY 50|NIFTY 100|NIFTY NEXT 50)\b',
-        case=False,
-        regex=True
+    grouped['Large_Cap'] = grouped['Index'].apply(
+        lambda x: any(
+            i.strip() in ['NIFTY 50', 'NIFTY 100', 'NIFTY NEXT 50']
+            for i in str(x).split(',')
+        )
     )
 
     grouped['Mid_Cap'] = grouped['Index'].str.contains(

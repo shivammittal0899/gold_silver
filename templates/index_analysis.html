@@ -1315,45 +1315,45 @@ function openIndexPopup(symbol){
         // TABLE
         // =========================
 
-        popupStocksTable.clear();
+        // popupStocksTable.clear();
 
-        data.stocks.forEach(r => {
+        // data.stocks.forEach(r => {
 
-            popupStocksTable.row.add([
+        //     popupStocksTable.row.add([
 
-                r.symbol,
+        //         r.symbol,
 
-                r.industry || '',
+        //         r.industry || '',
 
-                `
-                <div style="
-                    max-width:250px;
-                    white-space:normal;
-                ">
-                    ${r.indices || ''}
-                </div>
-                `,
+        //         `
+        //         <div style="
+        //             max-width:250px;
+        //             white-space:normal;
+        //         ">
+        //             ${r.indices || ''}
+        //         </div>
+        //         `,
 
-                formatRS(r.relative_strength),
+        //         formatRS(r.relative_strength),
 
-                formatReturn(r.return_1d),
-                formatReturn(r.return_5d),
-                formatReturn(r.return_15d),
-                formatReturn(r.return_30d),
+        //         formatReturn(r.return_1d),
+        //         formatReturn(r.return_5d),
+        //         formatReturn(r.return_15d),
+        //         formatReturn(r.return_30d),
 
-                formatSignal(r.signal_30m),
-                formatSignal(r.signal_60m),
-                formatSignal(r.signal_1d),
+        //         formatSignal(r.signal_30m),
+        //         formatSignal(r.signal_60m),
+        //         formatSignal(r.signal_1d),
 
-                r.rsi_30m,
-                r.rsi_60m,
-                r.rsi_1d
+        //         r.rsi_30m,
+        //         r.rsi_60m,
+        //         r.rsi_1d
 
-            ]);
+        //     ]);
 
-        });
+        // });
 
-        popupStocksTable.draw(false);
+        // popupStocksTable.draw(false);
 
     });
 

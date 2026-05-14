@@ -3301,10 +3301,6 @@ def get_index_chart():
 # POPUP DETAILS
 # =========================
 
-# =========================
-# POPUP DETAILS
-# =========================
-
 @app.route('/get_stock_index_details')
 def get_stock_index_details():
 

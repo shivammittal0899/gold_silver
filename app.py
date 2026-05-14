@@ -1826,8 +1826,6 @@ def analyze_stocks():
 
     access_token = read_access_token()
 
-    # kite_local = KiteConnect(api_key=API_KEY)
-    # kite_local.set_access_token(access_token)
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         output = list(executor.map(
@@ -1920,10 +1918,47 @@ def get_chart_data():
             "spanB": safe(row.get("senkou_b")),
             "volume": safe(row.get("Volume")),
         })
+    
 
     return jsonify(data)
 
+@app.route('/get_index_constituents')
+def get_index_constituents():
 
+    try:
+
+        index_name = request.args.get('index')
+
+        if not index_name:
+
+            return jsonify([])
+
+        conn = sqlite3.connect(DB_NAME)
+
+        query = """
+            SELECT Symbol
+            FROM index_stock_lists
+            WHERE "Index" = ?
+            ORDER BY Symbol
+        """
+
+        df = pd.read_sql(
+            query,
+            conn,
+            params=[index_name]
+        )
+
+        conn.close()
+
+        return jsonify(
+            df['Symbol'].tolist()
+        )
+
+    except Exception as e:
+
+        print("GET INDEX CONSTITUENTS ERROR:", e)
+
+        return jsonify([])
 # ----------------------------
 # Live Logs Page
 # ----------------------------

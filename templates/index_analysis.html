@@ -446,6 +446,22 @@ WATCHLIST SECTION
 
         </div>
     </div>
+    <div
+        id="indexStocksPanel"
+        style="
+            width:220px;
+            border-left:1px solid #ddd;
+            overflow-y:auto;
+            padding-left:10px;
+            display:none;
+        "
+    >
+
+        <h4>Constituents</h4>
+
+        <div id="indexStocksList"></div>
+
+    </div>
 
 </div>
 
@@ -1188,6 +1204,54 @@ function openChart(symbol) {
 
     loadChart();   // 🔥 delegate everything
 }
+function loadIndexStocks(indexName){
+
+    fetch(`/get_index_constituents?index=${encodeURIComponent(indexName)}`)
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        // NOT AN INDEX
+
+        if(!data || data.length === 0){
+
+            $('#indexStocksPanel').hide();
+
+            return;
+
+        }
+
+        $('#indexStocksPanel').show();
+
+        let html = '';
+
+        data.forEach(symbol => {
+
+            html += `
+
+                <div
+                    onclick="openChart('${symbol}')"
+                    style="
+                        padding:6px;
+                        cursor:pointer;
+                        border-bottom:1px solid #eee;
+                        color:#2980b9;
+                        font-weight:bold;
+                    "
+                >
+                    ${symbol}
+                </div>
+
+            `;
+
+        });
+
+        $('#indexStocksList').html(html);
+
+    });
+
+}
 function loadChart() {
     const currentRequest = ++requestId;
 
@@ -1198,6 +1262,7 @@ function loadChart() {
         chart.remove();
         chart = null;
     }
+    loadIndexStocks(currentSymbol);
 
     setTimeout(() => {
 

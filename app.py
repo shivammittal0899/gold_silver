@@ -3233,33 +3233,7 @@ def live_index_ltp():
 
     return jsonify(result)
 
-@app.route('/delete_indexes_from_watchlist', methods=['POST'])
-def delete_indexes_from_watchlist():
 
-    data = request.json
-
-    wid = data.get("watchlist_id")
-
-    symbols = data.get("symbols", [])
-
-    conn = sqlite3.connect("stocks_analysis.db")
-
-    c = conn.cursor()
-
-    c.executemany("""
-
-        DELETE FROM watchlist_items
-        WHERE watchlist_id=? AND symbol=?
-
-    """, [(wid, s) for s in symbols])
-
-    conn.commit()
-
-    conn.close()
-
-    return jsonify({
-        "status":"success"
-    })
 
 
 # ---------------------- MAIN ----------------------

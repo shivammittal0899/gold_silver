@@ -1928,6 +1928,7 @@ def get_index_constituents():
     try:
 
         index_name = request.args.get('index')
+        log1(index_name)
 
         if not index_name:
 

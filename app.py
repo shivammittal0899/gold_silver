@@ -2490,6 +2490,28 @@ def delete_portfolio(portfolio_id):
 
 from indices_data import *
 
+@app.route('/indices_dashboard')
+def indices_dashboard():
+
+    return render_template(
+        "indices_dashboard.html"
+    )
+@app.route('/get_indices_data')
+def get_indices_data_route():
+
+    data = get_indices_data()
+
+    return jsonify(data)
+
+@app.route('/refresh_indices')
+def refresh_indices_route():
+
+    rows = refresh_indices_data()
+
+    return jsonify({
+        "status": "success",
+        "rows": rows
+    })
 # =========================
 # INDEX WATCHLIST DATABASE
 # =========================

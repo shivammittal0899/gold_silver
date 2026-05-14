@@ -3233,6 +3233,256 @@ def live_index_ltp():
 
     return jsonify(result)
 
+# =========================
+# INDEX CHART
+# =========================
+
+@app.route('/get_index_chart')
+def get_index_chart():
+
+    try:
+
+        symbol = request.args.get(
+            "symbol"
+        )
+
+        access_token = read_access_token()
+
+        kite_local = KiteConnect(
+            api_key=API_KEY
+        )
+
+        kite_local.set_access_token(
+            access_token
+        )
+
+        token = get_index_instrument_token(
+            symbol
+        )
+
+        if not token:
+            return jsonify([])
+
+        df = fetch_with_retry_token(
+
+            symbol,
+            token,
+            "day",
+            kite_local,
+            period=365
+
+        )
+
+        chart = []
+
+        for _, row in df.iterrows():
+
+            chart.append({
+
+                "time":
+                    pd.to_datetime(
+                        row['date']
+                    ).strftime("%Y-%m-%d"),
+
+                "value":
+                    float(row['close'])
+
+            })
+
+        return jsonify(chart)
+
+    except Exception as e:
+
+        log1(f"chart error {e}")
+
+        return jsonify([])
+    
+# =========================
+# POPUP DETAILS
+# =========================
+
+# =========================
+# POPUP DETAILS
+# =========================
+
+@app.route('/get_stock_index_details')
+def get_stock_index_details():
+
+    try:
+
+        symbol = request.args.get(
+            "symbol"
+        )
+
+        if not symbol:
+
+            return jsonify({})
+
+        # =========================
+        # GET STOCK INDEX
+        # =========================
+
+        conn = sqlite3.connect(
+            "indices_data.db"
+        )
+
+        df = pd.read_sql("""
+
+            SELECT
+                Symbol,
+                "Index"
+
+            FROM master_indices
+
+        """, conn)
+
+        conn.close()
+
+        if df.empty:
+
+            return jsonify({})
+
+        # =========================
+        # FIND SELECTED STOCK INDEX
+        # =========================
+
+        stock_row = df[
+            df['Symbol'] == symbol
+        ]
+
+        if stock_row.empty:
+
+            return jsonify({})
+
+        index_string = str(
+
+            stock_row.iloc[0]['Index']
+
+        )
+
+        index_list = [
+
+            x.strip()
+
+            for x in index_string.split(',')
+
+            if x.strip()
+
+        ]
+
+        if len(index_list) == 0:
+
+            return jsonify({})
+
+        # FIRST INDEX
+
+        first_index = index_list[0]
+
+        # =========================
+        # FIND ALL CONSTITUENTS
+        # =========================
+
+        symbols = []
+
+        for _, row in df.iterrows():
+
+            try:
+
+                idxs = [
+
+                    x.strip()
+
+                    for x in str(
+                        row['Index']
+                    ).split(',')
+
+                    if x.strip()
+
+                ]
+
+                if first_index in idxs:
+
+                    symbols.append(
+                        row['Symbol']
+                    )
+
+            except:
+                pass
+
+        # REMOVE DUPLICATES
+
+        symbols = list(set(symbols))
+
+        if len(symbols) == 0:
+
+            return jsonify({})
+
+        # =========================
+        # ANALYZE STOCKS
+        # =========================
+
+        access_token = read_access_token()
+
+        output = []
+
+        with ThreadPoolExecutor(
+            max_workers=10
+        ) as executor:
+
+            results = executor.map(
+
+                lambda s:
+                    analyze_one_index(
+                        s,
+                        access_token
+                    ),
+
+                symbols
+
+            )
+
+            for r in results:
+
+                if r:
+
+                    output.append(r)
+
+        # =========================
+        # SORT BY RS
+        # =========================
+
+        output = sorted(
+
+            output,
+
+            key=lambda x:
+
+                x.get(
+                    "relative_strength",
+                    0
+                ),
+
+            reverse=True
+
+        )
+
+        return jsonify({
+
+            "index": first_index,
+
+            "stocks": output
+
+        })
+
+    except Exception as e:
+
+        log1(
+
+            f"POPUP ERROR: {e}"
+
+        )
+
+        return jsonify({})
 
 
 

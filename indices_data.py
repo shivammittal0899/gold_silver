@@ -355,7 +355,7 @@ def create_index_stock_table(df):
     index_df = (
         df.groupby('Index')
         .agg({
-            'Symbol': lambda x: list(sorted(set(x)))
+            'Symbol': lambda x: str(list(sorted(set(x))))
         })
         .reset_index()
     )

@@ -1933,8 +1933,8 @@ def get_index_constituents():
         if not index_name:
 
             return jsonify([])
-
-        conn = sqlite3.connect(DB_NAME)
+        DB_NAME1 = "indices_data.db"
+        conn = sqlite3.connect(DB_NAME1)
 
         query = """
             SELECT Stocks

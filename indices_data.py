@@ -100,7 +100,64 @@ INDEX_MAP = {
     "NIFTY RURAL": "niftyrural_"
     # "NIFTY IPO": "niftyipo"
 }
+def save_all_index_watchlist():
 
+    conn = sqlite3.connect("index_analysis.db")
+
+    c = conn.cursor()
+
+    # ============================================
+    # CREATE WATCHLIST IF NOT EXISTS
+    # ============================================
+
+    c.execute("""
+        INSERT OR IGNORE INTO index_watchlists(name)
+        VALUES (?)
+    """, ("ALL INDEX",))
+
+    # ============================================
+    # GET WATCHLIST ID
+    # ============================================
+
+    c.execute("""
+        SELECT id
+        FROM index_watchlists
+        WHERE name = ?
+    """, ("ALL INDEX",))
+
+    watchlist_id = c.fetchone()[0]
+
+    # ============================================
+    # CLEAR OLD SYMBOLS
+    # ============================================
+
+    c.execute("""
+        DELETE FROM index_watchlist_items
+        WHERE watchlist_id = ?
+    """, (watchlist_id,))
+
+    # ============================================
+    # INSERT ALL INDEX SYMBOLS
+    # ============================================
+
+    for symbol in INDEX_MAP.keys():
+
+        c.execute("""
+            INSERT OR IGNORE INTO index_watchlist_items(
+                watchlist_id,
+                symbol
+            )
+            VALUES (?, ?)
+        """, (
+            watchlist_id,
+            symbol
+        ))
+
+    conn.commit()
+
+    conn.close()
+
+save_all_index_watchlist()
 # ============================================
 # DOWNLOAD ALL INDICES
 # ============================================
@@ -290,6 +347,45 @@ def save_to_database(df):
     conn.close()
 
 # ============================================
+# CREATE INDEX STOCK LIST TABLE
+# ============================================
+
+def create_index_stock_table(df):
+
+    index_df = (
+        df.groupby('Index')
+        .agg({
+            'Symbol': lambda x: list(sorted(set(x)))
+        })
+        .reset_index()
+    )
+
+    index_df.rename(
+        columns={
+            'Symbol': 'Stocks'
+        },
+        inplace=True
+    )
+
+    return index_df
+
+# ============================================
+# SAVE INDEX STOCK TABLE
+# ============================================
+
+def save_index_stock_table(df):
+
+    conn = sqlite3.connect(DB_NAME)
+
+    df.to_sql(
+        "index_stock_lists",
+        conn,
+        if_exists="replace",
+        index=False
+    )
+
+    conn.close()
+# ============================================
 # REFRESH DATABASE
 # ============================================
 
@@ -302,7 +398,11 @@ def refresh_indices_data():
 
     master_df = create_master_table(raw_df)
 
+    index_stock_df = create_index_stock_table(raw_df)
+
     save_to_database(master_df)
+
+    save_index_stock_table(index_stock_df)
 
     return len(master_df)
 

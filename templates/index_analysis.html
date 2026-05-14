@@ -1202,7 +1202,7 @@ function openChart(symbol) {
     document.getElementById("chartModal").style.display = "block";
     document.getElementById("chartTitle").innerText = symbol;
 
-    loadChart();   // 🔥 delegate everything
+    loadChart(currentSymbol);   // 🔥 delegate everything
 }
 function loadIndexStocks(indexName){
 
@@ -1252,7 +1252,7 @@ function loadIndexStocks(indexName){
     });
 
 }
-function loadChart() {
+function loadChart(currentSymbol) {
     const currentRequest = ++requestId;
 
     let container = document.getElementById("chartContainer");

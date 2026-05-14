@@ -1940,7 +1940,6 @@ def get_index_constituents():
             SELECT Stocks
             FROM index_stock_lists
             WHERE "Index" = ?
-            ORDER BY Symbol
         """
 
         df = pd.read_sql(

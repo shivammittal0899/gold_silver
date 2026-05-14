@@ -209,7 +209,35 @@ WATCHLIST SECTION
 <!-- TECHNICAL TABLE -->
 <div class="table-container">
 
-    <h3>Technical Analysis</h3>
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:10px;
+    ">
+
+        <h3>Technical Analysis</h3>
+
+        <div>
+
+            <button onclick="copySelectedRows()">
+                📋 Copy Selected
+            </button>
+
+            <button onclick="addSelectedToWatchlist()">
+                ➕ Add To Watchlist
+            </button>
+
+            <button
+                class="danger"
+                onclick="deleteSelectedFromWatchlist()"
+            >
+                🗑 Delete From Watchlist
+            </button>
+
+        </div>
+
+    </div>
 
     <table
         id="analysisTable"
@@ -219,6 +247,14 @@ WATCHLIST SECTION
 
         <thead>
             <tr>
+
+                <th>
+                    <input
+                        type="checkbox"
+                        id="selectAllRows"
+                        onchange="toggleAllRows(this)"
+                    >
+                </th>
 
                 <th>Symbol</th>
                 <th>Price</th>
@@ -259,6 +295,14 @@ WATCHLIST SECTION
         <thead>
             <tr>
 
+                <th>
+                    <input
+                        type="checkbox"
+                        id="selectAllRows"
+                        onchange="toggleAllRows(this)"
+                    >
+                </th>
+
                 <th>Symbol</th>
                 <th>Price</th>
 
@@ -282,7 +326,74 @@ WATCHLIST SECTION
     </table>
 
 </div>
+<!-- ADD TO WATCHLIST MODAL -->
 
+<div
+    id="watchlistModal"
+    style="
+        display:none;
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.5);
+        z-index:9999;
+    "
+>
+
+    <div
+        style="
+            background:white;
+            width:400px;
+            padding:20px;
+            border-radius:12px;
+            position:absolute;
+            top:50%;
+            left:50%;
+            transform:translate(-50%, -50%);
+        "
+    >
+
+        <h3>Select Watchlist</h3>
+
+        <select
+            id="watchlistSelectPopup"
+            style="
+                width:100%;
+                padding:10px;
+                border-radius:8px;
+                margin-top:10px;
+            "
+        >
+
+        </select>
+
+        <div
+            style="
+                margin-top:20px;
+                display:flex;
+                justify-content:flex-end;
+                gap:10px;
+            "
+        >
+
+            <button
+                onclick="closeWatchlistModal()"
+                style="background:#95a5a6;"
+            >
+                Cancel
+            </button>
+
+            <button onclick="confirmAddToWatchlist()">
+                Add
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
 <script>
 
 let currentIndexes = [];
@@ -650,6 +761,14 @@ function updateTables(data){
 
         analysisTable.row.add([
 
+            `
+            <input
+                type="checkbox"
+                class="rowCheckbox"
+                value="${row.symbol}"
+            >
+            `,
+
             row.symbol,
 
             row.price,
@@ -670,6 +789,13 @@ function updateTables(data){
         ]);
 
         highLowTable.row.add([
+            `
+            <input
+                type="checkbox"
+                class="rowCheckbox"
+                value="${row.symbol}"
+            >
+            `,
 
             row.symbol,
 
@@ -776,7 +902,189 @@ function updateLiveLTP(){
     });
 
 }
+function getSelectedRows(){
 
+    let rows = [];
+
+    $('.rowCheckbox:checked').each(function(){
+
+        rows.push($(this).val());
+
+    });
+
+    return [...new Set(rows)];
+
+}
+
+
+function toggleAllRows(el){
+
+    $('.rowCheckbox').prop(
+        'checked',
+        el.checked
+    );
+
+}
+
+
+function copySelectedRows(){
+
+    let rows = getSelectedRows();
+
+    if(rows.length === 0){
+
+        alert('Select rows');
+        return;
+
+    }
+
+    navigator.clipboard.writeText(
+        rows.join(' ')
+    );
+
+    alert('Copied Successfully');
+
+}
+
+
+function addSelectedToWatchlist(){
+
+    let rows = getSelectedRows();
+
+    if(rows.length === 0){
+
+        alert('Select rows');
+        return;
+
+    }
+
+    // CLEAR OLD OPTIONS
+
+    $('#watchlistSelectPopup').empty();
+
+    // LOAD WATCHLISTS
+
+    $('.watchlist-btn').each(function(){
+
+        let id = $(this).data('id');
+
+        let name = $(this).text().trim();
+
+        $('#watchlistSelectPopup').append(`
+
+            <option value="${id}">
+                ${name}
+            </option>
+
+        `);
+
+    });
+
+    // STORE ROWS TEMP
+
+    window.selectedRowsForWatchlist = rows;
+
+    // SHOW MODAL
+
+    $('#watchlistModal').show();
+
+}
+function closeWatchlistModal(){
+
+    $('#watchlistModal').hide();
+
+}
+
+
+function confirmAddToWatchlist(){
+
+    let watchlistId = $('#watchlistSelectPopup').val();
+
+    let rows = window.selectedRowsForWatchlist || [];
+
+    if(!watchlistId){
+
+        alert('Select watchlist');
+        return;
+
+    }
+
+    fetch('/add_indexes_to_watchlist',{
+
+        method:'POST',
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+        body:JSON.stringify({
+
+            watchlist_id:watchlistId,
+            symbols:rows
+
+        })
+
+    })
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        alert('Added Successfully');
+
+        closeWatchlistModal();
+
+    });
+
+}
+function deleteSelectedFromWatchlist(){
+
+    let rows = getSelectedRows();
+
+    if(rows.length === 0){
+
+        alert('Select rows');
+        return;
+
+    }
+
+    if(!activeWatchlist){
+
+        alert('Select watchlist');
+        return;
+
+    }
+
+    fetch('/delete_indexes_from_watchlist',{
+
+        method:'POST',
+
+        headers:{
+            'Content-Type':'application/json'
+        },
+
+        body:JSON.stringify({
+
+            watchlist_id:activeWatchlist,
+            symbols:rows
+
+        })
+
+    })
+
+    .then(res=>res.json())
+
+    .then(data=>{
+
+        alert('Deleted Successfully');
+
+        runAnalysis(currentIndexes.filter(
+            x => !rows.includes(x)
+        ));
+
+    });
+
+}
 
 // =========================
 // AUTO REFRESH

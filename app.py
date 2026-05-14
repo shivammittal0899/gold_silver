@@ -1949,7 +1949,7 @@ def get_index_constituents():
         )
 
         conn.close()
-
+        log1(df)
         return jsonify(
             df['Symbol'].tolist()
         )

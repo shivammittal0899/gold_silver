@@ -157,7 +157,7 @@ def save_all_index_watchlist():
 
     conn.close()
 
-save_all_index_watchlist()
+# save_all_index_watchlist()
 # ============================================
 # DOWNLOAD ALL INDICES
 # ============================================

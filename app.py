@@ -1937,7 +1937,7 @@ def get_index_constituents():
         conn = sqlite3.connect(DB_NAME)
 
         query = """
-            SELECT Symbol
+            SELECT Stocks
             FROM index_stock_lists
             WHERE "Index" = ?
             ORDER BY Symbol
@@ -1950,7 +1950,7 @@ def get_index_constituents():
         )
 
         conn.close()
-        log1(df)
+        log1(f"----- {df}")
         return jsonify(
             df['Symbol'].tolist()
         )

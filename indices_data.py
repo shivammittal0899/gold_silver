@@ -352,22 +352,36 @@ def save_to_database(df):
 
 def create_index_stock_table(df):
 
-    index_df = (
-        df.groupby('Index')
-        .agg({
-            'Symbol': lambda x: str(list(sorted(set(x))))
-        })
-        .reset_index()
-    )
+    index_df = df[[
+        'Index',
+        'Symbol'
+    ]].drop_duplicates()
 
-    index_df.rename(
-        columns={
-            'Symbol': 'Stocks'
-        },
-        inplace=True
-    )
+    index_df = index_df.sort_values([
+        'Index',
+        'Symbol'
+    ])
 
     return index_df
+
+# def create_index_stock_table(df):
+
+#     index_df = (
+#         df.groupby('Index')
+#         .agg({
+#             'Symbol': lambda x: str(list(sorted(set(x))))
+#         })
+#         .reset_index()
+#     )
+
+#     index_df.rename(
+#         columns={
+#             'Symbol': 'Stocks'
+#         },
+#         inplace=True
+#     )
+
+#     return index_df
 
 # ============================================
 # SAVE INDEX STOCK TABLE

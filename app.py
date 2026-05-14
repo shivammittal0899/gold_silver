@@ -1933,13 +1933,14 @@ def get_index_constituents():
         if not index_name:
 
             return jsonify([])
-        DB_NAME1 = "indices_data.db"
-        conn = sqlite3.connect(DB_NAME1)
+
+        conn = sqlite3.connect(DB_NAME)
 
         query = """
-            SELECT Stocks
+            SELECT Symbol
             FROM index_stock_lists
             WHERE "Index" = ?
+            ORDER BY Symbol
         """
 
         df = pd.read_sql(
@@ -1949,14 +1950,14 @@ def get_index_constituents():
         )
 
         conn.close()
-        log1(f"----- {df}")
+        log1(f"---  {df}")
         return jsonify(
             df['Symbol'].tolist()
         )
 
     except Exception as e:
 
-        log1("GET INDEX CONSTITUENTS ERROR:", e)
+        print(e)
 
         return jsonify([])
 # ----------------------------

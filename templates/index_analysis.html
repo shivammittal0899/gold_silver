@@ -397,117 +397,58 @@ WATCHLIST SECTION
 </div>
 <!-- INDEX POPUP -->
 
-<div
-    id="indexPopup"
-    style="
-        display:none;
-        position:fixed;
-        top:0;
-        left:0;
-        width:100%;
-        height:100%;
-        background:rgba(0,0,0,0.7);
-        z-index:999999;
-    "
->
+<div id="chartModal" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.6);
+    z-index:9999;
+">
 
-    <div
-        style="
+    <div style="
+        background:white;
+        width:80%;
+        height:80%;
+        margin:5% auto;
+        padding:10px;
+        padding-bottom:20px;
+        border-radius:10px;
+        position:relative;
+    ">
+        <button onclick="closeChart()" style="
             position:absolute;
-            top:50%;
-            left:50%;
-            transform:translate(-50%,-50%);
-            width:97%;
-            height:95%;
-            background:white;
-            border-radius:12px;
-            overflow:hidden;
-            display:flex;
-            flex-direction:column;
-        "
-    >
+            top:10px;
+            right:10px;
+            background:red;
+        ">✖</button>
 
-        <!-- HEADER -->
+        <h3 id="chartTitle"></h3>
 
-        <div style="
-            padding:15px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            border-bottom:1px solid #ddd;
-        ">
+        <!-- Chart container -->
+        <div id="chartContainer" style="width:100%; height:90%;"></div>
+        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
 
-            <h2 id="popupTitle"></h2>
+            <!-- Timeframe -->
+            <select id="timeframeSelect" onchange="changeTimeframe()">
+                <option value="5minute">5m</option>
+                <option value="15minute">15m</option>
+                <option value="30minute">30m</option>
+                <option value="60minute">60m</option>
+                <option value="day" selected>1D</option>
+            </select>
 
-            <button
-                onclick="closeIndexPopup()"
-                class="danger"
-            >
-                Close
-            </button>
+            <!-- Indicators -->
+            <label><input type="checkbox" onchange="toggleIndicator('ichimoku')"> Ichimoku</label>
+            <label><input type="checkbox" onchange="toggleIndicator('rsi')"> RSI</label>
+            <label><input type="checkbox" onchange="toggleIndicator('vwap')"> VWAP</label>
+            <label><input type="checkbox" onchange="toggleIndicator('ema')"> EMA</label>
 
         </div>
-
-        <!-- CHART -->
-
-        <div
-            id="popupChart"
-            style="
-                height:400px;
-                border-bottom:1px solid #ddd;
-            "
-        ></div>
-
-        <!-- TABLE -->
-
-        <div style="
-            flex:1;
-            overflow:auto;
-            padding:15px;
-        ">
-
-            <table
-                id="popupStocksTable"
-                class="display nowrap"
-                style="width:100%"
-            >
-
-                <thead>
-
-                    <tr>
-
-                        <th>Symbol</th>
-                        <th>Industry</th>
-                        <th>Indices</th>
-
-                        <th>RS</th>
-
-                        <th>1D</th>
-                        <th>5D</th>
-                        <th>15D</th>
-                        <th>30D</th>
-
-                        <th>Signal 30m</th>
-                        <th>Signal 60m</th>
-                        <th>Signal 1D</th>
-
-                        <th>RSI 30m</th>
-                        <th>RSI 60m</th>
-                        <th>RSI 1D</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody></tbody>
-
-            </table>
-
-        </div>
-
     </div>
 
 </div>
+
 <script>
 
 let currentIndexes = [];
@@ -1227,142 +1168,248 @@ function deleteSelectedFromWatchlist(){
 
 
 
-function openIndexPopup(symbol){
+let chart = null;
+let candleSeries = null;
+let currentSymbol = null;
+let currentInterval = "day";
+let requestId = 0;
 
-    $('#popupTitle').text(symbol);
+let indicators = {
+    ichimoku: true,
+    rsi: false,
+    vwap: false,
+    ema: false
+};
+function openChart(symbol) {
+    currentSymbol = symbol;
 
-    $('#indexPopup').show();
+    document.getElementById("chartModal").style.display = "block";
+    document.getElementById("chartTitle").innerText = symbol;
 
-    popupStocksTable.clear().draw();
+    loadChart();   // 🔥 delegate everything
+}
+function loadChart() {
+    const currentRequest = ++requestId;
 
-    $('#popupChart').html('Loading...');
+    let container = document.getElementById("chartContainer");
+    container.innerHTML = "";
 
-    fetch(
+    if (chart) {
+        chart.remove();
+        chart = null;
+    }
 
-        `/get_stock_index_details?symbol=${symbol}`
+    setTimeout(() => {
 
-    )
-
-    .then(res => res.json())
-
-    .then(data => {
-
-        let firstIndex = data.index;
-
-        $('#popupTitle').text(
-
-            `${symbol} • ${firstIndex}`
-
-        );
-
-        // =========================
-        // CHART
-        // =========================
-
-        $('#popupChart').html('');
-
-        fetch(
-
-            `/get_index_chart?symbol=${encodeURIComponent(firstIndex)}`
-
-        )
-
-        .then(res => res.json())
-
-        .then(chartData => {
-
-            const chart =
-                LightweightCharts.createChart(
-
-                    document.getElementById(
-                        'popupChart'
-                    ),
-
-                    {
-
-                        width:
-                            document.getElementById(
-                                'popupChart'
-                            ).clientWidth,
-
-                        height:400,
-
-                        layout:{
-                            background:{
-                                color:'#fff'
-                            },
-                            textColor:'#333'
-                        }
-
+        chart = LightweightCharts.createChart(container, {
+            width: container.clientWidth,
+            height: container.clientHeight,
+            timeScale: {
+                timeVisible: true,     // 🔥 REQUIRED
+                secondsVisible: false  // optional
+            }
+        });
+        chart.applyOptions({
+            localization: {
+                timeFormatter: time => {
+                    const date = new Date(time * 1000);
+                    if (currentInterval === "day") {
+                        return date.toLocaleDateString();
+                    } else {
+                        return date.toLocaleTimeString();
                     }
-
-                );
-
-            const lineSeries =
-                chart.addLineSeries({
-
-                    color:'#2962FF',
-
-                    lineWidth:2
-
-                });
-
-            lineSeries.setData(chartData);
-
+                }
+            }
         });
 
-        // =========================
-        // TABLE
-        // =========================
+        candleSeries = chart.addSeries(LightweightCharts.CandlestickSeries);
+        fetch(`/get_chart_data?symbol=${currentSymbol}&interval=${currentInterval}`)
+            .then(res => res.json())
+            .then(data => {
 
-        // popupStocksTable.clear();
+                if (currentRequest !== requestId) return;
 
-        // data.stocks.forEach(r => {
+                if (!data || data.length === 0) return;
 
-        //     popupStocksTable.row.add([
+                let cleanData = data.filter(d =>
+                    d &&
+                    typeof d.time !== "undefined" &&
+                    Number.isFinite(d.open) &&
+                    Number.isFinite(d.high) &&
+                    Number.isFinite(d.low) &&
+                    Number.isFinite(d.close)
+                );
 
-        //         r.symbol,
+                if (cleanData.length === 0) return;
 
-        //         r.industry || '',
+                // ✅ sort
+                cleanData.sort((a, b) => a.time - b.time);
 
-        //         `
-        //         <div style="
-        //             max-width:250px;
-        //             white-space:normal;
-        //         ">
-        //             ${r.indices || ''}
-        //         </div>
-        //         `,
+                // ✅ remove duplicates
+                const uniqueMap = new Map();
+                cleanData.forEach(d => uniqueMap.set(d.time, d));
+                const finalData = Array.from(uniqueMap.values());
 
-        //         formatRS(r.relative_strength),
+                candleSeries.setData(finalData);
+                // console.log(data.slice(-10));
+                if (indicators.ema) addEMA(finalData);
+                if (indicators.vwap) addVWAP(finalData);
+                if (indicators.ichimoku) addIchimoku(finalData);
+                if (indicators.rsi) addRSI(finalData);
 
-        //         formatReturn(r.return_1d),
-        //         formatReturn(r.return_5d),
-        //         formatReturn(r.return_15d),
-        //         formatReturn(r.return_30d),
-
-        //         formatSignal(r.signal_30m),
-        //         formatSignal(r.signal_60m),
-        //         formatSignal(r.signal_1d),
-
-        //         r.rsi_30m,
-        //         r.rsi_60m,
-        //         r.rsi_1d
-
-        //     ]);
-
-        // });
-
-        // popupStocksTable.draw(false);
-
-    });
-
+                chart.timeScale().fitContent();
+            })
+            .catch(err => console.error("Chart error:", err));
+        
+    }, 50);
 }
-function closeIndexPopup(){
-
-    $('#indexPopup').hide();
-
+function changeTimeframe() {
+    currentInterval = document.getElementById("timeframeSelect").value;
+    loadChart();
 }
+function toggleIndicator(name) {
+    indicators[name] = !indicators[name];
+    loadChart();
+}
+function closeChart() {
+    document.getElementById("chartModal").style.display = "none";
+}
+// function openIndexPopup(symbol){
+
+//     $('#popupTitle').text(symbol);
+
+//     $('#indexPopup').show();
+
+//     popupStocksTable.clear().draw();
+
+//     $('#popupChart').html('Loading...');
+
+//     fetch(
+
+//         `/get_stock_index_details?symbol=${symbol}`
+
+//     )
+
+//     .then(res => res.json())
+
+//     .then(data => {
+
+//         let firstIndex = data.index;
+
+//         $('#popupTitle').text(
+
+//             `${symbol} • ${firstIndex}`
+
+//         );
+
+//         // =========================
+//         // CHART
+//         // =========================
+
+//         $('#popupChart').html('');
+
+//         fetch(
+
+//             `/get_index_chart?symbol=${encodeURIComponent(firstIndex)}`
+
+//         )
+
+//         .then(res => res.json())
+
+//         .then(chartData => {
+
+//             const chart =
+//                 LightweightCharts.createChart(
+
+//                     document.getElementById(
+//                         'popupChart'
+//                     ),
+
+//                     {
+
+//                         width:
+//                             document.getElementById(
+//                                 'popupChart'
+//                             ).clientWidth,
+
+//                         height:400,
+
+//                         layout:{
+//                             background:{
+//                                 color:'#fff'
+//                             },
+//                             textColor:'#333'
+//                         }
+
+//                     }
+
+//                 );
+
+//             const lineSeries =
+//                 chart.addLineSeries({
+
+//                     color:'#2962FF',
+
+//                     lineWidth:2
+
+//                 });
+
+//             lineSeries.setData(chartData);
+
+//         });
+
+//         // =========================
+//         // TABLE
+//         // =========================
+
+//         // popupStocksTable.clear();
+
+//         // data.stocks.forEach(r => {
+
+//         //     popupStocksTable.row.add([
+
+//         //         r.symbol,
+
+//         //         r.industry || '',
+
+//         //         `
+//         //         <div style="
+//         //             max-width:250px;
+//         //             white-space:normal;
+//         //         ">
+//         //             ${r.indices || ''}
+//         //         </div>
+//         //         `,
+
+//         //         formatRS(r.relative_strength),
+
+//         //         formatReturn(r.return_1d),
+//         //         formatReturn(r.return_5d),
+//         //         formatReturn(r.return_15d),
+//         //         formatReturn(r.return_30d),
+
+//         //         formatSignal(r.signal_30m),
+//         //         formatSignal(r.signal_60m),
+//         //         formatSignal(r.signal_1d),
+
+//         //         r.rsi_30m,
+//         //         r.rsi_60m,
+//         //         r.rsi_1d
+
+//         //     ]);
+
+//         // });
+
+//         // popupStocksTable.draw(false);
+
+//     });
+
+// }
+// function closeIndexPopup(){
+
+//     $('#indexPopup').hide();
+
+// }
 // =========================
 // AUTO REFRESH
 // =========================

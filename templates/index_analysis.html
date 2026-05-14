@@ -1204,54 +1204,6 @@ function openChart(symbol) {
 
     loadChart(currentSymbol);   // 🔥 delegate everything
 }
-function loadIndexStocks(indexName){
-
-    fetch(`/get_index_constituents?index=${encodeURIComponent(indexName)}`)
-
-    .then(res => res.json())
-
-    .then(data => {
-
-        // NOT AN INDEX
-
-        if(!data || data.length === 0){
-
-            $('#indexStocksPanel').hide();
-
-            return;
-
-        }
-
-        $('#indexStocksPanel').show();
-
-        let html = '';
-
-        data.forEach(symbol => {
-
-            html += `
-
-                <div
-                    onclick="openChart('${symbol}')"
-                    style="
-                        padding:6px;
-                        cursor:pointer;
-                        border-bottom:1px solid #eee;
-                        color:#2980b9;
-                        font-weight:bold;
-                    "
-                >
-                    ${symbol}
-                </div>
-
-            `;
-
-        });
-
-        $('#indexStocksList').html(html);
-
-    });
-
-}
 function loadChart(currentSymbol) {
     const currentRequest = ++requestId;
 
@@ -1327,6 +1279,55 @@ function loadChart(currentSymbol) {
             .catch(err => console.error("Chart error:", err));
         
     }, 50);
+}
+
+function loadIndexStocks(indexName){
+
+    fetch(`/get_index_constituents?index=${encodeURIComponent(indexName)}`)
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        // NOT AN INDEX
+
+        if(!data || data.length === 0){
+
+            $('#indexStocksPanel').hide();
+
+            return;
+
+        }
+
+        $('#indexStocksPanel').show();
+
+        let html = '';
+
+        data.forEach(symbol => {
+
+            html += `
+
+                <div
+                    onclick="openChart('${symbol}')"
+                    style="
+                        padding:6px;
+                        cursor:pointer;
+                        border-bottom:1px solid #eee;
+                        color:#2980b9;
+                        font-weight:bold;
+                    "
+                >
+                    ${symbol}
+                </div>
+
+            `;
+
+        });
+
+        $('#indexStocksList').html(html);
+
+    });
+
 }
 function changeTimeframe() {
     currentInterval = document.getElementById("timeframeSelect").value;

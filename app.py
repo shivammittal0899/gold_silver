@@ -1957,7 +1957,7 @@ def get_index_constituents():
 
     except Exception as e:
 
-        print("GET INDEX CONSTITUENTS ERROR:", e)
+        log1("GET INDEX CONSTITUENTS ERROR:", e)
 
         return jsonify([])
 # ----------------------------

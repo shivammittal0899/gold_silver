@@ -1792,7 +1792,6 @@ def analyze_stocks():
             lambda s: analyze_one_stock(s, access_token),
             symbols
         ))
-    # log1(output)
     return jsonify([r for r in output if r])
 def safe(val):
     if pd.isna(val) or val is None:
@@ -1888,11 +1887,16 @@ def get_index_constituents():
     try:
 
         index_name = request.args.get('index')
+
         log1(index_name)
 
         if not index_name:
 
             return jsonify([])
+
+        # ============================================
+        # DATABASE
+        # ============================================
 
         conn = sqlite3.connect(DB_NAME)
 
@@ -1910,14 +1914,58 @@ def get_index_constituents():
         )
 
         conn.close()
-        log1(f"---  {df}")
-        return jsonify(
-            df['Symbol'].tolist()
-        )
+
+        log1(df)
+
+        if df.empty:
+
+            return jsonify([])
+
+        # ============================================
+        # SYMBOL LIST
+        # ============================================
+
+        symbols = df['Symbol'].tolist()
+
+        # ============================================
+        # ACCESS TOKEN
+        # ============================================
+
+        access_token = read_access_token()
+
+        # ============================================
+        # ANALYZE STOCKS
+        # ============================================
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+
+            output = list(executor.map(
+
+                lambda s: analyze_one_stock(
+                    s,
+                    access_token,
+                    analysis_type="index"
+                ),
+
+                symbols
+
+            ))
+
+        # REMOVE EMPTY RESULTS
+
+        output = [
+
+            x for x in output
+
+            if x and isinstance(x, dict)
+
+        ]
+
+        return jsonify(output)
 
     except Exception as e:
 
-        print(e)
+        log1(f"GET INDEX CONSTITUENTS ERROR: {e}")
 
         return jsonify([])
 # ----------------------------

@@ -1951,8 +1951,8 @@ def get_index_constituents():
             kite_local,
             period=560
         )
-        if df_index is None or len(df_index) < 120:
-            return empty_stock_result(index_name, "df_index")
+        # if df_index is None or len(df_index) < 120:
+        #     return empty_stock_result(index_name, "df_index")
 
         df_index.rename(columns={
             'open': 'Open',
@@ -1962,6 +1962,7 @@ def get_index_constituents():
             'volume': 'Volume',
             'oi': 'OI'
         }, inplace=True)
+        log1(df_index)
         # ============================================
         # ANALYZE STOCKS
         # ============================================

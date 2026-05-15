@@ -523,7 +523,7 @@ WATCHLIST SECTION
                         min-height:0;
                     "
                 >
-
+                    <div id = "indexAnalysis"></div>
                     <table style="
                         width:100%;
                         border-collapse:collapse;
@@ -1056,7 +1056,7 @@ function updateTables(data){
 
             `
             <span
-                onclick="openChart('${row.symbol}')"
+                onclick="openChart('${row.symbol}', '${JSON.stringify(row)}')"
                 style="
                     color:#2980b9;
                     cursor:pointer;
@@ -1396,9 +1396,10 @@ let indicators = {
     vwap: false,
     ema: false
 };
-function openChart(symbol) {
+function openChart(symbol, row) {
     currentSymbol = symbol;
 
+    console.log(row.ret1)
     document.getElementById("chartModal").style.display = "block";
     document.getElementById("chartTitle").innerText = symbol;
 

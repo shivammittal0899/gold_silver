@@ -1752,7 +1752,8 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
             fundamental_data = fundamental_analysis(symbol, info) 
             result.update(fundamental_data if isinstance(fundamental_data, dict) else {})
         if analysis_type == "index":
-            stock_rs = rs_fun(df3, index_data)
+            stock_rs = rs_fun(result_ret, index_data)
+            result.update(stock_rs if isinstance(stock_rs, dict) else {})
 
         # valu = valuation_analysis(result)
         # # log1(val)

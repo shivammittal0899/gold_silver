@@ -532,6 +532,22 @@ WATCHLIST SECTION
                     "
                 >
                     <div id = "indexAnalysis"></div>
+                    <div style="
+                        display:flex;
+                        gap:10px;
+                        margin-bottom:10px;
+                    ">
+
+                        <button
+                            onclick="copyModalSelected()"
+                            style="
+                                background:#3498db;
+                            "
+                        >
+                            📋 Copy Selected
+                        </button>
+
+                    </div>
                     <table style="
                         width:100%;
                         border-collapse:collapse;
@@ -546,16 +562,20 @@ WATCHLIST SECTION
 
                             <tr>
 
-                                <th style="
-                                    text-align:left;
+                                <td style="
                                     padding:10px;
-                                    border-bottom:1px solid #ddd;
+                                    border-bottom:1px solid #eee;
                                 ">
+
                                     <input
                                         type="checkbox"
-                                        onchange="toggleAllRows(this)"
+                                        class="modalStockCheckbox"
+                                        value="${stock.symbol}"
+
+                                        onclick="event.stopPropagation();"
                                     >
-                                </th>
+
+                                </td>
                                 <th style="
                                     text-align:left;
                                     padding:10px;
@@ -1535,6 +1555,64 @@ function toggleIndicator(name) {
 }
 function closeChart() {
     document.getElementById("chartModal").style.display = "none";
+}
+// =========================
+// TOGGLE ALL MODAL ROWS
+// =========================
+
+function toggleAllModalRows(el){
+
+    $('.modalStockCheckbox').prop(
+        'checked',
+        el.checked
+    );
+
+}
+
+
+// =========================
+// GET MODAL SELECTED
+// =========================
+
+function getModalSelectedRows(){
+
+    let rows = [];
+
+    $('.modalStockCheckbox:checked').each(function(){
+
+        rows.push($(this).val());
+
+    });
+
+    return [...new Set(rows)];
+
+}
+
+
+// =========================
+// COPY MODAL SELECTED
+// =========================
+
+function copyModalSelected(){
+
+    let rows = getModalSelectedRows();
+
+    if(rows.length === 0){
+
+        alert('Select stocks');
+
+        return;
+
+    }
+
+    navigator.clipboard.writeText(
+
+        rows.join(' ')
+
+    );
+
+    alert('Copied Successfully');
+
 }
 
 setInterval(updateLiveLTP, 5000);

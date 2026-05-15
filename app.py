@@ -1746,6 +1746,7 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
             'signal_1d': result3['signal'],
             
         }
+        log1(f"Data received till now {symbol}")
         if analysis_type == "stock":
             df_yf = yf.Ticker(symbol+".NS")
             info = df_yf.get_info()
@@ -1753,6 +1754,7 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
             result.update(fundamental_data if isinstance(fundamental_data, dict) else {})
         if analysis_type == "index":
             stock_rs = rs_fun(result_ret, index_data)
+            log1(f"Data RS fetch till now {symbol}")
             result.update(stock_rs if isinstance(stock_rs, dict) else {})
 
         # valu = valuation_analysis(result)
@@ -1773,8 +1775,6 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
 
         # composite = composite_score(result)
         # result.update(composite if isinstance(composite, dict) else {})
-        # log1(result)
-        log1(result)
         return {"symbol": symbol, **result}
 
     except Exception as e:
@@ -1990,7 +1990,6 @@ def get_index_constituents():
             if x and isinstance(x, dict)
 
         ]
-        log1(output)
 
         return jsonify(output)
 

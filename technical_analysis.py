@@ -470,20 +470,67 @@ def stock_data_analysis_common(df):
     }
     return data
 
+def calculate_returns(price, df):
+    periods = {
+        'ret5': 5,
+        'ret15': 10,
+        'ret30': 20,
+        'ret90': 60
+    }
+    result = {}
+    for key, period in periods.items():
+        if len(df) > period:
+            result[key] = round(
+                ((price / df['Open'].iat[-period]) - 1) * 100,
+                2
+            )
+        else:
+            result[key] = None
+    return result
 
+def safe_rs(stock_ret, index_ret):
+    if stock_ret is None or index_ret is None:
+        return None
+    return round(stock_ret - index_ret, 2)
+
+
+data = {
+
+    'rs5': safe_rs(
+        result_ret.get('ret5'),
+        ret5
+    ),
+
+    'rs15': safe_rs(
+        result_ret.get('ret15'),
+        ret15
+    ),
+
+    'rs30': safe_rs(
+        result_ret.get('ret30'),
+        ret30
+    ),
+
+    'rs90': safe_rs(
+        result_ret.get('ret90'),
+        ret90
+    ),
+
+}
 def rs_fun(result_ret, index_data):
     price = index_data['Close'].iat[-1]
+    ret = calculate_returns(price, index_data)
     # ret1 = float(((price/index_data['Close'].iat[-2])-1)*100)
-    ret5 = float(((price/index_data['Open'].iat[-5])-1)*100)
-    ret15 = float(((price/index_data['Open'].iat[-10]) - 1)*100)
-    ret30 = float(((price/index_data['Open'].iat[-20]) - 1)*100)
-    ret90 = float(((price/index_data['Open'].iat[-60]) - 1)*100)
+    # ret5 = float(((price/index_data['Open'].iat[-5])-1)*100)
+    # ret15 = float(((price/index_data['Open'].iat[-10]) - 1)*100)
+    # ret30 = float(((price/index_data['Open'].iat[-20]) - 1)*100)
+    # ret90 = float(((price/index_data['Open'].iat[-60]) - 1)*100)
 
     data = {
-        'rs5': result_ret['ret5'] - ret5,
-        'rs15': result_ret['ret15'] - ret15,
-        'rs30': result_ret['ret30'] - ret30,
-        'rs90': result_ret['ret90'] - ret90,
+        'rs5': safe_rs(result_ret.get('ret5'),ret['ret5']),
+        'rs15': None,
+        'rs30': None,
+        'rs90': safe_rs(result_ret.get('ret90'),ret['ret90']),
     }
 
     return data

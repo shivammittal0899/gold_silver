@@ -551,7 +551,10 @@ WATCHLIST SECTION
                                     padding:10px;
                                     border-bottom:1px solid #ddd;
                                 ">
-                                    Checkbox
+                                    <input
+                                        type="checkbox"
+                                        onchange="toggleAllRows(this)"
+                                    >
                                 </th>
                                 <th style="
                                     text-align:left;
@@ -1499,7 +1502,7 @@ function loadChart(currentSymbol) {
     }, 50);
 }
 function loadIndexStocks(indexName){
-
+    $('#indexStocksList').html("");
     fetch(`/get_index_constituents?index=${encodeURIComponent(indexName)}`)
 
     .then(res => res.json())

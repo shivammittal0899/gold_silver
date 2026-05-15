@@ -548,10 +548,16 @@ WATCHLIST SECTION
                         </button>
 
                     </div>
-                    <table style="
+                    <div style="
                         width:100%;
-                        border-collapse:collapse;
+                        overflow-x:auto;
                     ">
+
+                        <table style="
+                            min-width:1600px;
+                            border-collapse:collapse;
+                            white-space:nowrap;
+                        ">
 
                         <thead style="
                             position:sticky;
@@ -569,10 +575,8 @@ WATCHLIST SECTION
 
                                     <input
                                         type="checkbox"
-                                        class="modalStockCheckbox"
-                                        value="${stock.symbol}"
-
-                                        onclick="event.stopPropagation();"
+                                        onchange="toggleAllModalRows(this)"
+                                        
                                     >
 
                                 </td>
@@ -684,7 +688,8 @@ WATCHLIST SECTION
 
                         <tbody id="indexStocksList"></tbody>
 
-                    </table>
+                        </table>
+                    </div>
 
                 </div>
 

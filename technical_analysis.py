@@ -469,3 +469,7 @@ def stock_data_analysis_common(df):
         'retyearLow': float(((price/yearLow) - 1)*100)
     }
     return data
+
+
+def rs_fun(df3, index_data):
+    return None

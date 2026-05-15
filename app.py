@@ -1637,7 +1637,7 @@ def live_ltp():
     conn.close()
 
     return jsonify(result)
-def analyze_one_stock(symbol, access_token, analysis_type = "stock"):
+def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data = None):
     try:
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
@@ -1751,6 +1751,8 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock"):
             info = df_yf.get_info()
             fundamental_data = fundamental_analysis(symbol, info) 
             result.update(fundamental_data if isinstance(fundamental_data, dict) else {})
+        if analysis_type == "index":
+            stock_rs = rs_fun(df3, index_data)
 
         # valu = valuation_analysis(result)
         # # log1(val)
@@ -1938,22 +1940,22 @@ def get_index_constituents():
         token = get_instrument_token(index_name)
         log1(token)
         
-        # # 🔥 adjust period dynamically
-        # period_map = {
-        #     "5minute": 7,
-        #     "15minute": 15,
-        #     "30minute": 60,
-        #     "60minute": 60,
-        #     "day": 665
-        # }
-        # # log1(f"{interval} -- {period_map.get(interval, 365)}")
-        # df_index = fetch_with_retry_token(
-        #     index_name,
-        #     token,
-        #     "day",
-        #     kite_local,
-        #     period=560
-        # )
+        # 🔥 adjust period dynamically
+        period_map = {
+            "5minute": 7,
+            "15minute": 15,
+            "30minute": 60,
+            "60minute": 60,
+            "day": 665
+        }
+        # log1(f"{interval} -- {period_map.get(interval, 365)}")
+        df_index = fetch_with_retry_token(
+            index_name,
+            token,
+            "day",
+            kite_local,
+            period=560
+        )
         # ============================================
         # ANALYZE STOCKS
         # ============================================
@@ -1965,7 +1967,8 @@ def get_index_constituents():
                 lambda s: analyze_one_stock(
                     s,
                     access_token,
-                    analysis_type="index"
+                    analysis_type="index",
+                    index_data = df_index
                 ),
 
                 symbols

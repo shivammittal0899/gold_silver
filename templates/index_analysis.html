@@ -95,6 +95,14 @@
     table.dataTable tbody td{
         white-space:nowrap;
     }
+    #indexAnalysis{
+        display: flex;
+        gap: 30px;
+        font-size: 18px;
+    }
+    #indexAnalysis span {
+        font-weight: bold;
+    }
 
     </style>
 
@@ -1400,10 +1408,10 @@ function openChart(symbol, ret1, ret5, ret15, ret30) {
     currentSymbol = symbol;
 
     console.log(ret1)
-    htmlret =  `<div class = "chartIndexHighlight">Return - <span>${ret1}</span></div>
-                <div class = "chartIndexHighlight">Return 5D - <span>${ret5}</span></div>
-                <div class = "chartIndexHighlight">Return 15D - <span>${ret15}</span></div>
-                <div class = "chartIndexHighlight">Return 30D - <span>${ret30}</span></div>
+    htmlret =  `<div><span>Return:  </span>${ret1}</div>
+                <div><span>Return 5D:  </span>${ret5}</div>
+                <div><span>Return 15D:  </span>${ret15}</div>
+                <div><span>Return 30D:  </span>${ret30}</div>
                 `
     let containerret = document.getElementById("indexAnalysis");
     containerret.innerHTML = "";

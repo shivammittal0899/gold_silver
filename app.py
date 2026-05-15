@@ -1648,7 +1648,7 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock"):
 
         df1 = fetch_with_retry_token(symbol, token, "30minute", kite_local, period = 60)
         df2 = fetch_with_retry_token(symbol, token, "60minute", kite_local, period = 90)
-        df3 = fetch_with_retry_token(symbol, token, "day", kite_local, period = 360)
+        df3 = fetch_with_retry_token(symbol, token, "day", kite_local, period = 560)
         
         if df1 is None or len(df1) < 120:
             return empty_stock_result(symbol, "df1")
@@ -1932,7 +1932,28 @@ def get_index_constituents():
         # ============================================
 
         access_token = read_access_token()
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
 
+        token = get_instrument_token(index_name)
+        log1(token)
+        
+        # # 🔥 adjust period dynamically
+        # period_map = {
+        #     "5minute": 7,
+        #     "15minute": 15,
+        #     "30minute": 60,
+        #     "60minute": 60,
+        #     "day": 665
+        # }
+        # # log1(f"{interval} -- {period_map.get(interval, 365)}")
+        # df_index = fetch_with_retry_token(
+        #     index_name,
+        #     token,
+        #     "day",
+        #     kite_local,
+        #     period=560
+        # )
         # ============================================
         # ANALYZE STOCKS
         # ============================================

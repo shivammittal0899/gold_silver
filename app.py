@@ -1637,7 +1637,7 @@ def live_ltp():
     conn.close()
 
     return jsonify(result)
-def analyze_one_stock(symbol, access_token):
+def analyze_one_stock(symbol, access_token, analysis_type = "stock"):
     try:
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
@@ -1685,8 +1685,7 @@ def analyze_one_stock(symbol, access_token):
             'oi': 'OI'
         }, inplace=True)
 
-        df_yf = yf.Ticker(symbol+".NS")
-        info = df_yf.get_info()
+        
         
         result1, df1 = stock_data_analysis(df1, "30m")
         result2, df2 = stock_data_analysis(df2, "60m")
@@ -1706,7 +1705,7 @@ def analyze_one_stock(symbol, access_token):
                 ).get("last_price", result1['price'])
             except:
                 live_ltp = result1['price']
-
+        
         result = {
 
             'ltp': live_ltp,
@@ -1745,72 +1744,33 @@ def analyze_one_stock(symbol, access_token):
             'signal_30m': result1['signal'],
             'signal_60m': result2['signal'],
             'signal_1d': result3['signal'],
-            'industry': info.get("industry", None),
-            'sector': info.get("sector", None),
-            'business': info.get("longBusinessSummary", None),
-            'dividendYield': info.get("dividendYield", None),
-            'payoutRatio': info.get("payoutRatio", None),
-            'beta': info.get("beta", None),
-            'trailingPE': info.get("trailingPE", None),
-            'forwardPE': info.get("forwardPE", None),
-            'trailingEPS': info.get("trailingEps", None),
-            'forwardEPS': info.get("forwardEps", None),
-            'epsTrailingTwelveMonths': info.get("epsTrailingTwelveMonths", None),
-            'epsForward': info.get("epsForward", None),
-            'epsCurrentYear': info.get("epsCurrentYear", None),
-            'pegRatio': info.get("pegRatio", None),
-            'marketCap': info.get("marketCap", None),   #
-            'enterpriseValue': info.get("enterpriseValue", None), #
-            'profitMargins': info.get("profitMargins", None), ##
-            'bookValue': info.get("bookValue", None),
-            'priceToBook': info.get("priceToBook", None),
-            'earningsQuarterlyGrowth': info.get("earningsQuarterlyGrowth", None),
-            'enterpriseToRevenue': info.get("enterpriseToRevenue", None),
-            'enterpriseToEbitda': info.get("enterpriseToEbitda", None),
-            'targetHighPrice': info.get("targetHighPrice", None), #
-            'targetLowPrice': info.get("targetLowPrice", None), ###
-            'targetMeanPrice': info.get("targetMeanPrice", None),  ##
-            'recommendationKey': info.get("recommendationKey", None),  ##
-            'totalCashPerShare': info.get("totalCashPerShare", None),
-            'ebitda': info.get("ebitda", None),
-            'totalRevenue': info.get("totalRevenue", None),
-            'totalDebt': info.get("totalDebt", None),
-            'quickRatio': info.get("quickRatio", None),  ##
-            'currentRatio': info.get("currentRatio", None),  ##
-            'debtToEquity': info.get("debtToEquity", None),  ##
-            'revenuePerShare': info.get("revenuePerShare", None),
-            'returnOnAssets': info.get("returnOnAssets", None),
-            'returnOnEquity': info.get("returnOnEquity", None),
-            'grossProfits': info.get("grossProfits", None),  
-            'freeCashflow': info.get("freeCashflow", None),
-            'operatingCashflow': info.get("operatingCashflow", None),
-            'earningsGrowth': info.get("earningsGrowth", None),
-            'revenueGrowth': info.get("revenueGrowth", None),
-            'grossMargins': info.get("grossMargins", None),  ##
-            'ebitdaMargins': info.get("ebitdaMargins", None),  ##
-            'operatingMargins': info.get("operatingMargins", None),  ##
-            'customPriceAlertConfidence': info.get("customPriceAlertConfidence", None),
-            'fiftyTwoWeekRange': info.get("fiftyTwoWeekRange", None),
+            
         }
-        valu = valuation_analysis(result)
-        # log1(val)
-        growth = growth_analysis(result)
-        # log1(growth)
-        prof = profitability_analysis(result)
-        # log1(prof)
-        risk = financial_health_analysis(result)
-        # log1(risk)
-        sent = sentiment_analysis(result, result1['price'])
-        # log1(sent)
-        result.update(valu if isinstance(valu, dict) else {})
-        result.update(growth if isinstance(growth, dict) else {})
-        result.update(prof if isinstance(prof, dict) else {})
-        result.update(risk if isinstance(risk, dict) else {})
-        result.update(sent if isinstance(sent, dict) else {})
+        if analysis_type == "stock":
+            df_yf = yf.Ticker(symbol+".NS")
+            info = df_yf.get_info()
+            fundamental_data = fundamental_analysis(symbol, info) 
+            result.update(fundamental_data if isinstance(fundamental_data, dict) else {})
 
-        composite = composite_score(result)
-        result.update(composite if isinstance(composite, dict) else {})
-        log1(result)
+        # valu = valuation_analysis(result)
+        # # log1(val)
+        # growth = growth_analysis(result)
+        # # log1(growth)
+        # prof = profitability_analysis(result)
+        # # log1(prof)
+        # risk = financial_health_analysis(result)
+        # # log1(risk)
+        # sent = sentiment_analysis(result, result1['price'])
+        # # log1(sent)
+        # result.update(valu if isinstance(valu, dict) else {})
+        # result.update(growth if isinstance(growth, dict) else {})
+        # result.update(prof if isinstance(prof, dict) else {})
+        # result.update(risk if isinstance(risk, dict) else {})
+        # result.update(sent if isinstance(sent, dict) else {})
+
+        # composite = composite_score(result)
+        # result.update(composite if isinstance(composite, dict) else {})
+        # log1(result)
         return {"symbol": symbol, **result}
 
     except Exception as e:

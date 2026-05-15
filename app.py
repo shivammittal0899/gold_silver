@@ -1774,6 +1774,7 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
         # composite = composite_score(result)
         # result.update(composite if isinstance(composite, dict) else {})
         # log1(result)
+        log1(result)
         return {"symbol": symbol, **result}
 
     except Exception as e:
@@ -1985,6 +1986,7 @@ def get_index_constituents():
             if x and isinstance(x, dict)
 
         ]
+        log1(output)
 
         return jsonify(output)
 

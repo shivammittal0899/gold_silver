@@ -343,7 +343,7 @@ function popup_table(data){
 
         html += `
             <tr>
-                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                <td><input type="checkbox" class="modalStockCheckbox" value="${d.symbol}"></td>
                 
                 <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
                     ${d.symbol}

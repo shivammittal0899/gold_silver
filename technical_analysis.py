@@ -473,7 +473,7 @@ def stock_data_analysis_common(df):
 
 def rs_fun(result_ret, index_data):
     price = index_data['Close'].iat[-1]
-    ret1 = float(((price/index_data['Close'].iat[-2])-1)*100)
+    # ret1 = float(((price/index_data['Close'].iat[-2])-1)*100)
     ret5 = float(((price/index_data['Open'].iat[-5])-1)*100)
     ret15 = float(((price/index_data['Open'].iat[-10]) - 1)*100)
     ret30 = float(((price/index_data['Open'].iat[-20]) - 1)*100)

@@ -1942,14 +1942,7 @@ def get_index_constituents():
         token = get_instrument_token(index_name)
         log1(token)
         
-        # 🔥 adjust period dynamically
-        period_map = {
-            "5minute": 7,
-            "15minute": 15,
-            "30minute": 60,
-            "60minute": 60,
-            "day": 665
-        }
+        
         # log1(f"{interval} -- {period_map.get(interval, 365)}")
         df_index = fetch_with_retry_token(
             index_name,
@@ -1958,6 +1951,17 @@ def get_index_constituents():
             kite_local,
             period=560
         )
+        if df_index is None or len(df_index) < 120:
+            return empty_stock_result(index_name, "df_index")
+
+        df_index.rename(columns={
+            'open': 'Open',
+            'high': 'High',
+            'low': 'Low',
+            'close': 'Close',
+            'volume': 'Volume',
+            'oi': 'OI'
+        }, inplace=True)
         # ============================================
         # ANALYZE STOCKS
         # ============================================

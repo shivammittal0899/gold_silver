@@ -1056,7 +1056,7 @@ function updateTables(data){
 
             `
             <span
-                onclick="openChart('${row.symbol}', '${JSON.stringify(row)}')"
+                onclick="openChart('${row.symbol}', '${row.return_1d}', '${row.return_5d}', '${row.return_15d}', '${row.return_30d}')"
                 style="
                     color:#2980b9;
                     cursor:pointer;
@@ -1396,10 +1396,10 @@ let indicators = {
     vwap: false,
     ema: false
 };
-function openChart(symbol, row) {
+function openChart(symbol, ret1, ret5, ret15, ret30) {
     currentSymbol = symbol;
 
-    console.log(row.ret1)
+    console.log(ret1)
     document.getElementById("chartModal").style.display = "block";
     document.getElementById("chartTitle").innerText = symbol;
 

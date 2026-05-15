@@ -493,30 +493,6 @@ def safe_rs(stock_ret, index_ret):
         return None
     return round(stock_ret - index_ret, 2)
 
-
-data = {
-
-    'rs5': safe_rs(
-        result_ret.get('ret5'),
-        ret5
-    ),
-
-    'rs15': safe_rs(
-        result_ret.get('ret15'),
-        ret15
-    ),
-
-    'rs30': safe_rs(
-        result_ret.get('ret30'),
-        ret30
-    ),
-
-    'rs90': safe_rs(
-        result_ret.get('ret90'),
-        ret90
-    ),
-
-}
 def rs_fun(result_ret, index_data):
     price = index_data['Close'].iat[-1]
     ret = calculate_returns(price, index_data)

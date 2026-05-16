@@ -63,6 +63,7 @@ INDEX_MAP = {
     # INFRA
     "NIFTY INFRA": "niftyinfra",
     "NIFTY INDIA MFG": "niftyindiamanufacturing_",
+    "NIFTY MULTI MFG": "",
 
     # REALTY
     "NIFTY REALTY": "niftyrealty",
@@ -71,8 +72,25 @@ INDEX_MAP = {
     "NIFTY FMCG": "niftyfmcg",
     "NIFTY CONSUMPTION": "niftyconsumption",
 
+    "NIFTY CONSR DURBL": "niftyconsumerdurables",
+
     # DEFENCE
     "NIFTY IND DEFENCE": "niftyindiadefence_",
+
+    # CAPITAL MKT
+    "NIFTY CAPITAL MKT": "niftycapitalmarkets_",
+
+    "NIFTY COMMODITIES": "niftycommodities",
+
+    "NIFTY HOUSING": "niftycorehousing_",
+
+    "NIFTY IND TOURISM": "niftyindiatourism_",
+
+    "NIFTY MEDIA": "niftymedia",
+
+    "NIFTY PSE": "niftypse",
+
+    "NIFTY SERV SECTOR": "niftyservices",
 
     # MOMENTUM
     "NIFTY200MOMENTM30": "nifty200momentum30_",

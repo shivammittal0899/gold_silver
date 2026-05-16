@@ -1176,22 +1176,12 @@ function updateLiveLTP() {
 
     });
 }
-// 🔥 LIVE TICKS
-setInterval(updateLiveLTP, 30000);
 
-// 🔥 FULL REFRESH
-setInterval(() => {
-
-    if (currentStocks.length > 0) {
-        fetchAndRenderAnalysis(currentStocks);
-    }
-
-}, 60000);
 // =========================
 // LIVE UPDATE CONTROL
 // =========================
 
-let liveUpdatesEnabled = true;
+let liveUpdatesEnabled = false;
 let liveLtpInterval = null;
 let fullRefreshInterval = null;
 // =========================

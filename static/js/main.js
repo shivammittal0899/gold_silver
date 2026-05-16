@@ -160,7 +160,7 @@ function technical_table1(data){
                     ${d.symbol}
                 </td>
                 
-                <td>${d.sector || '-'}</td>
+                <td>${d.industry || '-'}</td>
                 <td class="ltp-cell"
                     data-symbol="${d.symbol}"
                     data-ltp="${d.ltp || 0}"

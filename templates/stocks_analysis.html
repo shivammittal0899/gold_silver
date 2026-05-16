@@ -139,6 +139,13 @@
 <button onclick="addStocks()">Add to Watchlist</button>
 <button onclick="toggleWatchlistPanel()">➕ Add to Watchlist</button>
 <button onclick="analyze()">📊 Analyze</button>
+<button
+    id="liveToggleBtn"
+    onclick="toggleLiveUpdates()"
+    style="background:#27ae60;"
+>
+    ⏸ Stop Live
+</button>
 <button onclick="clearSelectedStocks()" 
         style="background:#e74c3c;">
     ❌ Clear Selection
@@ -1169,7 +1176,7 @@ function updateLiveLTP() {
     });
 }
 // 🔥 LIVE TICKS
-setInterval(updateLiveLTP, 5000);
+setInterval(updateLiveLTP, 30000);
 
 // 🔥 FULL REFRESH
 setInterval(() => {
@@ -1178,10 +1185,72 @@ setInterval(() => {
         fetchAndRenderAnalysis(currentStocks);
     }
 
-}, 30000);
+}, 60000);
+// =========================
+// LIVE UPDATE CONTROL
+// =========================
+
+let liveUpdatesEnabled = true;
+let liveLtpInterval = null;
+let fullRefreshInterval = null;
+// =========================
+// START LIVE UPDATES
+// =========================
+function startLiveUpdates(){
+    // LIVE LTP
+    liveLtpInterval = setInterval(
+        updateLiveLTP,
+        30000
+    );
+    // FULL REFRESH
+    fullRefreshInterval = setInterval(() => {
+        if(currentStocks.length > 0){
+            fetchAndRenderAnalysis(
+                currentStocks
+            );
+        }
+    }, 60000);
+}
+
+// =========================
+// STOP LIVE UPDATES
+// =========================
+function stopLiveUpdates(){
+    clearInterval(
+        liveLtpInterval
+    );
+
+    clearInterval(
+        fullRefreshInterval
+    );
+
+}
+// =========================
+// TOGGLE
+// =========================
+
+function toggleLiveUpdates(){
+    liveUpdatesEnabled = !liveUpdatesEnabled;
+    let btn = document.getElementById(
+        "liveToggleBtn"
+    );
+    // STOP
+    if(!liveUpdatesEnabled){
+        stopLiveUpdates();
+        btn.innerHTML = "▶ Start Live";
+        btn.style.background = "#e67e22";
+    }
+    // START
+    else{
+        startLiveUpdates();
+        btn.innerHTML = "⏸ Stop Live";
+        btn.style.background = "#27ae60";
+    }
+}
 window.onload = function() {
 
     fetch('/start_market_ws');
+    startLiveUpdates();
 
 };
 </script>

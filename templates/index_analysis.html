@@ -576,7 +576,10 @@ WATCHLIST SECTION
                                     <input
                                         type="checkbox"
                                         onchange="toggleAllModalRows(this)"
-                                        
+                                        class="modalStockCheckbox"
+                                        value="${stock.symbol}"
+
+                                        onclick="event.stopPropagation();"
                                     >
 
                                 </td>
@@ -1620,7 +1623,7 @@ function copyModalSelected(){
 
 }
 
-setInterval(updateLiveLTP, 5000);
+setInterval(updateLiveLTP, 30000);
 
 setInterval(()=>{
 
@@ -1630,7 +1633,7 @@ setInterval(()=>{
 
     }
 
-}, 30000);
+}, 60000);
 
 </script>
 

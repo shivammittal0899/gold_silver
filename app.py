@@ -1782,6 +1782,67 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
         return empty_stock_result(symbol, "Error")
 
 
+def analyze_one_stock_index(symbol, access_token, analysis_type = "stock", index_data = None):
+    try:
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
+        token = get_instrument_token(symbol)
+
+        if not token:
+            return empty_stock_result(symbol, "token issue")
+
+        df3 = fetch_with_retry_token(symbol, token, "day", kite_local, period = 560)
+        
+        # if df1 is None or len(df1) < 120:
+        #     return empty_stock_result(symbol, "df1")
+
+        df3.rename(columns={
+            'open': 'Open',
+            'high': 'High',
+            'low': 'Low',
+            'close': 'Close',
+            'volume': 'Volume',
+            'oi': 'OI'
+        }, inplace=True)
+        result_ret = stock_data_analysis_common(df3)
+        
+        result = {
+
+            'ltp': live_ltp,
+            'price': df3['Close'].iat[-1],
+            'ret1': result_ret['ret1'],
+            'ret5': result_ret['ret5'],
+            'ret15': result_ret['ret15'],
+            'ret30': result_ret['ret30'],
+            'ret90': result_ret['ret90'],
+            'retdayHigh': result_ret['retdayHigh'],
+            'retdayLow': result_ret['retdayLow'],
+            'retweekHigh': result_ret['retweekHigh'],
+            'retweekLow': result_ret['retweekLow'],
+            'retmonthHigh': result_ret['retmonthHigh'],
+            'retmonthLow': result_ret['retmonthLow'],
+            'retyearHigh': result_ret['retyearHigh'],
+            'retyearLow': result_ret['retyearLow']
+            
+        }
+        log1(f"Data received till now {symbol}")
+        if analysis_type == "stock":
+            df_yf = yf.Ticker(symbol+".NS")
+            info = df_yf.get_info()
+            fundamental_data = fundamental_analysis(symbol, info) 
+            result.update(fundamental_data if isinstance(fundamental_data, dict) else {})
+        if analysis_type == "index":
+            stock_rs = rs_fun(result_ret, index_data)
+            log1(f"Data RS fetch till now {symbol}")
+            result.update(stock_rs if isinstance(stock_rs, dict) else {})
+
+        return {"symbol": symbol, **result}
+
+    except Exception as e:
+        log1(f"Error in {symbol}: {e}")
+        return empty_stock_result(symbol, "Error")
+
+
 @app.route('/analyze_stocks', methods=['POST'])
 def analyze_stocks():
     # symbols = request.json.get("symbols", [])
@@ -2075,7 +2136,7 @@ def get_stock_constituents():
 
             output = list(executor.map(
 
-                lambda s: analyze_one_stock(
+                lambda s: analyze_one_stock_index(
                     s,
                     access_token,
                     analysis_type="index",

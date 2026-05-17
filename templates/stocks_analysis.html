@@ -514,13 +514,6 @@
                                 ">
                                     RS 90D
                                 </th>
-                                <th style="
-                                    text-align:left;
-                                    padding:10px;
-                                    border-bottom:1px solid #ddd;
-                                ">
-                                    Signal D
-                                </th>
 
 
                             </tr>
@@ -1309,6 +1302,7 @@ function loadStockIndex(stockName){
         }
 
         $('#indexStocksPanel').show();
+        console.log(data)
         html = popup_stock_table(data)
 
         $('#indexStocksList').html(html);

@@ -398,7 +398,6 @@ function popup_stock_table(data){
                 <td style="${getReturnColor(d.rs15)}">${d.rs15?.toFixed(2) || '-'}</td>
                 <td style="${getReturnColor(d.rs30)}">${d.rs30?.toFixed(2) || '-'}</td>
                 <td style="${getReturnColor(d.rs90)}">${d.rs90?.toFixed(2) || '-'}</td>
-                <td style="color:${color1d}; font-weight:bold;">${sig1d || '-'}</td>
             </tr>
         `;
     });

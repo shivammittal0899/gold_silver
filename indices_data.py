@@ -238,11 +238,6 @@ def create_master_table(df):
     # ============================================
     # MARKET CAP
     # ============================================
-
-    # grouped['Large_Cap'] = grouped['Index'].str.contains(
-    #     'NIFTY 50|NIFTY 100|NIFTY NEXT 50',
-    #     case=False
-    # )
     grouped['Large_Cap'] = grouped['Index'].apply(
         lambda x: any(
             i.strip() in ['NIFTY 50', 'NIFTY 100', 'NIFTY NEXT 50']

@@ -504,8 +504,8 @@ def rs_fun(result_ret, index_data):
 
     data = {
         'rs5': safe_rs(result_ret.get('ret5'),ret['ret5']),
-        'rs15': None,
-        'rs30': None,
+        'rs15': safe_rs(result_ret.get('ret15'),ret['ret15']),
+        'rs30': safe_rs(result_ret.get('ret30'),ret['ret30']),
         'rs90': safe_rs(result_ret.get('ret90'),ret['ret90']),
     }
 

@@ -368,3 +368,39 @@ function popup_table(data){
     });
     return html
 }
+function popup_stock_table(data){
+    let html = ""
+    data.forEach(d => {
+        let sig1d = d.signal_1d || "";
+
+
+        let color1d =
+            sig1d.includes("Strong Buy") ? "darkgreen" :
+            sig1d.includes("Strong Sell") ? "darkred" :
+            sig1d.includes("Buy") ? "green" :
+            sig1d.includes("Sell") ? "red" : "black";
+
+        html += `
+            <tr>
+                <td><input type="checkbox" class="modalStockCheckbox" value="${d.symbol}"></td>
+                
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+                    ${d.symbol}
+                </td>
+                
+                <td>${d.price?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.ret1?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret5)}">${d.ret5?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret15)}">${d.ret15?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret30)}">${d.ret30?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret90)}">${d.ret90?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.rs5)}">${d.rs5?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.rs15)}">${d.rs15?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.rs30)}">${d.rs30?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.rs90)}">${d.rs90?.toFixed(2) || '-'}</td>
+                <td style="color:${color1d}; font-weight:bold;">${sig1d || '-'}</td>
+            </tr>
+        `;
+    });
+    return html
+}

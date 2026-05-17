@@ -1290,7 +1290,7 @@ function loadChart() {
             .catch(err => console.error("Chart error:", err));
         
     }, 50);
-    // loadStockIndex(currentSymbol);
+    loadStockIndex(currentSymbol);
 }
 function loadStockIndex(stockName){
     $('#stockIndexList').html("");
@@ -1309,9 +1309,9 @@ function loadStockIndex(stockName){
         }
 
         $('#indexStocksPanel').show();
-        html = popup_table(data)
+        // html = popup_table(data)
 
-        $('#indexStocksList').html(html);
+        // $('#indexStocksList').html(html);
 
     });
 

@@ -2087,7 +2087,7 @@ def get_stock_constituents():
             ))
 
         # REMOVE EMPTY RESULTS
-
+        log1(output)
         output = [
 
             x for x in output

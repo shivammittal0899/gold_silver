@@ -1809,7 +1809,7 @@ def analyze_one_stock_index(symbol, access_token, analysis_type = "stock", index
         result = {
 
             'ltp': live_ltp,
-            'price': df3['Close'].iat[-1],
+            'price': float(df3['Close'].iat[-1]),
             'ret1': result_ret['ret1'],
             'ret5': result_ret['ret5'],
             'ret15': result_ret['ret15'],

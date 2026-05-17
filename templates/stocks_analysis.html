@@ -300,13 +300,15 @@
 
     <div style="
         background:white;
-        width:80%;
-        height:80%;
-        margin:5% auto;
+        width:90%;
+        height:90%;
+        margin:2% auto;
         padding:10px;
-        padding-bottom:20px;
+        padding-bottom:10px;
         border-radius:10px;
         position:relative;
+        display: flex;
+        flex-direction: column;
     ">
         <button onclick="closeChart()" style="
             position:absolute;
@@ -316,26 +318,223 @@
         ">✖</button>
 
         <h3 id="chartTitle"></h3>
+        <div style="
+            flex:1;
+            display:flex;
+            flex-direction:column;
+            gap:10px;
+            overflow:hidden;
+            overflow-y: auto;
+            min-height:0;
+        ">
+            <!-- Chart container -->
+            <div id="chartContainer" style="width:100%; height:70%;"></div>
+            <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
 
-        <!-- Chart container -->
-        <div id="chartContainer" style="width:100%; height:90%;"></div>
-        <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center;">
+                <!-- Timeframe -->
+                <select id="timeframeSelect" onchange="changeTimeframe()">
+                    <option value="5minute">5m</option>
+                    <option value="15minute">15m</option>
+                    <option value="30minute">30m</option>
+                    <option value="60minute">60m</option>
+                    <option value="day" selected>1D</option>
+                </select>
 
-            <!-- Timeframe -->
-            <select id="timeframeSelect" onchange="changeTimeframe()">
-                <option value="5minute">5m</option>
-                <option value="15minute">15m</option>
-                <option value="30minute">30m</option>
-                <option value="60minute">60m</option>
-                <option value="day" selected>1D</option>
-            </select>
+                <!-- Indicators -->
+                <label><input type="checkbox" onchange="toggleIndicator('ichimoku')"> Ichimoku</label>
+                <label><input type="checkbox" onchange="toggleIndicator('rsi')"> RSI</label>
+                <label><input type="checkbox" onchange="toggleIndicator('vwap')"> VWAP</label>
+                <label><input type="checkbox" onchange="toggleIndicator('ema')"> EMA</label>
 
-            <!-- Indicators -->
-            <label><input type="checkbox" onchange="toggleIndicator('ichimoku')"> Ichimoku</label>
-            <label><input type="checkbox" onchange="toggleIndicator('rsi')"> RSI</label>
-            <label><input type="checkbox" onchange="toggleIndicator('vwap')"> VWAP</label>
-            <label><input type="checkbox" onchange="toggleIndicator('ema')"> EMA</label>
+            </div>
+            <!-- Index Container -->
+             <div style="
+                flex:1;
+                display:flex;
+                flex-direction:column;
+                min-height:70vh;
+                overflow:hidden;
+                border:1px solid #ddd;
+                border-radius:8px;
+                padding:10px;
+                background:#fafafa;
+            ">
 
+                <!-- TITLE -->
+
+                <h4 style="
+                    margin:0 0 10px 0;
+                    position:sticky;
+                    top:0;
+                    background:#fafafa;
+                    z-index:5;
+                ">
+                    Constituents
+                </h4>
+
+                <!-- SCROLLABLE LIST -->
+
+                <div
+                    id="stockIndexPanel"
+                    style="
+                        flex:1;
+                        overflow-y:auto;
+                        overflow-x:hidden;
+                        min-height:0;
+                    "
+                >
+                    <div id = "stockAnalysis"></div>
+                    <div style="
+                        display:flex;
+                        gap:10px;
+                        margin-bottom:10px;
+                    ">
+
+                        <button
+                            onclick="copyModalSelected()"
+                            style="
+                                background:#3498db;
+                            "
+                        >
+                            📋 Copy Selected
+                        </button>
+
+                    </div>
+                    <div style="
+                        width:100%;
+                        overflow-x:auto;
+                    ">
+
+                        <table style="
+                            min-width:1600px;
+                            border-collapse:collapse;
+                            white-space:nowrap;
+                        ">
+
+                        <thead style="
+                            position:sticky;
+                            top:0;
+                            background:white;
+                            z-index:5;
+                        ">
+
+                            <tr>
+
+                                <td style="
+                                    padding:10px;
+                                    border-bottom:1px solid #eee;
+                                ">
+
+                                    <input
+                                        type="checkbox"
+                                        onchange="toggleAllModalRows(this)"
+                                        class="modalStockCheckbox"
+                                        value="${stock.symbol}"
+
+                                        onclick="event.stopPropagation();"
+                                    >
+
+                                </td>
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    Symbol
+                                </th>
+
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    Price
+                                </th>
+
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    Ret1D
+                                </th>
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    Ret5D
+                                </th>
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    Ret15D
+                                </th>
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    Ret30D
+                                </th>
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    Ret90D
+                                </th>
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    RS 5D
+                                </th>
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    RS 15D
+                                </th>
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    RS 30D
+                                </th>
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    RS 90D
+                                </th>
+                                <th style="
+                                    text-align:left;
+                                    padding:10px;
+                                    border-bottom:1px solid #ddd;
+                                ">
+                                    Signal D
+                                </th>
+
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="stockIndexList"></tbody>
+
+                        </table>
+                    </div>
+
+                </div>
+
+            </div>
         </div>
     </div>
 
@@ -1062,11 +1261,8 @@ function loadChart() {
         fetch(`/get_chart_data?symbol=${currentSymbol}&interval=${currentInterval}`)
             .then(res => res.json())
             .then(data => {
-
                 if (currentRequest !== requestId) return;
-
                 if (!data || data.length === 0) return;
-
                 let cleanData = data.filter(d =>
                     d &&
                     typeof d.time !== "undefined" &&
@@ -1075,17 +1271,13 @@ function loadChart() {
                     Number.isFinite(d.low) &&
                     Number.isFinite(d.close)
                 );
-
                 if (cleanData.length === 0) return;
-
                 // ✅ sort
                 cleanData.sort((a, b) => a.time - b.time);
-
                 // ✅ remove duplicates
                 const uniqueMap = new Map();
                 cleanData.forEach(d => uniqueMap.set(d.time, d));
                 const finalData = Array.from(uniqueMap.values());
-
                 candleSeries.setData(finalData);
                 // console.log(data.slice(-10));
                 if (indicators.ema) addEMA(finalData);
@@ -1098,6 +1290,31 @@ function loadChart() {
             .catch(err => console.error("Chart error:", err));
         
     }, 50);
+    loadStockIndex(currentSymbol);
+}
+function loadStockIndex(stockName){
+    $('#stockIndexList').html("");
+    fetch(`/get_stock_constituents?stock=${encodeURIComponent(stockName)}`)
+
+    .then(res => res.json())
+
+    .then(data => {
+
+        if(!data || data.length === 0){
+
+            $('#indexStocksPanel').hide();
+
+            return;
+
+        }
+
+        $('#indexStocksPanel').show();
+        html = popup_table(data)
+
+        $('#indexStocksList').html(html);
+
+    });
+
 }
 function changeTimeframe() {
     currentInterval = document.getElementById("timeframeSelect").value;
@@ -1129,6 +1346,31 @@ function copySelectedSymbols() {
             console.error("Copy failed", err);
             alert("❌ Copy failed");
         });
+}
+
+// =========================
+// GET MODAL SELECTED
+// =========================
+function getModalSelectedRows(){
+    let rows = [];
+    $('.modalStockCheckbox:checked').each(function(){
+        rows.push($(this).val());
+    });
+    return [...new Set(rows)];
+}
+// =========================
+// COPY MODAL SELECTED
+// =========================
+function copyModalSelected(){
+    let rows = getModalSelectedRows();
+    if(rows.length === 0){
+        alert('Select stocks');
+        return;
+    }
+    navigator.clipboard.writeText(
+        rows.join(' ')
+    );
+    alert('Copied Successfully');
 }
 function updateLiveLTP() {
 

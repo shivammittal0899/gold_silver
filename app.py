@@ -413,7 +413,7 @@ def fetch_with_retry_token(symbol, token, interval, kite, period = 30, retries=3
             # log1(df['date'].iloc[-1])
             return df
         except Exception as e:
-            log1(f"⚠️ Attempt {attempt+1} failed: {e}")
+            log1(f"⚠️ Attempt {attempt+1} failed: {e} -- {symbol}")
             if attempt < retries - 1:
                 time.sleep(delay)
             else:
@@ -1887,42 +1887,30 @@ def get_chart_data():
 
 @app.route('/get_index_constituents')
 def get_index_constituents():
-
     try:
-
         index_name = request.args.get('index')
-
         log1(index_name)
-
         if not index_name:
-
             return jsonify([])
-
         # ============================================
         # DATABASE
         # ============================================
 
         conn = sqlite3.connect(DB_NAME)
-
         query = """
             SELECT Symbol
             FROM index_stock_lists
             WHERE "Index" = ?
             ORDER BY Symbol
         """
-
         df = pd.read_sql(
             query,
             conn,
             params=[index_name]
         )
-
         conn.close()
-
         log1(df)
-
         if df.empty:
-
             return jsonify([])
 
         # ============================================
@@ -1979,6 +1967,122 @@ def get_index_constituents():
                 ),
 
                 symbols
+
+            ))
+
+        # REMOVE EMPTY RESULTS
+
+        output = [
+
+            x for x in output
+
+            if x and isinstance(x, dict)
+
+        ]
+
+        return jsonify(output)
+
+    except Exception as e:
+
+        log1(f"GET INDEX CONSTITUENTS ERROR: {e}")
+
+        return jsonify([])
+
+
+@app.route('/get_stock_constituents')
+def get_stock_constituents():
+    try:
+        stock_name = request.args.get('stock')
+        log1(stock_name)
+        if not stock_name:
+            return jsonify([])
+        # ============================================
+        # DATABASE
+        # ============================================
+
+        DB_NAME1 = "indices_data.db"
+        conn = sqlite3.connect(DB_NAME1)
+        query = """
+            SELECT *
+            FROM master_indices
+            WHERE Symbol = ?
+        """
+        df = pd.read_sql(
+            query,
+            conn,
+            params=[stock_name]
+        )
+        conn.close()
+        log1(df)
+        if df.empty:
+            return jsonify([])
+        # ============================================
+        # FETCH INDEX VALUES
+        # ============================================
+        indices = df.iloc[0]['Index']
+        # CONVERT STRING TO LIST
+        index_list = [
+            x.strip()
+            for x in indices.split(',')
+        ]
+        # log1(df)
+        # if df.empty:
+        #     return jsonify([])
+
+        # ============================================
+        # SYMBOL LIST
+        # ============================================
+
+        # symbols = df['Symbol'].tolist()
+
+        # ============================================
+        # ACCESS TOKEN
+        # ============================================
+
+        access_token = read_access_token()
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
+
+        token = get_instrument_token(stock_name)
+        log1(token)
+        
+        
+        # log1(f"{interval} -- {period_map.get(interval, 365)}")
+        df_stock = fetch_with_retry_token(
+            stock_name,
+            token,
+            "day",
+            kite_local,
+            period=560
+        )
+        # if df_index is None or len(df_index) < 120:
+        #     return empty_stock_result(index_name, "df_index")
+
+        df_stock.rename(columns={
+            'open': 'Open',
+            'high': 'High',
+            'low': 'Low',
+            'close': 'Close',
+            'volume': 'Volume',
+            'oi': 'OI'
+        }, inplace=True)
+        log1(df_stock)
+        # ============================================
+        # ANALYZE STOCKS
+        # ============================================
+
+        with ThreadPoolExecutor(max_workers=5) as executor:
+
+            output = list(executor.map(
+
+                lambda s: analyze_one_stock(
+                    s,
+                    access_token,
+                    analysis_type="index",
+                    index_data = df_stock
+                ),
+
+                index_list
 
             ))
 

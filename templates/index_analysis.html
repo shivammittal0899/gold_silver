@@ -500,7 +500,7 @@ WATCHLIST SECTION
                 flex:1;
                 display:flex;
                 flex-direction:column;
-                min-height:60vh;
+                min-height:70vh;
                 overflow:hidden;
                 border:1px solid #ddd;
                 border-radius:8px;
@@ -604,35 +604,35 @@ WATCHLIST SECTION
                                     padding:10px;
                                     border-bottom:1px solid #ddd;
                                 ">
-                                    Return 1D
+                                    Ret1D
                                 </th>
                                 <th style="
                                     text-align:left;
                                     padding:10px;
                                     border-bottom:1px solid #ddd;
                                 ">
-                                    Return 5D
+                                    Ret5D
                                 </th>
                                 <th style="
                                     text-align:left;
                                     padding:10px;
                                     border-bottom:1px solid #ddd;
                                 ">
-                                    Return 15D
+                                    Ret15D
                                 </th>
                                 <th style="
                                     text-align:left;
                                     padding:10px;
                                     border-bottom:1px solid #ddd;
                                 ">
-                                    Return 30D
+                                    Ret30D
                                 </th>
                                 <th style="
                                     text-align:left;
                                     padding:10px;
                                     border-bottom:1px solid #ddd;
                                 ">
-                                    Return 90D
+                                    Ret90D
                                 </th>
                                 <th style="
                                     text-align:left;
@@ -1211,176 +1211,110 @@ function formatSignal(signal){
 function updateLiveLTP(){
 
     if(currentIndexes.length === 0) return;
-
     fetch(`/live-index-ltp?symbols=${currentIndexes.join(',')}`)
-
     .then(res=>res.json())
-
     .then(data=>{
-
         analysisTable.rows().every(function(){
-
             let row = this.data();
-
             let symbol = row[0];
-
             if(data[symbol]){
-
                 row[1] = data[symbol];
-
                 this.data(row);
-
             }
-
         });
-
     });
-
 }
 function getSelectedRows(){
-
     let rows = [];
-
     $('.rowCheckbox:checked').each(function(){
-
         rows.push($(this).val());
-
     });
-
     return [...new Set(rows)];
-
 }
 
 
 function toggleAllRows(el){
-
     $('.rowCheckbox').prop(
         'checked',
         el.checked
     );
-
 }
 
 
 function copySelectedRows(){
-
     let rows = getSelectedRows();
-
     if(rows.length === 0){
-
         alert('Select rows');
         return;
-
     }
-
     navigator.clipboard.writeText(
         rows.join(' ')
     );
-
     alert('Copied Successfully');
-
 }
 
 
 function addSelectedToWatchlist(){
-
     let rows = getSelectedRows();
-
     if(rows.length === 0){
-
         alert('Select rows');
         return;
-
     }
 
     // CLEAR OLD OPTIONS
 
     $('#watchlistSelectPopup').empty();
-
     // LOAD WATCHLISTS
-
     $('.watchlist-btn').each(function(){
-
         let id = $(this).data('id');
-
         let name = $(this).text().trim();
-
         $('#watchlistSelectPopup').append(`
-
             <option value="${id}">
                 ${name}
             </option>
-
         `);
-
     });
 
     // STORE ROWS TEMP
-
     window.selectedRowsForWatchlist = rows;
 
     // SHOW MODAL
-
     $('#watchlistModal').show();
 
 }
 function closeWatchlistModal(){
-
     $('#watchlistModal').hide();
-
 }
 
 
 function confirmAddToWatchlist(){
-
     let watchlistId = $('#watchlistSelectPopup').val();
-
     let rows = window.selectedRowsForWatchlist || [];
-
     if(!watchlistId){
-
         alert('Select watchlist');
         return;
-
     }
-
     fetch('/add_indexes_to_watchlist',{
-
         method:'POST',
-
         headers:{
             'Content-Type':'application/json'
         },
-
         body:JSON.stringify({
-
             watchlist_id:watchlistId,
             symbols:rows
-
         })
-
     })
-
     .then(res=>res.json())
-
     .then(data=>{
-
         alert('Added Successfully');
-
         closeWatchlistModal();
-
     });
-
 }
 function deleteSelectedFromWatchlist(){
-
     let rows = getSelectedRows();
-
     if(rows.length === 0){
-
         alert('Select rows');
         return;
-
     }
 
     if(!activeWatchlist){
@@ -1463,7 +1397,6 @@ function loadChart(currentSymbol) {
         chart.remove();
         chart = null;
     }
-    loadIndexStocks(currentSymbol);
 
     setTimeout(() => {
 
@@ -1492,11 +1425,8 @@ function loadChart(currentSymbol) {
         fetch(`/get_chart_data?symbol=${currentSymbol}&interval=${currentInterval}`)
             .then(res => res.json())
             .then(data => {
-
                 if (currentRequest !== requestId) return;
-
                 if (!data || data.length === 0) return;
-
                 let cleanData = data.filter(d =>
                     d &&
                     typeof d.time !== "undefined" &&
@@ -1505,12 +1435,9 @@ function loadChart(currentSymbol) {
                     Number.isFinite(d.low) &&
                     Number.isFinite(d.close)
                 );
-
                 if (cleanData.length === 0) return;
-
                 // ✅ sort
                 cleanData.sort((a, b) => a.time - b.time);
-
                 // ✅ remove duplicates
                 const uniqueMap = new Map();
                 cleanData.forEach(d => uniqueMap.set(d.time, d));
@@ -1528,6 +1455,8 @@ function loadChart(currentSymbol) {
             .catch(err => console.error("Chart error:", err));
         
     }, 50);
+
+    loadIndexStocks(currentSymbol);
 }
 function loadIndexStocks(indexName){
     $('#indexStocksList').html("");

@@ -2348,8 +2348,8 @@ def portfolio_data():
             p['lots'] = '-'
 
         # 🔥 VALUES
-        invested_value = qty * p['average_price']
-        present_value = qty * ltp
+        invested_value = p['quantity'] * p['average_price']
+        present_value = p['quantity'] * ltp
 
         p['invested_value'] = invested_value
         p['present_value'] = present_value
@@ -2417,8 +2417,8 @@ def portfolio_data():
         else:
             p['lots'] = '-'
 
-        invested_value = qty * p['average_price']
-        present_value = qty * ltp
+        invested_value = p['quantity'] * p['average_price']
+        present_value = p['quantity'] * ltp
 
         p['invested_value'] = invested_value
         p['present_value'] = present_value
@@ -2556,9 +2556,9 @@ def portfolio_data():
         ltp = v["ltp"]
 
         # 🔥 INVESTED & PRESENT VALUE
-        invested_value = abs(qty) * avg_price
+        invested_value = qty * avg_price
 
-        present_value = abs(qty) * ltp
+        present_value = qty * ltp
 
         # 🔥 PNL
         pnl = (

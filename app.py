@@ -1807,8 +1807,6 @@ def analyze_one_stock_index(symbol, access_token, analysis_type = "stock", index
         result_ret = stock_data_analysis_common(df3)
         
         result = {
-
-            'ltp': live_ltp,
             'price': float(df3['Close'].iat[-1]),
             'ret1': result_ret['ret1'],
             'ret5': result_ret['ret5'],

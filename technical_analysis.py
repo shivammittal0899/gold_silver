@@ -491,7 +491,7 @@ def calculate_returns(price, df):
 def safe_rs(stock_ret, index_ret):
     if stock_ret is None or index_ret is None:
         return None
-    return round(stock_ret - index_ret, 2)
+    return float(round(stock_ret - index_ret, 2))
 
 def rs_fun(result_ret, index_data):
     price = index_data['Close'].iat[-1]

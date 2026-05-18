@@ -36,6 +36,14 @@
     <button type="submit">Add</button>
 </form>
 
+<button
+    id="liveToggleBtn"
+    onclick="toggleLiveUpdates()"
+    style="background:#e67e22;"
+>
+    ⏸ Stop Live
+</button>
+
 <!-- 🔥 Manual Portfolio Tables -->
 <div id="manual-container"></div>
 
@@ -386,7 +394,51 @@ function deleteHolding(id) {
 }
 
 /* ===================== AUTO REFRESH ===================== */
-setInterval(fetchAll, 10000);
+// setInterval(fetchAll, 10000);
+
+// =========================
+// LIVE UPDATE CONTROL
+// =========================
+
+let liveUpdatesEnabled = false;
+// let liveLtpInterval = null;
+let fullRefreshInterval = null;
+// =========================
+// START LIVE UPDATES
+// =========================
+function startLiveUpdates(){
+    // FULL REFRESH
+    fullRefreshInterval = setInterval(fetchAll, 10000);
+}
+// =========================
+// STOP LIVE UPDATES
+// =========================
+function stopLiveUpdates(){
+    clearInterval(
+        fullRefreshInterval
+    );
+}
+// =========================
+// TOGGLE
+// =========================
+function toggleLiveUpdates(){
+    liveUpdatesEnabled = !liveUpdatesEnabled;
+    let btn = document.getElementById(
+        "liveToggleBtn"
+    );
+    // STOP
+    if(!liveUpdatesEnabled){
+        stopLiveUpdates();
+        btn.innerHTML = "▶ Start Live";
+        btn.style.background = "#e67e22";
+    }
+    // START
+    else{
+        startLiveUpdates();
+        btn.innerHTML = "⏸ Stop Live";
+        btn.style.background = "#27ae60";
+    }
+}
 
 window.onload = fetchAll;
 

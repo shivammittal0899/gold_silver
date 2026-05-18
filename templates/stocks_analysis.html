@@ -990,7 +990,7 @@ function updateTableWithAnalysis(data) {
     // FIRST TIME LOAD
     // =========================
     if (!analysisTable) {
-        htmlt, htmlhl, htmlfr, htmlfg, htmlft = stock_analysis_tables(data)
+        let {htmlt, htmlhl, htmlfr, htmlfg, htmlft} = stock_analysis_tables(data)
         // render html first time
         document.getElementById("stocks_table").innerHTML = htmlt;
 

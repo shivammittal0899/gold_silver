@@ -280,7 +280,7 @@ function stock_analysis_tables(data){
             </tr>
         `;
 
-        htmlfg += `
+        htmlft += `
             <tr>
                 <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
                 
@@ -298,7 +298,7 @@ function stock_analysis_tables(data){
         `;
     });
 
-    return htmlt, htmlhl, htmlfr, htmlfg, htmlft
+    return {htmlt, htmlhl, htmlfr, htmlfg, htmlft}
     
 }
 

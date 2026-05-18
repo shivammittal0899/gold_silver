@@ -990,22 +990,31 @@ function updateTableWithAnalysis(data) {
     // FIRST TIME LOAD
     // =========================
     if (!analysisTable) {
-
+        htmlt, htmlhl, htmlfr, htmlfg, htmlft = stock_analysis_tables(data)
         // render html first time
-        document.getElementById("stocks_table").innerHTML =
-            technical_table1(data);
+        document.getElementById("stocks_table").innerHTML = htmlt;
 
-        document.getElementById("stockshighlow_table").innerHTML =
-            highlow_table(data);
+        document.getElementById("stockshighlow_table").innerHTML = htmlhl;
         
-        document.getElementById("stocksfundamental_table").innerHTML =
-            fundamental_table(data);
+        document.getElementById("stocksfundamental_table").innerHTML = htmlfr;
 
-        document.getElementById("stocksgrowth_table").innerHTML =
-            fundamentalgrowth_table(data);
+        document.getElementById("stocksgrowth_table").innerHTML = htmlfg;
 
-        document.getElementById("priceTarget_table").innerHTML =
-            priceTarget_table(data);
+        document.getElementById("priceTarget_table").innerHTML = htmlft;
+        // document.getElementById("stocks_table").innerHTML =
+        //     technical_table1(data);
+
+        // document.getElementById("stockshighlow_table").innerHTML =
+        //     highlow_table(data);
+        
+        // document.getElementById("stocksfundamental_table").innerHTML =
+        //     fundamental_table(data);
+
+        // document.getElementById("stocksgrowth_table").innerHTML =
+        //     fundamentalgrowth_table(data);
+
+        // document.getElementById("priceTarget_table").innerHTML =
+        //     priceTarget_table(data);
 
         // init datatables
         initDataTable();

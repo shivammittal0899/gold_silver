@@ -128,6 +128,180 @@ function getFundamentalColor(val) {
     if (val <= 40) return "color:#cc0000; font-weight:bold;";
 }
 
+function stock_analysis_tables(data){
+    let htmlt = ""
+    let htmlhl = ""
+    let htmlfr = ""
+    let htmlfg = ""
+    let htmlft = ""
+
+    data.forEach(d => {
+        let sig30 = d.signal_30m || "";
+        let sig60 = d.signal_60m || "";
+        let sig1d = d.signal_1d || "";
+
+        let color30 =
+            sig30.includes("Strong Buy") ? "darkgreen" :
+            sig30.includes("Strong Sell") ? "darkred" :
+            sig30.includes("Buy") ? "lightgreen" :
+            sig30.includes("Sell") ? "red" : "black";
+        let color60 =
+            sig60.includes("Strong Buy") ? "darkgreen" :
+            sig60.includes("Strong Sell") ? "darkred" :
+            sig60.includes("Buy") ? "green" :
+            sig60.includes("Sell") ? "red" : "black";
+        let color1d =
+            sig1d.includes("Strong Buy") ? "darkgreen" :
+            sig1d.includes("Strong Sell") ? "darkred" :
+            sig1d.includes("Buy") ? "green" :
+            sig1d.includes("Sell") ? "red" : "black";
+
+        htmlt += `
+            <tr>
+                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;
+                background:${
+                    d.is_fut
+                    ? '#fff3cd'
+                    : ''
+                };
+
+                font-weight:${
+                    d.is_fut
+                    ? 'bold'
+                    : 'normal'
+                };">
+                    ${d.symbol}
+                </td>
+                
+                <td>${d.industry || '-'}</td>
+                <td class="ltp-cell"
+                    data-symbol="${d.symbol}"
+                    data-ltp="${d.ltp || 0}"
+                    style="font-weight:bold;">
+                    ${d.ltp?.toFixed(2) || '-'}
+                </td>
+                <td style="${getReturnColor(d.ret1)}">${d.ret1?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret5)}">${d.ret5?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret15)}">${d.ret15?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret30)}">${d.ret30?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret90)}">${d.ret90?.toFixed(2) || '-'}</td>
+                <td style="color:${color30}; font-weight:bold;">${sig30 || '-'}</td>
+                <td style="color:${color60}; font-weight:bold;">${sig60 || '-'}</td>
+                <td style="color:${color1d}; font-weight:bold;">${sig1d || '-'}</td>
+                <td style="${getRSIColor(d.rsi_30m)}">${d.rsi_30m || '-'}</td>
+                <td style="${getRSIColor(d.rsi_60m)}">${d.rsi_60m || '-'}</td>
+                <td style="${getRSIColor(d.rsi_1d)}">${d.rsi_1d || '-'}</td>
+                <td>${d.price_tenkan_30m || '-'}</td>
+                <td>${d.price_tenkan_60m || '-'}</td>
+                <td>${d.price_tenkan_1d || '-'}</td>
+                <td>${d.tenkan_kijun_30m || '-'}</td>
+                <td>${d.tenkan_kijun_60m || '-'}</td>
+                <td>${d.tenkan_kijun_1d || '-'}</td>
+            </tr>
+        `;
+
+        htmlhl +=`
+            <tr>
+                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;
+                background:${
+                    d.is_fut
+                    ? '#fff3cd'
+                    : ''
+                };
+
+                font-weight:${
+                    d.is_fut
+                    ? 'bold'
+                    : 'normal'
+                };">
+                    ${d.symbol}
+                </td>
+                <td class="ltp-cell"
+                    data-symbol="${d.symbol}"
+                    data-ltp="${d.ltp || 0}"
+                    style="font-weight:bold;">
+                    ${d.ltp?.toFixed(2) || '-'}
+                </td>
+                <td style="${getReturnColor(d.ret1)}">${d.ret1?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retdayHigh)}">${d.retdayHigh?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retdayLow)}">${d.retdayLow?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retweekHigh)}">${d.retweekHigh?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retweekLow)}">${d.retweekLow?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retmonthHigh)}">${d.retmonthHigh?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retmonthLow)}">${d.retmonthLow?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retyearHigh)}">${d.retyearHigh?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.retyearLow)}">${d.retyearLow?.toFixed(2) || '-'}</td>
+            </tr>
+        `;
+
+        htmlfr += `
+            <tr>
+                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+                    ${d.symbol}
+                </td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.beta?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.trailingPE?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.forwardPE?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.trailingEPS?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.forwardEPS?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.epsCurrentYear?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.epsForward?.toFixed(2) || '-'}</td>
+                
+                <td style="${getReturnColor(d.ret1)}">${d.quickRatio?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.currentRatio?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.debtToEquity?.toFixed(2) || '-'}</td>
+            </tr>
+        `;
+
+        htmlfg += `
+            <tr>
+                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+                    ${d.symbol}
+                </td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.earningsQuarterlyGrowth?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.earningsGrowth?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.revenueGrowth?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.revenuePerShare?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.totalCashPerShare?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.profitMargins?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.grossMargins?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.ebitdaMargins?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.enterpriseToRevenue?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.enterpriseToEbitda?.toFixed(2) || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.priceToBook?.toFixed(2) || '-'}</td>
+            </tr>
+        `;
+
+        htmlfg += `
+            <tr>
+                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+                    ${d.symbol}
+                </td>
+                <td>${d.price?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.targetHighPrice?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.targetLowPrice?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.targetMeanPrice?.toFixed(2) || '-'}</td>
+                <td style="${getFundamentalColor(d.ret1)}">${d.recommendationKey || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.customPriceAlertConfidence || '-'}</td>
+                <td style="${getReturnColor(d.ret1)}">${d.fiftyTwoWeekRange || '-'}</td>
+            </tr>
+        `;
+    });
+
+    return htmlt, htmlhl, htmlfr, htmlfg, htmlft
+    
+}
+
 
 function technical_table1(data){
     let html = ""
@@ -207,7 +381,18 @@ function highlow_table(data){
             <tr>
                 <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
                 
-                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;
+                background:${
+                    d.is_fut
+                    ? '#fff3cd'
+                    : ''
+                };
+
+                font-weight:${
+                    d.is_fut
+                    ? 'bold'
+                    : 'normal'
+                };">
                     ${d.symbol}
                 </td>
                 <td class="ltp-cell"

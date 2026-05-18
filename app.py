@@ -1381,16 +1381,19 @@ def stocks_analysis():
     conn.close()
 
     # fetch symbols
-    conn = sqlite3.connect("instruments.db")
-    c = conn.cursor()
-    symbols = c.execute("""
-        SELECT tradingsymbol FROM instruments 
-        WHERE segment='EQ'
-        ORDER BY tradingsymbol
-    """).fetchall()
-    conn.close()
+    # conn = sqlite3.connect("instruments.db")
+    # c = conn.cursor()
+    # symbols = c.execute("""
+    #     SELECT tradingsymbol FROM instruments 
+    #     WHERE segment='EQ'
+    #     ORDER BY tradingsymbol
+    # """).fetchall()
+    # conn.close()
 
-    symbols = [s[0] for s in symbols]
+    # symbols = [s[0] for s in symbols]
+    symbols = sorted(
+        INSTRUMENT_MAP.keys()
+    )
 
     return render_template(
         "stocks_analysis.html",
@@ -1533,18 +1536,19 @@ def reload_instruments_route():
     return redirect('/instruments_dashboard')
 
 def get_instrument_token(symbol):
-    conn = sqlite3.connect("instruments.db")
-    c = conn.cursor()
+    return INSTRUMENT_MAP.get(symbol)
+    # conn = sqlite3.connect("instruments.db")
+    # c = conn.cursor()
 
-    row = c.execute("""
-        SELECT instrument_token 
-        FROM instruments
-        WHERE tradingsymbol=? AND segment='EQ'
-    """, (symbol,)).fetchone()
+    # row = c.execute("""
+    #     SELECT instrument_token 
+    #     FROM instruments
+    #     WHERE tradingsymbol=? AND segment='EQ'
+    # """, (symbol,)).fetchone()
 
-    conn.close()
+    # conn.close()
 
-    return row[0] if row else None
+    # return row[0] if row else None
 def empty_stock_result(symbol, e):
     return {
         "symbol": symbol,
@@ -1617,22 +1621,15 @@ def live_ltp():
 
     result = {}
 
+    with LIVE_LTP_LOCK:
+        live_ltp_copy = LIVE_LTP.copy()
     for symbol in symbols:
-
-        row = c.execute("""
-            SELECT instrument_token
-            FROM instruments
-            WHERE tradingsymbol=?
-            LIMIT 1
-        """, (symbol,)).fetchone()
-
-        if not row:
+        token = INSTRUMENT_MAP.get(
+            symbol.upper().strip()
+        )
+        if not token:
             continue
-
-        token = row[0]
-
-        with LIVE_LTP_LOCK:
-            result[symbol] = LIVE_LTP.get(token, 0)
+        result[symbol] = live_ltp_copy.get(token,0)
 
     conn.close()
 

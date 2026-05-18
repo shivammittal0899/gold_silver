@@ -230,6 +230,13 @@ WATCHLIST SECTION
 
         <div>
 
+            <button
+                id="liveToggleBtn"
+                onclick="toggleLiveUpdates()"
+                style="background:#e67e22;"
+            >
+                ▶ Start Live"
+            </button>
             <button onclick="copySelectedRows()">
                 📋 Copy Selected
             </button>
@@ -1552,17 +1559,78 @@ function copyModalSelected(){
 
 }
 
-setInterval(updateLiveLTP, 30000);
+// setInterval(updateLiveLTP, 30000);
 
-setInterval(()=>{
+// setInterval(()=>{
 
-    if(currentIndexes.length > 0){
+//     if(currentIndexes.length > 0){
 
-        runAnalysis(currentIndexes);
+//         runAnalysis(currentIndexes);
 
+//     }
+
+// }, 60000);
+
+
+// =========================
+// LIVE UPDATE CONTROL
+// =========================
+
+let liveUpdatesEnabled = false;
+let liveLtpInterval = null;
+let fullRefreshInterval = null;
+// =========================
+// START LIVE UPDATES
+// =========================
+function startLiveUpdates(){
+    // LIVE LTP
+    liveLtpInterval = setInterval(
+        updateLiveLTP,
+        30000
+    );
+    // FULL REFRESH
+    fullRefreshInterval = setInterval(()=>{
+        if(currentIndexes.length > 0){
+            runAnalysis(currentIndexes);
+        }
+    }, 60000);
+}
+
+// =========================
+// STOP LIVE UPDATES
+// =========================
+function stopLiveUpdates(){
+    clearInterval(
+        liveLtpInterval
+    );
+
+    clearInterval(
+        fullRefreshInterval
+    );
+
+}
+// =========================
+// TOGGLE
+// =========================
+
+function toggleLiveUpdates(){
+    liveUpdatesEnabled = !liveUpdatesEnabled;
+    let btn = document.getElementById(
+        "liveToggleBtn"
+    );
+    // STOP
+    if(!liveUpdatesEnabled){
+        stopLiveUpdates();
+        btn.innerHTML = "▶ Start Live";
+        btn.style.background = "#e67e22";
     }
-
-}, 60000);
+    // START
+    else{
+        startLiveUpdates();
+        btn.innerHTML = "⏸ Stop Live";
+        btn.style.background = "#27ae60";
+    }
+}
 
 </script>
 

@@ -134,7 +134,7 @@ function stock_analysis_tables(data){
     let htmlfr = ""
     let htmlfg = ""
     let htmlft = ""
-
+    console.log("in stock analysis tables")
     data.forEach(d => {
         let sig30 = d.signal_30m || "";
         let sig60 = d.signal_60m || "";

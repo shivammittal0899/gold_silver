@@ -2362,7 +2362,7 @@ def portfolio_data():
         p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
 
         p['pnl_percent'] = (
-            p['pnl'] / invested_value * 100
+            p['pnl'] / abs(invested_value) * 100
         ) if invested_value else 0
 
         # 🔥 TYPE
@@ -2428,7 +2428,7 @@ def portfolio_data():
         p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
 
         p['pnl_percent'] = (
-            p['pnl'] / invested_value * 100
+            p['pnl'] / abs(invested_value) * 100
         ) if invested_value else 0
 
         if p['exchange'] == 'NSE':
@@ -2566,7 +2566,7 @@ def portfolio_data():
         ) * v["multiplier"]
 
         pnl_percent = (
-            pnl / invested_value * 100
+            pnl / abs(invested_value) * 100
         ) if invested_value else 0
 
         ####################################

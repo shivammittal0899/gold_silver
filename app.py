@@ -345,6 +345,7 @@ import json
 
 
 INSTRUMENT_MAP = {}
+FUTURE_STOCKS = set()
 TRAILING_THREADS = {}
 SL_ORDERS = {}   # task_id → order_id
 LIVE_SL = {}
@@ -369,20 +370,50 @@ def load_instruments_once():
         SELECT tradingsymbol, instrument_token
         FROM instruments
     """)
-
     rows = cursor.fetchall()
-
     conn.close()
-
     # 🔥 BUILD MAP
     INSTRUMENT_MAP = {
         row[0]: row[1]
         for row in rows
     }
-
     log1(f"✅ Loaded {len(INSTRUMENT_MAP)} instruments into memory")
 
 load_instruments_once()
+
+def load_future_stocks():
+
+    global FUTURE_STOCKS
+
+    conn = sqlite3.connect("instruments.db")
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT DISTINCT name
+        FROM instruments
+        WHERE segment='FUT'
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    FUTURE_STOCKS = {
+
+        row[0].upper().strip()
+
+        for row in rows
+
+        if row[0]
+
+    }
+
+    log1(
+        f"✅ Loaded {len(FUTURE_STOCKS)} F&O Stocks"
+    )
+
+load_future_stocks()
 
 def stop_task(task_id, reason):
     conn = sqlite3.connect("trailing.db", check_same_thread=False)
@@ -1513,11 +1544,6 @@ def delete_stocks_from_watchlist():
 from instruments import *
 from concurrent.futures import ThreadPoolExecutor
 
-# @app.route('/instruments_dashboard')
-# def instruments_dashboard():
-#     data = get_stock_with_futures()
-#     return render_template("instruments_dashboard.html", data=data)
-
 
 @app.route('/instruments_dashboard')
 def instruments_dashboard():
@@ -1608,30 +1634,19 @@ def start_market_ws():
 
 @app.route('/live-ltp')
 def live_ltp():
-
     symbols = request.args.get("symbols", "")
-
     if not symbols:
         return jsonify({})
-
     symbols = symbols.split(",")
-
-    conn = sqlite3.connect("instruments.db")
-    c = conn.cursor()
-
     result = {}
-
     with LIVE_LTP_LOCK:
         live_ltp_copy = LIVE_LTP.copy()
     for symbol in symbols:
-        token = INSTRUMENT_MAP.get(
-            symbol.upper().strip()
-        )
+        symbol = symbol.upper().strip()
+        token = INSTRUMENT_MAP.get(symbol)
         if not token:
             continue
-        result[symbol] = live_ltp_copy.get(token,0)
-
-    conn.close()
+        result[symbol] = live_ltp_copy.get(token, 0)
 
     return jsonify(result)
 def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data = None):
@@ -1704,7 +1719,7 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
                 live_ltp = result1['price']
         
         result = {
-
+            "is_fut": symbol.upper() in FUTURE_STOCKS,
             'ltp': live_ltp,
             'price': live_ltp,
             'ret1': result_ret['ret1'],
@@ -3086,51 +3101,31 @@ def delete_indexes_from_watchlist():
 
 @app.route('/search_index_symbols')
 def search_index_symbols():
-
     query = request.args.get('q', '')
-
     conn = sqlite3.connect("instruments.db")
-
     c = conn.cursor()
-
     rows = c.execute("""
-
         SELECT tradingsymbol
         FROM instruments
-
         WHERE (
-
             segment = 'EQ'
             OR segment = 'FUT'
             OR segment = 'INDICES'
-
         )
-
         AND tradingsymbol LIKE ?
-
         ORDER BY tradingsymbol
-
         LIMIT 100
-
     """, (f"%{query}%",)).fetchall()
-
     conn.close()
-
     results = [
-
         {
             "id": r[0],
             "text": r[0]
         }
-
         for r in rows
-
     ]
-
     return jsonify({
-
         "results": results
-
     })
 
 # =========================
@@ -3138,26 +3133,10 @@ def search_index_symbols():
 # =========================
 
 def get_index_instrument_token(symbol):
-
-    conn = sqlite3.connect("instruments.db")
-
-    c = conn.cursor()
-
-    row = c.execute("""
-
-        SELECT instrument_token
-
-        FROM instruments
-
-        WHERE tradingsymbol=?
-
-        LIMIT 1
-
-    """, (symbol,)).fetchone()
-
-    conn.close()
-
-    return row[0] if row else None
+    if not symbol:
+        return None
+    # symbol = symbol.upper().strip()
+    return INSTRUMENT_MAP.get(symbol)
 
 # =========================
 # EMPTY INDEX RESULT
@@ -3427,47 +3406,20 @@ def analyze_indexes():
 
 @app.route('/live-index-ltp')
 def live_index_ltp():
-
     symbols = request.args.get("symbols", "")
-
     if not symbols:
         return jsonify({})
-
     symbols = symbols.split(",")
-
-    conn = sqlite3.connect("instruments.db")
-
-    c = conn.cursor()
-
     result = {}
-
+    with LIVE_LTP_LOCK:
+        live_ltp_copy = LIVE_LTP.copy()
     for symbol in symbols:
-
-        row = c.execute("""
-
-            SELECT instrument_token
-
-            FROM instruments
-
-            WHERE tradingsymbol=?
-
-            LIMIT 1
-
-        """, (symbol,)).fetchone()
-
-        if not row:
+        symbol = symbol.upper().strip()
+        token = INSTRUMENT_MAP.get(symbol)
+        if not token:
             continue
-
-        token = row[0]
-
-        with LIVE_LTP_LOCK:
-
-            result[symbol] = LIVE_LTP.get(token, 0)
-
-    conn.close()
-
+        result[symbol] = live_ltp_copy.get(token, 0)
     return jsonify(result)
-
 # =========================
 # INDEX CHART
 # =========================

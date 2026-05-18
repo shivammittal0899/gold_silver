@@ -156,7 +156,18 @@ function technical_table1(data){
             <tr>
                 <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
                 
-                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;
+                background:${
+                    d.is_fut
+                    ? '#fff3cd'
+                    : ''
+                };
+
+                font-weight:${
+                    d.is_fut
+                    ? 'bold'
+                    : 'normal'
+                };">
                     ${d.symbol}
                 </td>
                 

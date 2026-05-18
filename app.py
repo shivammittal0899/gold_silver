@@ -2360,7 +2360,7 @@ def portfolio_data():
         ) * p['multiplier']
 
         p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
-
+        invested_value = abs(invested_value)
         p['pnl_percent'] = (
             p['pnl'] / abs(invested_value) * 100
         ) if invested_value else 0
@@ -2426,7 +2426,7 @@ def portfolio_data():
         p['pnl'] = present_value - invested_value
 
         p['side'] = 'LONG' if p['quantity'] > 0 else 'SHORT'
-
+        invested_value = abs(invested_value)
         p['pnl_percent'] = (
             p['pnl'] / abs(invested_value) * 100
         ) if invested_value else 0
@@ -2564,7 +2564,7 @@ def portfolio_data():
         pnl = (
             present_value - invested_value
         ) * v["multiplier"]
-
+        invested_value = abs(invested_value)
         pnl_percent = (
             pnl / abs(invested_value) * 100
         ) if invested_value else 0

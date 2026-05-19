@@ -444,6 +444,18 @@ function stock_analysis_tables(data){
     htmlsummary += summaryCard("30D Return > 0%", summary.ret30_gt_0, "#27ae60");
     htmlsummary += summaryCard("30D Return < 0%", summary.ret30_lt_0, "#e67e22");
     htmlsummary += summaryCard("30D Return < -10%", summary.ret30_lt_10, "red");
+    
+    // DAILY SIGNALS
+    htmlsummary += summaryCard("Strong Buy", summary.strong_buy_d, "darkgreen");
+    htmlsummary += summaryCard("Buy", summary.buy_d, "green");
+    htmlsummary += summaryCard("Sell", summary.sell_d, "orange");
+    htmlsummary += summaryCard("Strong Sell", summary.strong_sell_d, "darkred");
+    
+    // PRICE TENKAN
+    htmlsummary += summaryCard("Price Tenkan SU", summary.price_tenkan_su, "darkgreen");
+    htmlsummary += summaryCard("Price Tenkan U", summary.price_tenkan_u, "green");
+    htmlsummary += summaryCard("Price Tenkan D", summary.price_tenkan_d, "orange");
+    htmlsummary += summaryCard("Price Tenkan SD", summary.price_tenkan_sd, "darkred");
 
     return {htmlt, htmlhl, htmlfr, htmlfg, htmlft, htmlsummary}
     

@@ -134,8 +134,133 @@ function stock_analysis_tables(data){
     let htmlfr = ""
     let htmlfg = ""
     let htmlft = ""
-    console.log("in stock analysis tables")
+
+    let htmlsummary = ""
+
+    let summary = {
+
+        // RETURNS
+
+        ret1_gt_3: 0,
+        ret1_gt_0: 0,
+        ret1_lt_0: 0,
+        ret1_lt_3: 0,
+
+        ret5_gt_5: 0,
+        ret5_gt_0: 0,
+        ret5_lt_0: 0,
+        ret5_lt_5: 0,
+
+        ret15_gt_5: 0,
+        ret15_gt_0: 0,
+        ret15_lt_0: 0,
+        ret15_lt_5: 0,
+
+        ret30_gt_10: 0,
+        ret30_gt_0: 0,
+        ret30_lt_0: 0,
+        ret30_lt_10: 0,
+
+        // DAILY SIGNALS
+
+        strong_buy_d: 0,
+        buy_d: 0,
+        sell_d: 0,
+        strong_sell_d: 0,
+
+        // TENKAN
+
+        price_tenkan_su: 0,
+        price_tenkan_u: 0,
+        price_tenkan_sd: 0,
+        price_tenkan_d: 0,
+
+        // High Low
+        day_hl_gt_3: 0,
+        day_hl_gt_1: 0,
+        day_hl_lt_1: 0,
+        day_hl_lt_3: 0
+
+
+    };
+
     data.forEach(d => {
+
+        // 1D RETURNS
+
+        if(d.ret1 > 3) summary.ret1_gt_3++;
+
+        if(d.ret1 > 0) summary.ret1_gt_0++;
+
+        if(d.ret1 < 0) summary.ret1_lt_0++;
+
+        if(d.ret1 < -3) summary.ret1_lt_3++;
+
+        // 5D RETURNS
+
+        if(d.ret5 > 5) summary.ret5_gt_5++;
+
+        if(d.ret5 > 0) summary.ret5_gt_0++;
+
+        if(d.ret5 < 0) summary.ret5_lt_0++;
+
+        if(d.ret5 < -5) summary.ret5_lt_5++;
+
+        // 15D RETURNS
+
+        if(d.ret15 > 5) summary.ret15_gt_5++;
+
+        if(d.ret15 > 0) summary.ret15_gt_0++;
+
+        if(d.ret15 < 0) summary.ret15_lt_0++;
+
+        if(d.ret15 < -5) summary.ret15_lt_5++;
+
+        // 30D RETURNS
+
+        if(d.ret30 > 10) summary.ret30_gt_10++;
+
+        if(d.ret30 > 0) summary.ret30_gt_0++;
+
+        if(d.ret30 < 0) summary.ret30_lt_0++;
+
+        if(d.ret30 < -10) summary.ret30_lt_10++;
+
+        // DAILY SIGNALS
+
+        let sd = d.signal_1d || "";
+
+        if(sd.includes("Strong Buy"))
+            summary.strong_buy_d++;
+
+        else if(sd.includes("Buy"))
+            summary.buy_d++;
+
+        else if(sd.includes("Strong Sell"))
+            summary.strong_sell_d++;
+
+        else if(sd.includes("Sell"))
+            summary.sell_d++;
+        
+        // PRICE TENKAN
+
+        let pt = d.price_tenkan_1d || "";
+
+        if(pt.includes("Strong Uptrend"))
+            summary.price_tenkan_su++;
+
+        else if(sd.includes("Uptrend"))
+            summary.price_tenkan_u++;
+
+        else if(sd.includes("Strong Downtrend"))
+            summary.price_tenkan_sd++;
+
+        else if(sd.includes("Downtrend"))
+            summary.price_tenkan_d++;
+
+
+
+
         let sig30 = d.signal_30m || "";
         let sig60 = d.signal_60m || "";
         let sig1d = d.signal_1d || "";
@@ -298,7 +423,29 @@ function stock_analysis_tables(data){
         `;
     });
 
-    return {htmlt, htmlhl, htmlfr, htmlfg, htmlft}
+    // RETURNS
+
+    htmlsummary += summaryCard("1D Return > 3%", summary.ret1_gt_3, "green");
+    htmlsummary += summaryCard("1D Return > 0%", summary.ret1_gt_0, "#27ae60");
+    htmlsummary += summaryCard("1D Return < 0%", summary.ret1_lt_0, "#e67e22");
+    htmlsummary += summaryCard("1D Return < -3%", summary.ret1_lt_3, "red");
+
+    htmlsummary += summaryCard("5D Return > 5%", summary.ret5_gt_5, "green");
+    htmlsummary += summaryCard("5D Return > 0%", summary.ret5_gt_0, "#27ae60");
+    htmlsummary += summaryCard("5D Return < 0%", summary.ret5_lt_0, "#e67e22");
+    htmlsummary += summaryCard("5D Return < -5%", summary.ret5_lt_5, "red");
+
+    htmlsummary += summaryCard("15D Return > 5%", summary.ret15_gt_5, "green");
+    htmlsummary += summaryCard("15D Return > 0%", summary.ret15_gt_0, "#27ae60");
+    htmlsummary += summaryCard("15D Return < 0%", summary.ret15_lt_0, "#e67e22");
+    htmlsummary += summaryCard("15D Return < -5%", summary.ret15_lt_5, "red");
+
+    htmlsummary += summaryCard("30D Return > 10%", summary.ret30_gt_10, "green");
+    htmlsummary += summaryCard("30D Return > 0%", summary.ret30_gt_0, "#27ae60");
+    htmlsummary += summaryCard("30D Return < 0%", summary.ret30_lt_0, "#e67e22");
+    htmlsummary += summaryCard("30D Return < -10%", summary.ret30_lt_10, "red");
+
+    return {htmlt, htmlhl, htmlfr, htmlfg, htmlft, htmlsummary}
     
 }
 
@@ -598,4 +745,38 @@ function popup_stock_table(data){
         `;
     });
     return html
+}
+
+function summaryCard(title, value, color="#3498db"){
+
+    return `
+
+        <div style="
+            background:white;
+            border-left:5px solid ${color};
+            border-radius:10px;
+            padding:12px;
+            min-width:180px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.08);
+        ">
+
+            <div style="
+                font-size:13px;
+                color:#666;
+            ">
+                ${title}
+            </div>
+
+            <div style="
+                font-size:24px;
+                font-weight:bold;
+                margin-top:6px;
+                color:${color};
+            ">
+                ${value}
+            </div>
+
+        </div>
+
+    `;
 }

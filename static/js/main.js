@@ -249,13 +249,13 @@ function stock_analysis_tables(data){
         if(pt.includes("Strong Uptrend"))
             summary.price_tenkan_su++;
 
-        else if(sd.includes("Uptrend"))
+        else if(pt.includes("Uptrend"))
             summary.price_tenkan_u++;
 
-        else if(sd.includes("Strong Downtrend"))
+        else if(pt.includes("Strong Downtrend"))
             summary.price_tenkan_sd++;
 
-        else if(sd.includes("Downtrend"))
+        else if(pt.includes("Downtrend"))
             summary.price_tenkan_d++;
 
 

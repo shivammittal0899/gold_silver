@@ -763,7 +763,7 @@ function summaryCard(title, value, color="#3498db"){
 
     return `
 
-        <div style="
+        <div class = "summaryCards" style="
             background:white;
             border-left:5px solid ${color};
             border-radius:10px;
@@ -779,7 +779,7 @@ function summaryCard(title, value, color="#3498db"){
                 ${title}
             </div>
 
-            <div style="
+            <div class="summaryCards_no" style="
                 font-size:24px;
                 font-weight:bold;
                 margin-top:6px;

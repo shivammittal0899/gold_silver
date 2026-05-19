@@ -1704,24 +1704,25 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
         result3, df3 = stock_data_analysis(df3, "1d")
         result_ret = stock_data_analysis_common(df3)
         # 🔥 LIVE LTP
-        with LIVE_LTP_LOCK:
-            live_ltp = LIVE_LTP.get(token, 0)
+        # with LIVE_LTP_LOCK:
+        #     live_ltp = LIVE_LTP.get(token, 0)
 
-        # fallback
-        if not live_ltp:
-            try:
-                ltp_data = kite_local.ltp([f"NSE:{symbol}"])
-                live_ltp = ltp_data.get(
-                    f"NSE:{symbol}",
-                    {}
-                ).get("last_price", result1['price'])
-            except:
-                live_ltp = result1['price']
+        # # fallback
+        # if not live_ltp:
+        #     try:
+        #         ltp_data = kite_local.ltp([f"NSE:{symbol}"])
+        #         live_ltp = ltp_data.get(
+        #             f"NSE:{symbol}",
+        #             {}
+        #         ).get("last_price", result1['price'])
+        #     except:
+        #         live_ltp = result1['price']
         
         result = {
             "is_fut": symbol.upper() in FUTURE_STOCKS,
-            'ltp': live_ltp,
-            'price': live_ltp,
+            'ltp': result1['price'],
+            # 'ltp': live_ltp,
+            'price': result1['price'],
             'ret1': result_ret['ret1'],
             'ret5': result_ret['ret5'],
             'ret15': result_ret['ret15'],

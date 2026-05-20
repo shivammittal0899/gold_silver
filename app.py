@@ -1763,6 +1763,13 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
         if analysis_type == "stock":
             df_yf = yf.Ticker(symbol+".NS")
             info = df_yf.get_info()
+            log1(f"{symbol} - EpochDate -- {datetime.fromtimestamp(info.get("compensationAsOfEpochDate", None))}")
+            log1(f"{symbol} - exDividendDate -- {datetime.fromtimestamp(info.get("exDividendDate", None))}")
+            log1(f"{symbol} - lastFiscalYearEnd -- {datetime.fromtimestamp(info.get("lastFiscalYearEnd", None))}")
+            log1(f"{symbol} - nextFiscalYearEnd -- {datetime.fromtimestamp(info.get("nextFiscalYearEnd", None))}")
+            log1(f"{symbol} - mostRecentQuarter -- {datetime.fromtimestamp(info.get("mostRecentQuarter", None))}")
+            log1(f"{symbol} - earningsTimestampStart -- {datetime.fromtimestamp(info.get("earningsTimestampStart", None))}")
+            log1(f"{symbol} - earningsTimestampEnd -- {datetime.fromtimestamp(info.get("earningsTimestampEnd", None))}")
             fundamental_data = fundamental_analysis(symbol, info) 
             result.update(fundamental_data if isinstance(fundamental_data, dict) else {})
         if analysis_type == "index":

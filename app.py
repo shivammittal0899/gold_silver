@@ -3683,7 +3683,7 @@ def delivery_dashboard():
         'delivery_dashboard.html'
     )
 
-@app.route('/get_delivery_data')
+
 
 @app.route('/update_delivery_data')
 def update_delivery_data_route():
@@ -3746,7 +3746,7 @@ def update_delivery_data_route():
 
         })
     
-
+@app.route('/get_delivery_data')
 def get_delivery_data():
 
     conn = sqlite3.connect(

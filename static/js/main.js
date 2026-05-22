@@ -800,3 +800,12 @@ function navigatePage(url){
     if(!url) return;
     window.location.href = url;
 }
+// window.addEventListener("DOMContentLoaded", () => {
+
+//     let current = window.location.pathname;
+
+//     document.getElementById(
+//         "pageNavigator"
+//     ).value = current;
+
+// });

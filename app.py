@@ -3676,6 +3676,111 @@ def get_stock_index_details():
         return jsonify({})
 
 
+@app.route('/delivery_dashboard')
+def delivery_dashboard():
+
+    return render_template(
+        'delivery_dashboard.html'
+    )
+
+@app.route('/get_delivery_data')
+
+@app.route('/update_delivery_data')
+def update_delivery_data_route():
+    try:
+        date = request.args.get("date")
+        if not date:
+            return jsonify({
+                "message": "No date provided"
+            })
+        # ====================================
+        # FORMAT DATE
+        # ====================================
+        dt = datetime.strptime(
+            date,
+            "%Y-%m-%d"
+        )
+        dd = dt.strftime("%d")
+        mm = dt.strftime("%m")
+        yyyy = dt.strftime("%Y")
+        # ====================================
+        # NSE URL
+        # ====================================
+        url = f"""https://archives.nseindia.com/products/content/sec_bhavdata_full_{dd}{mm}{yyyy}.csv
+        """.strip()
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=20
+        )
+        if response.status_code != 200:
+            return jsonify({
+                "message": "NSE file not found"
+            })
+        # ====================================
+        # READ CSV
+        # ====================================
+        df = pd.read_csv(
+            StringIO(response.text)
+        )
+        # ====================================
+        # SAVE
+        # ====================================
+
+        update_delivery_data(df)
+
+        return jsonify({
+
+            "message": f"Delivery data updated for {date}"
+
+        })
+
+    except Exception as e:
+
+        return jsonify({
+
+            "message": str(e)
+
+        })
+    
+
+def get_delivery_data():
+
+    conn = sqlite3.connect(
+        "delivery_history.db"
+    )
+
+    query = """
+
+        SELECT *
+
+        FROM delivery_history
+
+        ORDER BY date DESC,
+                 deliv_per DESC
+
+        LIMIT 2000
+
+    """
+
+    df = pd.read_sql(
+        query,
+        conn
+    )
+
+    conn.close()
+
+    return jsonify(
+
+        df.to_dict(
+            orient="records"
+        )
+
+    )
+
 
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":

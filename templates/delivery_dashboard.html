@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delivery Dashboard</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- LOCAL Select2 -->
+    <link href="{{ url_for('static', filename='select2/select2.min.css') }}" rel="stylesheet" />
+    <script src="{{ url_for('static', filename='select2/select2.min.js') }}"></script>
+    <!-- Datatables -->
+    <link href="{{ url_for('static', filename='datatables/jquery.datatables.min.css') }}" rel="stylesheet" />
+    <script src="{{ url_for('static', filename='datatables/jquery.datatables.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <style>
+        body{
+            font-family:Arial;
+            background:#f5f5f5;
+            margin:20px;
+        }
+        h2{
+            margin-bottom:20px;
+        }
+        .topbar{
+            display:flex;
+            gap:10px;
+            margin-bottom:20px;
+            flex-wrap:wrap;
+        }
+        button{
+            padding:10px 15px;
+            border:none;
+            border-radius:8px;
+            background:#3498db;
+            color:white;
+            cursor:pointer;
+        }
+        .summary{
+            display:flex;
+            gap:12px;
+            flex-wrap:wrap;
+            margin-bottom:20px;
+        }
+        .card{
+            background:white;
+            padding:15px;
+            border-radius:10px;
+            min-width:180px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.08);
+        }
+        .card-title{
+            font-size:13px;
+            color:#666;
+        }
+        .card-value{
+            font-size:28px;
+            font-weight:bold;
+            margin-top:8px;
+        }
+        table{
+            width:100%;
+        }
+        .high-delivery{
+            background:#d4edda !important;
+            font-weight:bold;
+        }
+        .low-delivery{
+            background:#f8d7da !important;
+        }
+    </style>
+</head>
+<body>
+<h2>📦 Delivery Dashboard</h2>
+<div class="topbar">
+    <input
+        type="date"
+        id="deliveryDate"
+    >
+    <button onclick="fetchAndUpdateDelivery()">
+        📥 Fetch NSE Data
+    </button>
+    <button onclick="loadDeliveryData()">
+        🔄 Refresh Table
+    </button>
+</div>
+</div>
+<div
+    id="summaryCards"
+    class="summary"
+></div>
+<table
+    id="deliveryTable"
+    class="display nowrap"
+>
+    <thead>
+
+        <tr>
+
+            <th>Symbol</th>
+
+            <th>Date</th>
+
+            <th>Close</th>
+
+            <th>Change %</th>
+
+            <th>Volume</th>
+
+            <th>Turnover</th>
+
+            <th>Trades</th>
+
+            <th>Delivery Qty</th>
+
+            <th>Delivery %</th>
+
+            <th>Volume Ratio</th>
+
+            <th>Delivery Score</th>
+
+        </tr>
+
+    </thead>
+    <tbody></tbody>
+</table>
+<script>
+window.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        let today = new Date()
+            .toISOString()
+            .split('T')[0];
+
+        document.getElementById(
+            "deliveryDate"
+        ).value = today;
+
+    }
+);
+function fetchAndUpdateDelivery(){
+    let date = document.getElementById(
+        "deliveryDate"
+    ).value;
+    fetch(
+        `/update_delivery_data?date=${date}`
+    )
+    .then(res => res.json())
+    .then(data => {
+        alert(data.message);
+        loadDeliveryData();
+    });
+
+}
+let table = null;
+function summaryCard(title, value, color){
+    return `
+
+        <div
+            class="card"
+            style="
+                border-left:5px solid ${color};
+            "
+        >
+            <div class="card-title">
+                ${title}
+            </div>
+            <div
+                class="card-value"
+                style="
+                    color:${color};
+                "
+            >
+                ${value}
+            </div>
+        </div>
+    `;
+}
+
+function updateSummary(data){
+    let high50 = 0;
+    let high70 = 0;
+    let low20 = 0;
+    data.forEach(d => {
+        let val = parseFloat(
+            d.deliv_per
+        );
+        if(val > 50) high50++;
+        if(val > 70) high70++;
+        if(val < 20) low20++;
+    });
+    let html = "";
+    html += summaryCard(
+        "Delivery > 50%",
+        high50,
+        "green"
+    );
+    html += summaryCard(
+        "Delivery > 70%",
+        high70,
+        "darkgreen"
+    );
+    html += summaryCard(
+        "Delivery < 20%",
+        low20,
+        "red"
+    );
+    $("#summaryCards").html(html);
+}
+
+function loadDeliveryData(){
+    fetch('/get_delivery_data')
+    .then(res => res.json())
+    .then(data => {
+        updateSummary(data);
+        let html = "";
+        data.forEach(d => {
+            let cls = "";
+            if(d.deliv_per > 70){
+                cls = "high-delivery";
+            }
+            else if(d.deliv_per < 20){
+                cls = "low-delivery";
+            }
+            html += `
+                <tr class="${cls}">
+                    <td>${d.symbol}</td>
+                    <td>${d.date}</td>
+                    <td>
+                        ${parseFloat(d.close_price || 0).toFixed(2)}
+                    </td>
+                    <td style="
+                        color:${
+                            d.change_per >= 0
+                            ? 'green'
+                            : 'red'
+                        };
+                        font-weight:bold;
+                    ">
+                        ${parseFloat(d.change_per || 0).toFixed(2)}%
+                    </td>
+                    <td>
+                        ${Number(d.ttl_trd_qnty || 0).toLocaleString()}
+                    </td>
+                    <td>
+                        ${parseFloat(d.turnover_lacs || 0).toFixed(2)}
+                    </td>
+                    <td>
+                        ${Number(d.no_of_trades || 0).toLocaleString()}
+                    </td>
+                    <td>
+                        ${Number(d.deliv_qty || 0).toLocaleString()}
+                    </td>
+                    <td style="
+                        color:${
+                            d.deliv_per > 50
+                            ? 'green'
+                            : d.deliv_per < 20
+                            ? 'red'
+                            : 'black'
+                        };
+                        font-weight:bold;
+                    ">
+                        ${parseFloat(
+                            d.deliv_per || 0
+                        ).toFixed(2)}%
+                    </td>
+
+                    <td style="
+                        color:${
+                            d.volume_ratio > 2
+                            ? 'green'
+                            : 'black'
+                        };
+                        font-weight:bold;
+                    ">
+
+                        ${parseFloat(
+                            d.volume_ratio || 0
+                        ).toFixed(2)}
+
+                    </td>
+
+                    <td style="
+                        color:${
+                            d.delivery_score > 80
+                            ? 'darkgreen'
+                            : d.delivery_score > 50
+                            ? 'green'
+                            : 'black'
+                        };
+                        font-weight:bold;
+                    ">
+
+                        ${parseFloat(
+                            d.delivery_score || 0
+                        ).toFixed(2)}
+
+                    </td>
+
+                </tr>
+
+            `;
+        });
+        if($.fn.DataTable.isDataTable(
+            '#deliveryTable'
+        )){
+            table.destroy();
+        }
+        $("#deliveryTable tbody").html(
+            html
+        );
+        table = $('#deliveryTable').DataTable({
+            pageLength:50,
+            scrollX:true,
+            scrollY:'70vh',
+            scrollCollapse:true,
+            order:[[6, 'desc']]
+        });
+    });
+}
+loadDeliveryData();
+
+</script>
+
+</body>
+
+</html>

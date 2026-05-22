@@ -103,11 +103,72 @@
     #indexAnalysis span {
         font-weight: bold;
     }
+    .top-navbar{
+        width:100%;
+        background:white;
+        padding:10px 15px;
+        box-shadow:0 2px 6px rgba(0,0,0,0.08);
+        display:flex;
+        justify-content:flex-end;
+        align-items:center;
+        margin-bottom:15px;
+        position:sticky;
+        top:0;
+        z-index:999;
+    }
+    #pageNavigator{
+        padding:10px 14px;
+        border-radius:8px;
+        border:1px solid #ccc;
+        background:white;
+        font-size:14px;
+        min-width:220px;
+        cursor:pointer;
+    }
 
     </style>
 
 </head>
 <body>
+
+<div class="top-navbar">
+
+    <select
+        id="pageNavigator"
+        onchange="navigatePage(this.value)"
+    >
+
+        <option value="">
+            📂 Open Page
+        </option>
+
+        <option value="/">
+            Dashboard
+        </option>
+
+        <option value="/stocks_analysis">
+            Stocks Analysis
+        </option>
+
+        <option value="/index_analysis">
+            Index Analysis
+        </option>
+
+        <option value="/portfolio">
+            Portfolio
+        </option>
+
+        <option value="/option_analysis">
+            Option Analysis
+        </option>
+
+        <option value="/indices_dashboard">
+            Indices Dashboard
+        </option>
+
+    </select>
+
+</div>
 <!-- =========================
 WATCHLIST SECTION
 ========================= -->
@@ -712,6 +773,14 @@ WATCHLIST SECTION
 </div>
 
 <script>
+
+function navigatePage(url){
+
+    if(!url) return;
+
+    window.location.href = url;
+
+}
 
 let currentIndexes = [];
 let activeWatchlist = null;

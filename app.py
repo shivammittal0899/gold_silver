@@ -3686,7 +3686,7 @@ def delivery_dashboard():
 
 
 @app.route('/update_delivery_data')
-def update_delivery_data():
+def update_delivery_data_route():
     try:
         date = request.args.get("date")
         if not date:
@@ -3748,7 +3748,7 @@ def update_delivery_data():
     
 @app.route('/get_delivery_data')
 def get_delivery_data():
-
+    log1("inside getting data")
     try:
 
         conn = sqlite3.connect(

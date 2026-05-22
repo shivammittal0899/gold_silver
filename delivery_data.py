@@ -86,6 +86,8 @@ def init_delivery_db():
     """)
     conn.commit()
     conn.close()
+
+init_delivery_db()
 def update_delivery_data_file(df):
     conn = sqlite3.connect(
         "delivery_history.db"

@@ -138,11 +138,11 @@
         onchange="navigatePage(this.value)"
     >
 
-        <option value="">
+        <option value="/">
             📂 Open Page
         </option>
 
-        <option value="/">
+        <option value="/dashboard">
             Dashboard
         </option>
 
@@ -774,13 +774,6 @@ WATCHLIST SECTION
 
 <script>
 
-function navigatePage(url){
-
-    if(!url) return;
-
-    window.location.href = url;
-
-}
 
 let currentIndexes = [];
 let activeWatchlist = null;

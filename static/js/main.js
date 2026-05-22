@@ -792,3 +792,11 @@ function summaryCard(title, value, color="#3498db"){
 
     `;
 }
+
+
+
+
+function navigatePage(url){
+    if(!url) return;
+    window.location.href = url;
+}

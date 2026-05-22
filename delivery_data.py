@@ -22,32 +22,6 @@ import pandas as pd
 #     """)
 #     conn.commit()
 #     conn.close()
-def init_delivery_db():
-    conn = sqlite3.connect(
-        "delivery_history.db"
-    )
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS delivery_history (
-            date TEXT,
-            symbol TEXT,
-            close_price REAL,
-            change_per REAL,
-            ttl_trd_qnty INTEGER,
-            turnover_lacs REAL,
-            no_of_trades INTEGER,
-            deliv_qty INTEGER,
-            deliv_per REAL,
-            volume_ratio REAL,
-            delivery_score REAL,
-            PRIMARY KEY (
-                date,
-                symbol
-            )
-        )
-    """)
-    conn.commit()
-    conn.close()
 # def update_delivery_data(df):
 #     conn = sqlite3.connect(
 #         "delivery_history.db"
@@ -86,11 +60,42 @@ def init_delivery_db():
 #     conn.close()
 #     print("✅ Delivery data updated")
 
+def init_delivery_db():
+    conn = sqlite3.connect(
+        "delivery_history.db"
+    )
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS delivery_history (
+            date TEXT,
+            symbol TEXT,
+            close_price REAL,
+            change_per REAL,
+            ttl_trd_qnty INTEGER,
+            turnover_lacs REAL,
+            no_of_trades INTEGER,
+            deliv_qty INTEGER,
+            deliv_per REAL,
+            volume_ratio REAL,
+            delivery_score REAL,
+            PRIMARY KEY (
+                date,
+                symbol
+            )
+        )
+    """)
+    conn.commit()
+    conn.close()
 def update_delivery_data(df):
     conn = sqlite3.connect(
         "delivery_history.db"
     )
     cursor = conn.cursor()
+    df = df.dropna(
+        subset=[
+            "SYMBOL"
+        ]
+    )
     # CLEAN COLUMNS
     df.columns = [
         c.strip()
@@ -101,6 +106,7 @@ def update_delivery_data(df):
     numeric_cols = [
 
         "LAST_PRICE",
+        "PREV_CLOSE",
         "TTL_TRD_QNTY",
         "TURNOVER_LACS",
         "NO_OF_TRADES",
@@ -110,6 +116,18 @@ def update_delivery_data(df):
     ]
 
     for col in numeric_cols:
+
+        df[col] = (
+
+            df[col]
+
+            .astype(str)
+
+            .str.replace(',', '')
+
+            .str.strip()
+
+        )
 
         df[col] = pd.to_numeric(
 

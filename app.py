@@ -3764,7 +3764,7 @@ def get_delivery_data():
             ORDER BY date DESC,
                      delivery_score DESC
 
-            LIMIT 2000
+            
 
         """
 

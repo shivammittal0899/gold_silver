@@ -3774,7 +3774,8 @@ def get_delivery_data():
         )
 
         conn.close()
-
+        log1("sending data")
+        log1(df)
         return jsonify(
 
             df.to_dict(

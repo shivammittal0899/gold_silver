@@ -3675,7 +3675,7 @@ def get_stock_index_details():
 
         return jsonify({})
 
-
+from delivery_data import *
 @app.route('/delivery_dashboard')
 def delivery_dashboard():
 

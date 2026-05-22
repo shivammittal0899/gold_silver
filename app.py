@@ -3686,7 +3686,7 @@ def delivery_dashboard():
 
 
 @app.route('/update_delivery_data')
-def update_delivery_data_route():
+def update_delivery_data():
     try:
         date = request.args.get("date")
         if not date:

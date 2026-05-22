@@ -3730,7 +3730,7 @@ def update_delivery_data_route():
         # SAVE
         # ====================================
 
-        update_delivery_data(df)
+        update_delivery_data_file(df)
 
         return jsonify({
 
@@ -3749,37 +3749,47 @@ def update_delivery_data_route():
 @app.route('/get_delivery_data')
 def get_delivery_data():
 
-    conn = sqlite3.connect(
-        "delivery_history.db"
-    )
+    try:
 
-    query = """
-
-        SELECT *
-
-        FROM delivery_history
-
-        ORDER BY date DESC,
-                 deliv_per DESC
-
-        LIMIT 2000
-
-    """
-
-    df = pd.read_sql(
-        query,
-        conn
-    )
-
-    conn.close()
-
-    return jsonify(
-
-        df.to_dict(
-            orient="records"
+        conn = sqlite3.connect(
+            "delivery_history.db"
         )
 
-    )
+        query = """
+
+            SELECT *
+
+            FROM delivery_history
+
+            ORDER BY date DESC,
+                     delivery_score DESC
+
+            LIMIT 2000
+
+        """
+
+        df = pd.read_sql(
+            query,
+            conn
+        )
+
+        conn.close()
+
+        return jsonify(
+
+            df.to_dict(
+                orient="records"
+            )
+
+        )
+
+    except Exception as e:
+
+        import traceback
+
+        traceback.print_exc()
+
+        return jsonify([])
 
 
 # ---------------------- MAIN ----------------------

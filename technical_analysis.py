@@ -515,7 +515,7 @@ import sqlite3
 import pandas as pd
 
 
-def delivery_data_analysis(symbol):
+def delivery_data_analysis(df, symbol):
 
     conn = sqlite3.connect(
         "delivery_history.db"

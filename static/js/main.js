@@ -130,10 +130,27 @@ function getFundamentalColor(val) {
 
 function getDeliveryColor(val){
     if (val === null || val === undefined) return "";
-    let color = "";
     if (val >= 60) return "background-color:#e6ffe6; color:limegreen; font-weight:bold;";
-    if (val >= 45) return "background-color:#e6ffe6; color:orange; font-weight:bold;";
-    return "background-color:#ffcccc; color:red; font-weight:bold;";
+    if (val >= 45) return "background-color:#ffe6cc; color:orange; font-weight:bold;";
+    return "background-color:#ffe6e6; color:red; font-weight:bold;";
+}
+function getDeliveryScoreColor(val){
+    if (val === null || val === undefined) return "";
+    if (val >= 90) return "background-color:#99ff99; color:limegreen; font-weight:bold;";
+    if (val >= 70) return "background-color:#ffcc99; color:orange; font-weight:bold;";
+    return "background-color:#ffb3b3; color:red; font-weight:bold;";
+}
+function getDeliveryColor(val){
+    if (val === null || val === undefined) return "";
+    if (val >= 100) return "background-color:#e6ffe6; color:limegreen; font-weight:bold;";
+    if (val >= 60) return "background-color:#ffe6cc; color:orange; font-weight:bold;";
+    if (val >= 30) return "background-color:#ffffcc; color:#e6ac00; font-weight:bold;";
+    return "background-color:#ffe6e6; color:red; font-weight:bold;";
+}
+function getVolumeRatioColor(val){
+    if (val === null || val === undefined) return "";
+    if (val >= 1) return "background-color:#99ff99; color:limegreen; font-weight:bold;";
+    return "background-color:#ffcc99; color:orange; font-weight:bold;";
 }
 
 function stock_analysis_tables(data){
@@ -504,21 +521,21 @@ function stock_analysis_tables(data){
                 <td style="${getDeliveryColor(d[columns[3]])}">${d[columns[3]] ?? '-'}</td>
                 <td style="${getDeliveryColor(d[columns[4]])}">${d[columns[4]] ?? '-'}</td>
                 <td style="${getDeliveryColor(d[columns[5]])}">${d[columns[5]] ?? '-'}</td>
-                <td>${d[columns[6]] ?? '-'}</td>
-                <td>${d[columns[7]] ?? '-'}</td>
-                <td>${d[columns[8]] ?? '-'}</td>
-                <td>${d[columns[9]] ?? '-'}</td>
-                <td>${d[columns[10]] ?? '-'}</td>
+                <td style="${getDeliveryScoreColor(d[columns[6]])}">${d[columns[6]] ?? '-'}</td>
+                <td style="${getDeliveryScoreColor(d[columns[7]])}">${d[columns[7]] ?? '-'}</td>
+                <td style="${getDeliveryScoreColor(d[columns[8]])}">${d[columns[8]] ?? '-'}</td>
+                <td style="${getDeliveryScoreColor(d[columns[9]])}">${d[columns[9]] ?? '-'}</td>
+                <td style="${getDeliveryScoreColor(d[columns[10]])}">${d[columns[10]] ?? '-'}</td>
                 <td>${d[columns[11]] ?? '-'}</td>
                 <td>${d[columns[12]] ?? '-'}</td>
                 <td>${d[columns[13]] ?? '-'}</td>
                 <td>${d[columns[14]] ?? '-'}</td>
                 <td>${d[columns[15]] ?? '-'}</td>
-                <td>${d[columns[16]] ?? '-'}</td>
-                <td>${d[columns[17]] ?? '-'}</td>
-                <td>${d[columns[18]] ?? '-'}</td>
-                <td>${d[columns[19]] ?? '-'}</td>
-                <td>${d[columns[20]] ?? '-'}</td>
+                <td style="${getVolumeRatioColor(d[columns[16]])}">${d[columns[16]] ?? '-'}</td>
+                <td style="${getVolumeRatioColor(d[columns[17]])}">${d[columns[17]] ?? '-'}</td>
+                <td style="${getVolumeRatioColor(d[columns[18]])}">${d[columns[18]] ?? '-'}</td>
+                <td style="${getVolumeRatioColor(d[columns[19]])}">${d[columns[19]] ?? '-'}</td>
+                <td style="${getVolumeRatioColor(d[columns[20]])}">${d[columns[20]] ?? '-'}</td>
         `;
     });
 

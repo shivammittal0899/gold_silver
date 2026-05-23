@@ -127,7 +127,7 @@ def update_delivery_data_file(df):
 
                 )
 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 
             """, (
 

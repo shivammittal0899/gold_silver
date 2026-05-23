@@ -511,19 +511,31 @@ def rs_fun(result_ret, index_data):
     }
 
     return data
+import sqlite3
+import pandas as pd
 
-def delivery_data_analysis(df, symbol):
-    conn = sqlite3.connect("stocks.db")
+
+def delivery_data_analysis(symbol):
+
+    conn = sqlite3.connect(
+        "delivery_history.db"
+    )
+
     query = """
     SELECT
-        SYMBOL,
-        DATE1,
-        DELIV_PER,
-        TTL_TRD_QNTY,
-        NO_OF_TRADES
-    FROM bhavcopy
-    WHERE SYMBOL = ?
-    ORDER BY DATE1 DESC
+        date,
+        symbol,
+        close_price,
+        change_per,
+        ttl_trd_qnty,
+        turnover_lacs,
+        no_of_trades,
+        deliv_qty,
+        deliv_per
+
+    FROM delivery_history
+    WHERE symbol = ?
+    ORDER BY date DESC
     LIMIT 5
     """
 
@@ -532,6 +544,59 @@ def delivery_data_analysis(df, symbol):
         conn,
         params=(symbol,)
     )
+    conn.close()
+
+    # RETURN EMPTY IF NO DATA
+    if df.empty:
+        return {
+            "Symbol": symbol
+        }
+
+    # =========================================
+    # CALCULATIONS
+    # =========================================
+
+    # Trade Ratio = Volume / Trades
+    df["trade_ratio"] = (df["ttl_trd_qnty"]/df["no_of_trades"].replace(0,pd.NA))
+
+    # Volume Ratio
+
+    avg_volume = df["ttl_trd_qnty"].mean()
+
+    df["volume_ratio"] = (
+
+        df["ttl_trd_qnty"]
+
+        /
+
+        avg_volume
+
+    )
+
+    # Delivery Score
+
+    df["delivery_score"] = (
+
+        df["deliv_per"] * 0.5
+
+        +
+
+        df["volume_ratio"] * 30
+
+        +
+
+        (
+            df["trade_ratio"]
+            /
+            df["trade_ratio"].mean()
+        ) * 20
+
+    )
+
+    # =========================================
+    # OUTPUT ROW
+    # =========================================
+
     row = {
         "Symbol": symbol
     }
@@ -539,14 +604,27 @@ def delivery_data_analysis(df, symbol):
     for _, r in df.iterrows():
 
         date_str = pd.to_datetime(
-            r["DATE1"]
+            r["date"]
         ).strftime("%d/%m")
 
         row[f"Delivery {date_str}"] = round(
-            r["DELIV_PER"], 2
+            r["deliv_per"],
+            2
         )
 
         row[f"TradeRatio {date_str}"] = round(
-            r["trade_ratio"], 2
+            r["trade_ratio"],
+            2
         )
+
+        row[f"VolumeRatio {date_str}"] = round(
+            r["volume_ratio"],
+            2
+        )
+
+        row[f"DeliveryScore {date_str}"] = round(
+            r["delivery_score"],
+            2
+        )
+
     return row

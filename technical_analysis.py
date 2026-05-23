@@ -4,6 +4,7 @@ from ta import volatility
 from ta.volume import VolumeWeightedAveragePrice
 import pandas as pd
 import json
+import sqlite3
 def indicator_values(df):
     rsi = RSIIndicator(close=df['Close'], window=14)
     df['RSI'] = rsi.rsi()
@@ -510,3 +511,42 @@ def rs_fun(result_ret, index_data):
     }
 
     return data
+
+def delivery_data_analysis(df, symbol):
+    conn = sqlite3.connect("stocks.db")
+    query = """
+    SELECT
+        SYMBOL,
+        DATE1,
+        DELIV_PER,
+        TTL_TRD_QNTY,
+        NO_OF_TRADES
+    FROM bhavcopy
+    WHERE SYMBOL = ?
+    ORDER BY DATE1 DESC
+    LIMIT 5
+    """
+
+    df = pd.read_sql_query(
+        query,
+        conn,
+        params=(symbol,)
+    )
+    row = {
+        "Symbol": symbol
+    }
+
+    for _, r in df.iterrows():
+
+        date_str = pd.to_datetime(
+            r["DATE1"]
+        ).strftime("%d/%m")
+
+        row[f"Delivery {date_str}"] = round(
+            r["DELIV_PER"], 2
+        )
+
+        row[f"TradeRatio {date_str}"] = round(
+            r["trade_ratio"], 2
+        )
+    return row

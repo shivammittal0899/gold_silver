@@ -128,6 +128,14 @@ function getFundamentalColor(val) {
     if (val <= 40) return "color:#cc0000; font-weight:bold;";
 }
 
+function getDeliveryColor(val){
+    if (val === null || val === undefined) return "";
+    let color = "";
+    if (val >= 60) return "background-color:#e6ffe6; color:limegreen; font-weight:bold;";
+    if (val >= 45) return "background-color:#e6ffe6; color:orange; font-weight:bold;";
+    return "background-color:#ffcccc; color:red; font-weight:bold;";
+}
+
 function stock_analysis_tables(data){
     const firstRow = data[0];
     // const columns = [];
@@ -491,11 +499,11 @@ function stock_analysis_tables(data){
                 <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
                     ${d.symbol}
                 </td>
-                <td>${d[columns[1]] ?? '-'}</td>
-                <td>${d[columns[2]] ?? '-'}</td>
-                <td>${d[columns[3]] ?? '-'}</td>
-                <td>${d[columns[4]] ?? '-'}</td>
-                <td>${d[columns[5]] ?? '-'}</td>
+                <td style="${getDeliveryColor(d[columns[1]])}">${d[columns[1]] ?? '-'}</td>
+                <td style="${getDeliveryColor(d[columns[2]])}">${d[columns[2]] ?? '-'}</td>
+                <td style="${getDeliveryColor(d[columns[3]])}">${d[columns[3]] ?? '-'}</td>
+                <td style="${getDeliveryColor(d[columns[4]])}">${d[columns[4]] ?? '-'}</td>
+                <td style="${getDeliveryColor(d[columns[5]])}">${d[columns[5]] ?? '-'}</td>
                 <td>${d[columns[6]] ?? '-'}</td>
                 <td>${d[columns[7]] ?? '-'}</td>
                 <td>${d[columns[8]] ?? '-'}</td>

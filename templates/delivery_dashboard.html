@@ -112,10 +112,6 @@
 
             <th>Delivery %</th>
 
-            <th>Volume Ratio</th>
-
-            <th>Delivery Score</th>
-
         </tr>
 
     </thead>
@@ -264,37 +260,6 @@ function loadDeliveryData(){
                         ).toFixed(2)}%
                     </td>
 
-                    <td style="
-                        color:${
-                            d.volume_ratio > 2
-                            ? 'green'
-                            : 'black'
-                        };
-                        font-weight:bold;
-                    ">
-
-                        ${parseFloat(
-                            d.volume_ratio || 0
-                        ).toFixed(2)}
-
-                    </td>
-
-                    <td style="
-                        color:${
-                            d.delivery_score > 80
-                            ? 'darkgreen'
-                            : d.delivery_score > 50
-                            ? 'green'
-                            : 'black'
-                        };
-                        font-weight:bold;
-                    ">
-
-                        ${parseFloat(
-                            d.delivery_score || 0
-                        ).toFixed(2)}
-
-                    </td>
 
                 </tr>
 

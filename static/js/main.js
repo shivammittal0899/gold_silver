@@ -129,11 +129,14 @@ function getFundamentalColor(val) {
 }
 
 function stock_analysis_tables(data){
+    console.log(data)
     let htmlt = ""
     let htmlhl = ""
     let htmlfr = ""
     let htmlfg = ""
     let htmlft = ""
+    let htmldh = ""
+    let htmldb = ""
 
     let htmlsummary = ""
 
@@ -421,6 +424,8 @@ function stock_analysis_tables(data){
                 <td style="${getReturnColor(d.ret1)}">${d.fiftyTwoWeekRange || '-'}</td>
             </tr>
         `;
+
+        // htmldh += ``
     });
 
     // RETURNS
@@ -456,7 +461,7 @@ function stock_analysis_tables(data){
     htmlsummary += summaryCard("Price Tenkan U", summary.price_tenkan_u, "green");
     htmlsummary += summaryCard("Price Tenkan D", summary.price_tenkan_d, "orange");
     htmlsummary += summaryCard("Price Tenkan SD", summary.price_tenkan_sd, "darkred");
-
+    
     return {htmlt, htmlhl, htmlfr, htmlfg, htmlft, htmlsummary}
     
 }

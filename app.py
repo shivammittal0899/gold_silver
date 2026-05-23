@@ -1774,7 +1774,8 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
             result.update(fundamental_data if isinstance(fundamental_data, dict) else {})
 
             delivery_data  = delivery_data_analysis(df3, symbol)
-            log1(delivery_data)
+            result.update(delivery_data if isinstance(delivery_data, dict) else {})
+            log1(result)
         if analysis_type == "index":
             stock_rs = rs_fun(result_ret, index_data)
             log1(f"Data RS fetch till now {symbol}")

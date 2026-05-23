@@ -488,6 +488,7 @@ def composite_score(result):
 def fundamental_analysis(symbol, info):
 
     result = {
+        'recentQuaterDate': (info.get("mostRecentQuarter", None)),
         'industry': info.get("industry", None),
         'sector': info.get("sector", None),
         'business': info.get("longBusinessSummary", None),

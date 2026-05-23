@@ -305,6 +305,24 @@
         <tbody id="stockshighlow_table"></tbody>
     </table>
 </div>
+<!-- DELIVERY ANALYSIS TABLE -->
+<div class = "analysis-table-container" style="width:100%;">
+
+    <table
+        id="deliveryAnalysisTable"
+        class="table table-bordered table-striped table-hover"
+        style="width:100%"
+    >
+
+        <thead id="deliveryAnalysisHead">
+        </thead>
+
+        <tbody>
+        </tbody>
+
+    </table>
+
+</div>
 <div class = "analysis-table-container" style="width:100%;">
     <table id="FundamentalTable" class="display">
         <thead>
@@ -1062,6 +1080,12 @@ function deleteSelectedStocks() {
         autoLoadWatchlist(activeWatchlist);
     });
 }
+// let dataTable = null;
+let analysisTable = null;
+let highLowTable = null;
+let fundamentalTable = null;
+let growthTable = null;
+let priceTargetTable = null;
 
 function updateTableWithAnalysis(data) {
 
@@ -1084,22 +1108,7 @@ function updateTableWithAnalysis(data) {
         document.getElementById("priceTarget_table").innerHTML = htmlft;
 
         $("#marketSummary").html(htmlsummary);
-        // document.getElementById("stocks_table").innerHTML =
-        //     technical_table1(data);
-
-        // document.getElementById("stockshighlow_table").innerHTML =
-        //     highlow_table(data);
         
-        // document.getElementById("stocksfundamental_table").innerHTML =
-        //     fundamental_table(data);
-
-        // document.getElementById("stocksgrowth_table").innerHTML =
-        //     fundamentalgrowth_table(data);
-
-        // document.getElementById("priceTarget_table").innerHTML =
-        //     priceTarget_table(data);
-
-        // init datatables
         initDataTable();
 
         return;
@@ -1216,12 +1225,7 @@ function updateTableWithAnalysis(data) {
         .page(targetPage)
         .draw(false);
 }
-// let dataTable = null;
-let analysisTable = null;
-let highLowTable = null;
-let fundamentalTable = null;
-let growthTable = null;
-let priceTargetTable = null;
+
 
 function initDataTable() {
 

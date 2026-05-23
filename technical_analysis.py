@@ -563,35 +563,11 @@ def delivery_data_analysis(df, symbol):
 
     avg_volume = df["ttl_trd_qnty"].mean()
 
-    df["volume_ratio"] = (
-
-        df["ttl_trd_qnty"]
-
-        /
-
-        avg_volume
-
-    )
+    df["volume_ratio"] = (df["ttl_trd_qnty"]/avg_volume)
 
     # Delivery Score
 
-    df["delivery_score"] = (
-
-        df["deliv_per"] * 0.5
-
-        +
-
-        df["volume_ratio"] * 30
-
-        +
-
-        (
-            df["trade_ratio"]
-            /
-            df["trade_ratio"].mean()
-        ) * 20
-
-    )
+    df["delivery_score"] = (df["deliv_per"] * 0.5 + df["volume_ratio"] * 30 + (df["trade_ratio"]/df["trade_ratio"].mean()) * 20)
 
     # =========================================
     # OUTPUT ROW

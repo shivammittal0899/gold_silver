@@ -310,14 +310,13 @@
 
     <table
         id="deliveryAnalysisTable"
-        class="table table-bordered table-striped table-hover"
-        style="width:100%"
+        class="table table-bordered table-striped table-hover display"
     >
 
         <thead id="deliveryAnalysisHead">
         </thead>
 
-        <tbody>
+        <tbody id="deliveryAnalysisBody">
         </tbody>
 
     </table>
@@ -1083,6 +1082,7 @@ function deleteSelectedStocks() {
 // let dataTable = null;
 let analysisTable = null;
 let highLowTable = null;
+let deliveryAnalysis = null;
 let fundamentalTable = null;
 let growthTable = null;
 let priceTargetTable = null;
@@ -1095,10 +1095,13 @@ function updateTableWithAnalysis(data) {
     // FIRST TIME LOAD
     // =========================
     if (!analysisTable) {
-        let {htmlt, htmlhl, htmlfr, htmlfg, htmlft, htmlsummary} = stock_analysis_tables(data)
+        let {htmlt, htmlhl, htmlfr, htmlfg, htmlft, htmldh, htmldb, htmlsummary} = stock_analysis_tables(data)
         // render html first time
         document.getElementById("stocks_table").innerHTML = htmlt;
 
+        document.getElementById("stockshighlow_table").innerHTML = htmlhl;
+
+        document.getElementById("deliveryAnalysisHead").innerHTML = htmldh;
         document.getElementById("stockshighlow_table").innerHTML = htmlhl;
         
         document.getElementById("stocksfundamental_table").innerHTML = htmlfr;
@@ -1125,6 +1128,10 @@ function updateTableWithAnalysis(data) {
     let highPage = highLowTable.page();
     let highSearch = highLowTable.search();
     
+    let deliveryOrder = deliveryAnalysis.order();
+    let deliveryPage = deliveryAnalysis.page();
+    let deliverySearch = deliveryAnalysis.search();
+    
     let fundOrder = fundamentalTable.order();
     let fundPage = fundamentalTable.page();
     let fundSearch = fundamentalTable.search();
@@ -1142,6 +1149,7 @@ function updateTableWithAnalysis(data) {
     // =========================
     analysisTable.clear();
     highLowTable.clear();
+    deliveryAnalysis.clear();
     fundamentalTable.clear();
     growthTable.clear();
     priceTargetTable.clear();
@@ -1180,6 +1188,10 @@ function updateTableWithAnalysis(data) {
         $('#stockshighlow_table tr')
     ).draw(false);
 
+    deliveryAnalysis.rows.add(
+        $('#deliveryAnalysisBody tr')
+    ).draw(false);
+
     fundamentalTable.rows.add(
         $('#stocksfundamental_table tr')
     ).draw(false);
@@ -1202,6 +1214,12 @@ function updateTableWithAnalysis(data) {
         .draw(false);
 
     highLowTable
+        .search(highSearch)
+        .order(highOrder)
+        .page(highPage)
+        .draw(false);
+
+    deliveryAnalysis
         .search(highSearch)
         .order(highOrder)
         .page(highPage)
@@ -1246,6 +1264,18 @@ function initDataTable() {
 
     if (!highLowTable) {
         highLowTable = $('#HighLowTable').DataTable({
+            pageLength: 50,
+            ordering: true,
+            searching: true,
+            scrollY: "80vh",
+            scrollX: true,
+            scrollCollapse: true,
+            stateSave: true
+        });
+    }
+
+    if (!deliveryAnalysis) {
+        deliveryAnalysis = $('#deliveryAnalysisTable').DataTable({
             pageLength: 50,
             ordering: true,
             searching: true,

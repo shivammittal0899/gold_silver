@@ -129,7 +129,57 @@ function getFundamentalColor(val) {
 }
 
 function stock_analysis_tables(data){
-    console.log(data)
+    const firstRow = data[0];
+    // const columns = [];
+    // // SYMBOL FIRST
+    // columns.push("Symbol");
+    // // DELIVERY COLUMNS
+    // Object.keys(firstRow).forEach(key => {
+    //     if (
+    //         key.includes("Delivery ")
+    //         ||
+    //         key.includes("TradeRatio ")
+    //         ||
+    //         key.includes("VolumeRatio ")
+    //         ||
+    //         key.includes("DeliveryScore ")
+    //     ) {
+    //         columns.push(key);
+    //     }
+    // });
+    const columns = [
+
+        "Symbol",
+
+        // DELIVERY
+        ...Object.keys(firstRow).filter(
+            key =>
+                key.includes("Delivery ")
+                &&
+                !key.includes("Score")
+        ),
+
+        // DELIVERY SCORE
+        ...Object.keys(firstRow).filter(
+            key =>
+                key.includes("DeliveryScore ")
+        ),
+
+        // TRADE RATIO
+        ...Object.keys(firstRow).filter(
+            key =>
+                key.includes("TradeRatio ")
+        ),
+
+        // VOLUME RATIO
+        ...Object.keys(firstRow).filter(
+            key =>
+                key.includes("VolumeRatio ")
+        )
+
+    ];
+
+
     let htmlt = ""
     let htmlhl = ""
     let htmlfr = ""
@@ -140,6 +190,15 @@ function stock_analysis_tables(data){
 
     let htmlsummary = ""
 
+    htmldh += `<tr> 
+                <th><input type="checkbox" onclick="toggleAll(this)"></th>`;
+    columns.forEach(col => {
+        htmldh += `
+            <th>${col}</th>
+        `;
+    });
+    htmldh += "</tr>";
+    
     let summary = {
 
         // RETURNS
@@ -425,7 +484,34 @@ function stock_analysis_tables(data){
             </tr>
         `;
 
-        // htmldh += ``
+        htmldb += `
+            <tr>
+                <td><input type="checkbox" class="rowCheck" value="${d.symbol}"></td>
+                
+                <td onclick="openChart('${d.symbol}')" style="cursor:pointer; color:#3498db;">
+                    ${d.symbol}
+                </td>
+                <td>${d[columns[1]] ?? '-'}</td>
+                <td>${d[columns[2]] ?? '-'}</td>
+                <td>${d[columns[3]] ?? '-'}</td>
+                <td>${d[columns[4]] ?? '-'}</td>
+                <td>${d[columns[5]] ?? '-'}</td>
+                <td>${d[columns[6]] ?? '-'}</td>
+                <td>${d[columns[7]] ?? '-'}</td>
+                <td>${d[columns[8]] ?? '-'}</td>
+                <td>${d[columns[9]] ?? '-'}</td>
+                <td>${d[columns[10]] ?? '-'}</td>
+                <td>${d[columns[11]] ?? '-'}</td>
+                <td>${d[columns[12]] ?? '-'}</td>
+                <td>${d[columns[13]] ?? '-'}</td>
+                <td>${d[columns[14]] ?? '-'}</td>
+                <td>${d[columns[15]] ?? '-'}</td>
+                <td>${d[columns[16]] ?? '-'}</td>
+                <td>${d[columns[17]] ?? '-'}</td>
+                <td>${d[columns[18]] ?? '-'}</td>
+                <td>${d[columns[19]] ?? '-'}</td>
+                <td>${d[columns[20]] ?? '-'}</td>
+        `;
     });
 
     // RETURNS
@@ -462,7 +548,7 @@ function stock_analysis_tables(data){
     htmlsummary += summaryCard("Price Tenkan D", summary.price_tenkan_d, "orange");
     htmlsummary += summaryCard("Price Tenkan SD", summary.price_tenkan_sd, "darkred");
     
-    return {htmlt, htmlhl, htmlfr, htmlfg, htmlft, htmlsummary}
+    return {htmlt, htmlhl, htmlfr, htmlfg, htmlft, htmldh, htmldb, htmlsummary}
     
 }
 

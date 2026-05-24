@@ -4046,13 +4046,14 @@ def get_eq_symbols():
 # =========================
 # FETCH STOCK DATA
 # =========================
-
+import random
+import time
 def fetch_stock_fundamentals(symbol):
 
     try:
 
         log1(f"Fetching: {symbol}")
-
+        time.sleep(random.uniform(0.5, 1))
         ticker = yf.Ticker(symbol)
 
         info = ticker.info
@@ -4230,6 +4231,7 @@ def refresh_fundamentals():
         symbols = get_eq_symbols()
 
         log1(f"Total EQ Stocks: {len(symbols)}")
+        time.sleep(5) 
 
         success_count = 0
 
@@ -4241,7 +4243,7 @@ def refresh_fundamentals():
         # THREADPOOL
         # ====================================
 
-        with ThreadPoolExecutor(max_workers=5) as executor:
+        with ThreadPoolExecutor(max_workers=3) as executor:
             futures = {
                 executor.submit(
                     fetch_stock_fundamentals,

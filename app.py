@@ -4014,6 +4014,8 @@ def get_eq_symbols():
             # exactly 2 letters after dash
             if re.fullmatch(r"[A-Za-z]{2}", after_dash):
                 continue
+            if re.fullmatch(r"[A-Za-z]{1}", after_dash):
+                continue
         if " " in symbol:
             skipc +=1
             continue
@@ -4041,7 +4043,7 @@ def get_eq_symbols():
         # Skip if:
         # numbers > 4
         # OR letters < 3
-        if numbers_count > 4 or letters_count < 3:
+        if numbers_count > 4 or numbers_count < 2  or letters_count < 3:
             skipc +=1
             continue
 
@@ -4061,7 +4063,7 @@ def fetch_stock_fundamentals(symbol):
     try:
 
         log1(f"Fetching: {symbol}")
-        time.sleep(random.uniform(0.5, 1))
+        time.sleep(random.uniform(0.3, 0.8))
         ticker = yf.Ticker(symbol)
 
         info = ticker.info
@@ -4251,7 +4253,7 @@ def refresh_fundamentals():
         # THREADPOOL
         # ====================================
 
-        with ThreadPoolExecutor(max_workers=3) as executor:
+        with ThreadPoolExecutor(max_workers=5) as executor:
             futures = {
                 executor.submit(
                     fetch_stock_fundamentals,

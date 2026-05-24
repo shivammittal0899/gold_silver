@@ -3987,16 +3987,15 @@ import sqlite3
 
 def get_eq_symbols():
 
-    conn = sqlite3.connect("instruments.db")
+    conn = sqlite3.connect("index_analysis.db")
 
     conn.row_factory = sqlite3.Row
 
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT tradingsymbol
-        FROM instruments
-        WHERE segment = 'EQ'
+        SELECT symbol
+        FROM master_indices
     """)
 
     rows = cursor.fetchall()
@@ -4007,14 +4006,16 @@ def get_eq_symbols():
     skipc = 0
     for row in rows:
 
-        symbol = row["tradingsymbol"]
+        symbol = row["symbol"]
         # Skip symbols containing spaces
         if "-" in symbol:
             after_dash = symbol.split("-")[-1]
             # exactly 2 letters after dash
             if re.fullmatch(r"[A-Za-z]{2}", after_dash):
+                skipc +=1
                 continue
             if re.fullmatch(r"[A-Za-z]{1}", after_dash):
+                skipc +=1
                 continue
         if " " in symbol:
             skipc +=1
@@ -4037,12 +4038,6 @@ def get_eq_symbols():
         # =========================
         letters_count = len(re.findall(r'[A-Za-z]', symbol))
         numbers_count = len(re.findall(r'\d', symbol))
-        # =========================
-        # FILTER CONDITIONS
-        # =========================
-        # Skip if:
-        # numbers > 4
-        # OR letters < 3
         if numbers_count > 4 or (numbers_count < 2 and numbers_count > 0)  or letters_count < 3:
             skipc +=1
             continue
@@ -4063,7 +4058,7 @@ def fetch_stock_fundamentals(symbol):
     try:
 
         log1(f"Fetching: {symbol}")
-        time.sleep(random.uniform(0.3, 0.8))
+        time.sleep(random.uniform(0.5, 0.8))
         ticker = yf.Ticker(symbol)
 
         info = ticker.info
@@ -4253,7 +4248,7 @@ def refresh_fundamentals():
         # THREADPOOL
         # ====================================
 
-        with ThreadPoolExecutor(max_workers=5) as executor:
+        with ThreadPoolExecutor(max_workers=4) as executor:
             futures = {
                 executor.submit(
                     fetch_stock_fundamentals,

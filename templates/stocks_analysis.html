@@ -1094,8 +1094,8 @@ function updateTableWithAnalysis(data) {
     // =========================
     // FIRST TIME LOAD
     // =========================
+    let {htmlt, htmlhl, htmlfr, htmlfg, htmlft, htmldh, htmldb, htmlsummary} = stock_analysis_tables(data)
     if (!analysisTable) {
-        let {htmlt, htmlhl, htmlfr, htmlfg, htmlft, htmldh, htmldb, htmlsummary} = stock_analysis_tables(data)
         // render html first time
         document.getElementById("stocks_table").innerHTML = htmlt;
 

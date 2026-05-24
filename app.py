@@ -3987,7 +3987,7 @@ import sqlite3
 
 def get_eq_symbols():
 
-    conn = sqlite3.connect("index_analysis.db")
+    conn = sqlite3.connect("indices_data.db")
 
     conn.row_factory = sqlite3.Row
 

@@ -3796,9 +3796,9 @@ def get_delivery_data():
 
         return jsonify([])
 
-@app.route('/fundamentals_dashboard')
+@app.route('/yahoo_data')
 def fundamentals_dashboard():
-    return render_template("fundamentals_dashboard.html")
+    return render_template("yahoo_data.html")
 
 @app.route('/get_all_fundamentals')
 def get_all_fundamentals():

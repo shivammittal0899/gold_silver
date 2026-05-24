@@ -3796,7 +3796,316 @@ def get_delivery_data():
 
         return jsonify([])
 
+@app.route('/fundamentals_dashboard')
+def fundamentals_dashboard():
+    return render_template("fundamentals_dashboard.html")
 
+@app.route('/get_all_fundamentals')
+def get_all_fundamentals():
+
+    conn = get_db_connection()
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM stock_fundamentals
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    data = [dict(row) for row in rows]
+
+    return jsonify(data)
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import yfinance as yf
+import sqlite3
+from flask import jsonify
+
+
+DB_NAME_YF = "yahoo_fundamentals.db"
+
+
+# =========================
+# DB CONNECTION
+# =========================
+
+def get_db_connection():
+
+    conn = sqlite3.connect(DB_NAME_YF)
+
+    conn.row_factory = sqlite3.Row
+
+    return conn
+
+
+# =========================
+# FETCH STOCK DATA
+# =========================
+
+def fetch_stock_fundamentals(symbol):
+
+    try:
+
+        ticker = yf.Ticker(symbol)
+
+        info = ticker.info
+
+        result = {
+
+            'symbol': symbol,
+
+            'recentQuaterDate': str(info.get("mostRecentQuarter", None)),
+
+            'industry': info.get("industry", None),
+
+            'sector': info.get("sector", None),
+
+            'business': info.get("longBusinessSummary", None),
+
+            'dividendYield': info.get("dividendYield", None),
+
+            'payoutRatio': info.get("payoutRatio", None),
+
+            'beta': info.get("beta", None),
+
+            'trailingPE': info.get("trailingPE", None),
+
+            'forwardPE': info.get("forwardPE", None),
+
+            'trailingEPS': info.get("trailingEps", None),
+
+            'forwardEPS': info.get("forwardEps", None),
+
+            'epsTrailingTwelveMonths': info.get("epsTrailingTwelveMonths", None),
+
+            'epsForward': info.get("epsForward", None),
+
+            'epsCurrentYear': info.get("epsCurrentYear", None),
+
+            'pegRatio': info.get("pegRatio", None),
+
+            'marketCap': info.get("marketCap", None),
+
+            'enterpriseValue': info.get("enterpriseValue", None),
+
+            'profitMargins': info.get("profitMargins", None),
+
+            'bookValue': info.get("bookValue", None),
+
+            'priceToBook': info.get("priceToBook", None),
+
+            'earningsQuarterlyGrowth': info.get("earningsQuarterlyGrowth", None),
+
+            'enterpriseToRevenue': info.get("enterpriseToRevenue", None),
+
+            'enterpriseToEbitda': info.get("enterpriseToEbitda", None),
+
+            'targetHighPrice': info.get("targetHighPrice", None),
+
+            'targetLowPrice': info.get("targetLowPrice", None),
+
+            'targetMeanPrice': info.get("targetMeanPrice", None),
+
+            'recommendationKey': info.get("recommendationKey", None),
+
+            'totalCashPerShare': info.get("totalCashPerShare", None),
+
+            'ebitda': info.get("ebitda", None),
+
+            'totalRevenue': info.get("totalRevenue", None),
+
+            'totalDebt': info.get("totalDebt", None),
+
+            'quickRatio': info.get("quickRatio", None),
+
+            'currentRatio': info.get("currentRatio", None),
+
+            'debtToEquity': info.get("debtToEquity", None),
+
+            'revenuePerShare': info.get("revenuePerShare", None),
+
+            'returnOnAssets': info.get("returnOnAssets", None),
+
+            'returnOnEquity': info.get("returnOnEquity", None),
+
+            'grossProfits': info.get("grossProfits", None),
+
+            'freeCashflow': info.get("freeCashflow", None),
+
+            'operatingCashflow': info.get("operatingCashflow", None),
+
+            'earningsGrowth': info.get("earningsGrowth", None),
+
+            'revenueGrowth': info.get("revenueGrowth", None),
+
+            'grossMargins': info.get("grossMargins", None),
+
+            'ebitdaMargins': info.get("ebitdaMargins", None),
+
+            'operatingMargins': info.get("operatingMargins", None),
+
+            'customPriceAlertConfidence': info.get("customPriceAlertConfidence", None),
+
+            'fiftyTwoWeekRange': info.get("fiftyTwoWeekRange", None)
+
+        }
+
+        return result
+
+    except Exception as e:
+
+        print(f"Error fetching {symbol}: {e}")
+
+        return None
+
+
+# =========================
+# SAVE TO DATABASE
+# =========================
+
+def save_fundamentals_to_db(data):
+
+    try:
+
+        conn = get_db_connection()
+
+        cursor = conn.cursor()
+
+        columns = ", ".join(data.keys())
+
+        placeholders = ", ".join(["?"] * len(data))
+
+        update_stmt = ", ".join([
+            f"{col}=excluded.{col}"
+            for col in data.keys()
+            if col != "symbol"
+        ])
+
+        query = f"""
+            INSERT INTO stock_fundamentals ({columns})
+            VALUES ({placeholders})
+            ON CONFLICT(symbol)
+            DO UPDATE SET {update_stmt}
+        """
+
+        cursor.execute(query, list(data.values()))
+
+        conn.commit()
+
+        conn.close()
+
+    except Exception as e:
+
+        print(f"DB Save Error: {e}")
+
+
+# =========================
+# REFRESH ALL FUNDAMENTALS
+# =========================
+
+@app.route('/refresh_fundamentals')
+def refresh_fundamentals():
+
+    try:
+
+        # ====================================
+        # FETCH SYMBOLS FROM YOUR TABLE
+        # ====================================
+
+        conn = get_db_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT symbol
+            FROM stocks
+        """)
+
+        rows = cursor.fetchall()
+
+        conn.close()
+
+        symbols = [row["symbol"] for row in rows]
+
+        # Example:
+        # ['RELIANCE.NS', 'TCS.NS', 'INFY.NS']
+
+        print(f"Total Symbols: {len(symbols)}")
+
+        success_count = 0
+
+        failed_count = 0
+
+        # ====================================
+        # THREADPOOL
+        # ====================================
+
+        with ThreadPoolExecutor(max_workers=10) as executor:
+
+            futures = {
+
+                executor.submit(
+                    fetch_stock_fundamentals,
+                    symbol
+                ): symbol
+
+                for symbol in symbols
+
+            }
+
+            for future in as_completed(futures):
+
+                symbol = futures[future]
+
+                try:
+
+                    result = future.result()
+
+                    if result:
+
+                        save_fundamentals_to_db(result)
+
+                        success_count += 1
+
+                        print(f"Saved: {symbol}")
+
+                    else:
+
+                        failed_count += 1
+
+                        print(f"Failed: {symbol}")
+
+                except Exception as e:
+
+                    failed_count += 1
+
+                    print(f"Thread Error {symbol}: {e}")
+
+        return jsonify({
+
+            "status": "success",
+
+            "total": len(symbols),
+
+            "success": success_count,
+
+            "failed": failed_count
+
+        })
+
+    except Exception as e:
+
+        return jsonify({
+
+            "status": "error",
+
+            "message": str(e)
+
+        })
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
     init_watchlist_db()   # 🔥 MUST BE FIRST

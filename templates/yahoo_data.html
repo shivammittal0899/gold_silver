@@ -1,0 +1,300 @@
+<!-- templates/fundamentals_dashboard.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Stock Fundamentals Dashboard</title>
+
+    <!-- Datatables -->
+    <link href="{{ url_for('static', filename='datatables/jquery.datatables.min.css') }}" rel="stylesheet" />
+    <script src="{{ url_for('static', filename='datatables/jquery.datatables.min.js') }}"></script>
+
+    <style>
+
+        body {
+            background: #f5f7fb;
+            padding: 20px;
+            font-family: Arial;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-box {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0px 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .refresh-btn {
+            min-width: 180px;
+        }
+
+        table.dataTable tbody tr:hover {
+            background-color: #f1f5ff !important;
+        }
+
+        .loading-overlay {
+
+            position: fixed;
+
+            top: 0;
+
+            left: 0;
+
+            width: 100%;
+
+            height: 100%;
+
+            background: rgba(255,255,255,0.8);
+
+            display: none;
+
+            justify-content: center;
+
+            align-items: center;
+
+            z-index: 9999;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <h3>Refreshing Data...</h3>
+</div>
+
+<div class="card-box">
+
+    <div class="top-bar">
+
+        <h2>Stock Fundamentals Dashboard</h2>
+
+        <button class="btn btn-primary refresh-btn"
+                onclick="refreshData()">
+
+            Refresh Fundamentals
+
+        </button>
+
+    </div>
+
+    <table id="fundamentalsTable"
+           class="display nowrap"
+           style="width:100%">
+
+        <thead>
+
+        <tr>
+
+            <th>Symbol</th>
+            <th>Sector</th>
+            <th>Industry</th>
+            <th>Market Cap</th>
+            <th>PE</th>
+            <th>Forward PE</th>
+            <th>ROE</th>
+            <th>ROA</th>
+            <th>Profit Margin</th>
+            <th>Revenue Growth</th>
+            <th>Earnings Growth</th>
+            <th>Debt/Equity</th>
+            <th>Current Ratio</th>
+            <th>Quick Ratio</th>
+            <th>Recommendation</th>
+            <th>Target Mean</th>
+            <th>52 Week Range</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody></tbody>
+
+    </table>
+
+</div>
+
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+
+    let table;
+
+    // =========================
+    // LOAD TABLE
+    // =========================
+
+    async function loadTable() {
+
+        try {
+
+            const response = await fetch("/get_all_fundamentals");
+
+            const data = await response.json();
+
+            if ($.fn.DataTable.isDataTable('#fundamentalsTable')) {
+                table.destroy();
+            }
+
+            $("#fundamentalsTable tbody").empty();
+
+            data.forEach(stock => {
+
+                let row = `
+                    <tr>
+
+                        <td>${stock.symbol || "-"}</td>
+                        <td>${stock.sector || "-"}</td>
+                        <td>${stock.industry || "-"}</td>
+
+                        <td>${formatNumber(stock.marketCap)}</td>
+
+                        <td>${formatDecimal(stock.trailingPE)}</td>
+                        <td>${formatDecimal(stock.forwardPE)}</td>
+
+                        <td>${percent(stock.returnOnEquity)}</td>
+                        <td>${percent(stock.returnOnAssets)}</td>
+
+                        <td>${percent(stock.profitMargins)}</td>
+
+                        <td>${percent(stock.revenueGrowth)}</td>
+
+                        <td>${percent(stock.earningsGrowth)}</td>
+
+                        <td>${formatDecimal(stock.debtToEquity)}</td>
+
+                        <td>${formatDecimal(stock.currentRatio)}</td>
+
+                        <td>${formatDecimal(stock.quickRatio)}</td>
+
+                        <td>${stock.recommendationKey || "-"}</td>
+
+                        <td>${formatDecimal(stock.targetMeanPrice)}</td>
+
+                        <td>${stock.fiftyTwoWeekRange || "-"}</td>
+
+                    </tr>
+                `;
+
+                $("#fundamentalsTable tbody").append(row);
+
+            });
+
+            table = $('#fundamentalsTable').DataTable({
+
+                pageLength: 25,
+
+                scrollX: true,
+
+                order: [[4, 'asc']]
+
+            });
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            alert("Error loading data");
+
+        }
+
+    }
+
+    // =========================
+    // REFRESH DATA
+    // =========================
+
+    async function refreshData() {
+
+        try {
+
+            $("#loadingOverlay").css("display", "flex");
+
+            const response = await fetch("/refresh_fundamentals");
+
+            const result = await response.json();
+
+            console.log(result);
+
+            await loadTable();
+
+            $("#loadingOverlay").hide();
+
+            alert("Fundamentals Updated");
+
+        }
+
+        catch (error) {
+
+            console.error(error);
+
+            $("#loadingOverlay").hide();
+
+            alert("Refresh Failed");
+
+        }
+
+    }
+
+    // =========================
+    // HELPERS
+    // =========================
+
+    function formatNumber(value) {
+
+        if (value == null) return "-";
+
+        return Intl.NumberFormat('en-IN', {
+            maximumFractionDigits: 2
+        }).format(value);
+
+    }
+
+    function formatDecimal(value) {
+
+        if (value == null) return "-";
+
+        return Number(value).toFixed(2);
+
+    }
+
+    function percent(value) {
+
+        if (value == null) return "-";
+
+        return (value * 100).toFixed(2) + "%";
+
+    }
+
+    // =========================
+    // INIT
+    // =========================
+
+    loadTable();
+
+</script>
+
+</body>
+
+</html>

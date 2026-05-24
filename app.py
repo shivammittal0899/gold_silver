@@ -4043,7 +4043,7 @@ def get_eq_symbols():
         # Skip if:
         # numbers > 4
         # OR letters < 3
-        if numbers_count > 4 or numbers_count < 2  or letters_count < 3:
+        if numbers_count > 4 or (numbers_count < 2 and numbers_count > 0)  or letters_count < 3:
             skipc +=1
             continue
 

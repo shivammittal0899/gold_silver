@@ -4010,11 +4010,17 @@ def get_eq_symbols():
         symbol = row["tradingsymbol"]
         # Skip symbols containing spaces
         if " " in symbol:
-
             continue
-
         # Skip symbols having 2 or more "-"
         if symbol.count("-") >= 2:
+            continue
+        digit_positions = [
+            i
+            for i, ch in enumerate(symbol)
+            if ch.isdigit()
+        ]
+
+        if len(digit_positions) >= 2:
 
             continue
         # =========================
@@ -4235,40 +4241,25 @@ def refresh_fundamentals():
         # THREADPOOL
         # ====================================
 
-        with ThreadPoolExecutor(max_workers=10) as executor:
-
+        with ThreadPoolExecutor(max_workers=5) as executor:
             futures = {
-
                 executor.submit(
                     fetch_stock_fundamentals,
                     symbol
                 ): symbol
-
                 for symbol in symbols
-
             }
-
             for future in as_completed(futures):
-
                 symbol = futures[future]
-
                 try:
-
                     result = future.result()
                     # SKIP FAILED STOCKS
                     if result is None:
-
                         failed_count += 1
-
                         continue
-
                     save_fundamentals_to_db(result)
-
                     success_count += 1
-
                     log1(f"Saved: {symbol}")
-
-                    
 
                 except Exception as e:
 

@@ -1649,6 +1649,41 @@ def live_ltp():
         result[symbol] = live_ltp_copy.get(token, 0)
 
     return jsonify(result)
+
+
+DB_NAME_YF = "yahoo_fundamentals.db"
+
+def get_yahoo_data(symbol):
+
+    try:
+
+        conn = sqlite3.connect(DB_NAME_YF)
+
+        conn.row_factory = sqlite3.Row
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            SELECT *
+            FROM stock_fundamentals
+            WHERE symbol = ?
+        """, (symbol,))
+
+        row = cursor.fetchone()
+
+        conn.close()
+
+        if row:
+
+            return dict(row)
+
+        return None
+
+    except Exception as e:
+
+        print(f"DB Fetch Error: {e}")
+
+        return None
 def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data = None):
     try:
         kite_local = KiteConnect(api_key=API_KEY)
@@ -1761,8 +1796,9 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
         }
         log1(f"Data received till now {symbol}")
         if analysis_type == "stock":
-            df_yf = yf.Ticker(symbol+".NS")
-            info = df_yf.get_info()
+            # df_yf = yf.Ticker(symbol+".NS")
+            # info = df_yf.get_info()
+            info = get_yahoo_data(symbol)
             # log1(f"{symbol} - EpochDate -- {datetime.fromtimestamp(info.get("compensationAsOfEpochDate", None))}")
             # log1(f"{symbol} - exDividendDate -- {datetime.fromtimestamp(info.get("exDividendDate", None))}")
             # log1(f"{symbol} - lastFiscalYearEnd -- {datetime.fromtimestamp(info.get("lastFiscalYearEnd", None))}")
@@ -3972,25 +4008,27 @@ def get_eq_symbols():
     for row in rows:
 
         symbol = row["tradingsymbol"]
+        # Skip symbols containing spaces
+        if " " in symbol:
 
+            continue
+
+        # Skip symbols having 2 or more "-"
+        if symbol.count("-") >= 2:
+
+            continue
         # =========================
         # COUNT LETTERS & NUMBERS
         # =========================
-
         letters_count = len(re.findall(r'[A-Za-z]', symbol))
-
         numbers_count = len(re.findall(r'\d', symbol))
-
         # =========================
         # FILTER CONDITIONS
         # =========================
-
         # Skip if:
         # numbers > 4
         # OR letters < 3
-
         if numbers_count > 4 or letters_count < 3:
-
             continue
 
         # ADD .NS

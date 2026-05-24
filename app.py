@@ -3841,6 +3841,37 @@ def get_db_connection():
 
     return conn
 
+# =========================
+# FETCH EQ SYMBOLS
+# FROM instruments.db
+# =========================
+
+def get_eq_symbols():
+
+    conn = sqlite3.connect("instruments.db")
+
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT tradingsymbol
+        FROM instruments
+        WHERE segment = 'EQ'
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    # ADD .NS FOR YAHOO
+    symbols = [
+        f"{row['tradingsymbol']}.NS"
+        for row in rows
+    ]
+
+    return symbols
+
 
 # =========================
 # FETCH STOCK DATA
@@ -3849,6 +3880,19 @@ def get_db_connection():
 def fetch_stock_fundamentals(symbol):
 
     try:
+
+        log1(f"Fetching: {symbol}")
+
+        ticker = yf.Ticker(symbol)
+
+        info = ticker.info
+
+        # SKIP INVALID STOCKS
+        if not info or len(info) == 0:
+
+            log1(f"Skipped Empty: {symbol}")
+
+            return None
 
         ticker = yf.Ticker(symbol)
 
@@ -3958,7 +4002,7 @@ def fetch_stock_fundamentals(symbol):
 
     except Exception as e:
 
-        print(f"Error fetching {symbol}: {e}")
+        log1(f"Error fetching {symbol}: {e}")
 
         return None
 
@@ -4011,34 +4055,19 @@ def save_fundamentals_to_db(data):
 def refresh_fundamentals():
 
     try:
+        # ==================================
+        # GET EQ SYMBOLS
+        # ==================================
 
-        # ====================================
-        # FETCH SYMBOLS FROM YOUR TABLE
-        # ====================================
+        symbols = get_eq_symbols()
 
-        conn = get_db_connection()
-
-        cursor = conn.cursor()
-
-        cursor.execute("""
-            SELECT symbol
-            FROM stocks
-        """)
-
-        rows = cursor.fetchall()
-
-        conn.close()
-
-        symbols = [row["symbol"] for row in rows]
-
-        # Example:
-        # ['RELIANCE.NS', 'TCS.NS', 'INFY.NS']
-
-        print(f"Total Symbols: {len(symbols)}")
+        log1(f"Total EQ Stocks: {len(symbols)}")
 
         success_count = 0
 
         failed_count = 0
+
+
 
         # ====================================
         # THREADPOOL
@@ -4064,26 +4093,26 @@ def refresh_fundamentals():
                 try:
 
                     result = future.result()
-
-                    if result:
-
-                        save_fundamentals_to_db(result)
-
-                        success_count += 1
-
-                        print(f"Saved: {symbol}")
-
-                    else:
+                    # SKIP FAILED STOCKS
+                    if result is None:
 
                         failed_count += 1
 
-                        print(f"Failed: {symbol}")
+                        continue
+
+                    save_fundamentals_to_db(result)
+
+                    success_count += 1
+
+                    log1(f"Saved: {symbol}")
+
+                    
 
                 except Exception as e:
 
                     failed_count += 1
 
-                    print(f"Thread Error {symbol}: {e}")
+                    log1(f"Thread Error {symbol}: {e}")
 
         return jsonify({
 

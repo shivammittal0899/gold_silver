@@ -4002,17 +4002,24 @@ def get_eq_symbols():
     rows = cursor.fetchall()
 
     conn.close()
-
+    log1(len(rows))
     symbols = []
-
+    skipc = 0
     for row in rows:
 
         symbol = row["tradingsymbol"]
         # Skip symbols containing spaces
+        if "-" in symbol:
+            after_dash = symbol.split("-")[-1]
+            # exactly 2 letters after dash
+            if re.fullmatch(r"[A-Za-z]{2}", after_dash):
+                continue
         if " " in symbol:
+            skipc +=1
             continue
         # Skip symbols having 2 or more "-"
         if symbol.count("-") >= 2:
+            skipc +=1
             continue
         digit_positions = [
             i
@@ -4021,7 +4028,7 @@ def get_eq_symbols():
         ]
 
         if len(digit_positions) >= 2:
-
+            skipc +=1
             continue
         # =========================
         # COUNT LETTERS & NUMBERS
@@ -4035,11 +4042,12 @@ def get_eq_symbols():
         # numbers > 4
         # OR letters < 3
         if numbers_count > 4 or letters_count < 3:
+            skipc +=1
             continue
 
         # ADD .NS
         symbols.append(f"{symbol}.NS")
-
+    log1(skipc)
     return symbols
 
 

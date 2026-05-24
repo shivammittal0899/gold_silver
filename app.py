@@ -3796,6 +3796,95 @@ def get_delivery_data():
 
         return jsonify([])
 
+DB_NAME_YF = "yahoo_fundamentals.db"
+
+def init_yahoo_db():
+
+    conn = sqlite3.connect(DB_NAME_YF)
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS stock_fundamentals (
+
+        symbol TEXT PRIMARY KEY,
+
+        recentQuaterDate TEXT,
+
+        industry TEXT,
+        sector TEXT,
+        business TEXT,
+
+        dividendYield REAL,
+        payoutRatio REAL,
+        beta REAL,
+
+        trailingPE REAL,
+        forwardPE REAL,
+
+        trailingEPS REAL,
+        forwardEPS REAL,
+
+        epsTrailingTwelveMonths REAL,
+        epsForward REAL,
+        epsCurrentYear REAL,
+
+        pegRatio REAL,
+
+        marketCap REAL,
+        enterpriseValue REAL,
+
+        profitMargins REAL,
+
+        bookValue REAL,
+        priceToBook REAL,
+
+        earningsQuarterlyGrowth REAL,
+
+        enterpriseToRevenue REAL,
+        enterpriseToEbitda REAL,
+
+        targetHighPrice REAL,
+        targetLowPrice REAL,
+        targetMeanPrice REAL,
+
+        recommendationKey TEXT,
+
+        totalCashPerShare REAL,
+        ebitda REAL,
+        totalRevenue REAL,
+        totalDebt REAL,
+
+        quickRatio REAL,
+        currentRatio REAL,
+        debtToEquity REAL,
+
+        revenuePerShare REAL,
+        returnOnAssets REAL,
+        returnOnEquity REAL,
+
+        grossProfits REAL,
+        freeCashflow REAL,
+        operatingCashflow REAL,
+
+        earningsGrowth REAL,
+        revenueGrowth REAL,
+
+        grossMargins REAL,
+        ebitdaMargins REAL,
+        operatingMargins REAL,
+
+        customPriceAlertConfidence REAL,
+
+        fiftyTwoWeekRange TEXT
+    )
+    """)
+
+    conn.commit()
+
+    conn.close()
+
+init_yahoo_db()
 @app.route('/yahoo_data')
 def fundamentals_dashboard():
     return render_template("yahoo_data.html")
@@ -3803,22 +3892,32 @@ def fundamentals_dashboard():
 @app.route('/get_all_fundamentals')
 def get_all_fundamentals():
 
-    conn = get_db_connection()
+    try:
 
-    cursor = conn.cursor()
+        conn = get_db_connection()
 
-    cursor.execute("""
-        SELECT *
-        FROM stock_fundamentals
-    """)
+        cursor = conn.cursor()
 
-    rows = cursor.fetchall()
+        cursor.execute("""
+            SELECT *
+            FROM stock_fundamentals
+        """)
 
-    conn.close()
+        rows = cursor.fetchall()
 
-    data = [dict(row) for row in rows]
+        conn.close()
 
-    return jsonify(data)
+        data = [dict(row) for row in rows]
+
+        return jsonify(data)
+
+    except Exception as e:
+
+        print("GET ERROR:", e)
+
+        return jsonify({
+            "error": str(e)
+        }), 500
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import yfinance as yf
@@ -3826,7 +3925,7 @@ import sqlite3
 from flask import jsonify
 
 
-DB_NAME_YF = "yahoo_fundamentals.db"
+
 
 
 # =========================
@@ -3846,6 +3945,10 @@ def get_db_connection():
 # FROM instruments.db
 # =========================
 
+import re
+import sqlite3
+
+
 def get_eq_symbols():
 
     conn = sqlite3.connect("instruments.db")
@@ -3864,11 +3967,34 @@ def get_eq_symbols():
 
     conn.close()
 
-    # ADD .NS FOR YAHOO
-    symbols = [
-        f"{row['tradingsymbol']}.NS"
-        for row in rows
-    ]
+    symbols = []
+
+    for row in rows:
+
+        symbol = row["tradingsymbol"]
+
+        # =========================
+        # COUNT LETTERS & NUMBERS
+        # =========================
+
+        letters_count = len(re.findall(r'[A-Za-z]', symbol))
+
+        numbers_count = len(re.findall(r'\d', symbol))
+
+        # =========================
+        # FILTER CONDITIONS
+        # =========================
+
+        # Skip if:
+        # numbers > 4
+        # OR letters < 3
+
+        if numbers_count > 4 or letters_count < 3:
+
+            continue
+
+        # ADD .NS
+        symbols.append(f"{symbol}.NS")
 
     return symbols
 
@@ -3894,13 +4020,11 @@ def fetch_stock_fundamentals(symbol):
 
             return None
 
-        ticker = yf.Ticker(symbol)
-
-        info = ticker.info
 
         result = {
 
-            'symbol': symbol,
+            # 'symbol': symbol,
+            'symbol': symbol.replace(".NS", ""),
 
             'recentQuaterDate': str(info.get("mostRecentQuarter", None)),
 

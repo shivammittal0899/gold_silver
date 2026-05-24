@@ -1806,11 +1806,12 @@ def analyze_one_stock(symbol, access_token, analysis_type = "stock", index_data 
             # log1(f"{symbol} - mostRecentQuarter -- {datetime.fromtimestamp(info.get("mostRecentQuarter", None))}")
             # log1(f"{symbol} - earningsTimestampStart -- {datetime.fromtimestamp(info.get("earningsTimestampStart", None))}")
             # log1(f"{symbol} - earningsTimestampEnd -- {datetime.fromtimestamp(info.get("earningsTimestampEnd", None))}")
+            delivery_data  = delivery_data_analysis(df3, symbol)
+            result.update(delivery_data if isinstance(delivery_data, dict) else {})
+            
             fundamental_data = fundamental_analysis(symbol, info) 
             result.update(fundamental_data if isinstance(fundamental_data, dict) else {})
 
-            delivery_data  = delivery_data_analysis(df3, symbol)
-            result.update(delivery_data if isinstance(delivery_data, dict) else {})
             log1(result)
         if analysis_type == "index":
             stock_rs = rs_fun(result_ret, index_data)
@@ -4007,40 +4008,40 @@ def get_eq_symbols():
     for row in rows:
 
         symbol = row["symbol"]
-        # Skip symbols containing spaces
-        if "-" in symbol:
-            after_dash = symbol.split("-")[-1]
-            # exactly 2 letters after dash
-            if re.fullmatch(r"[A-Za-z]{2}", after_dash):
-                skipc +=1
-                continue
-            if re.fullmatch(r"[A-Za-z]{1}", after_dash):
-                skipc +=1
-                continue
-        if " " in symbol:
-            skipc +=1
-            continue
-        # Skip symbols having 2 or more "-"
-        if symbol.count("-") >= 2:
-            skipc +=1
-            continue
-        digit_positions = [
-            i
-            for i, ch in enumerate(symbol)
-            if ch.isdigit()
-        ]
+        # # Skip symbols containing spaces
+        # if "-" in symbol:
+        #     after_dash = symbol.split("-")[-1]
+        #     # exactly 2 letters after dash
+        #     if re.fullmatch(r"[A-Za-z]{2}", after_dash):
+        #         skipc +=1
+        #         continue
+        #     if re.fullmatch(r"[A-Za-z]{1}", after_dash):
+        #         skipc +=1
+        #         continue
+        # if " " in symbol:
+        #     skipc +=1
+        #     continue
+        # # Skip symbols having 2 or more "-"
+        # if symbol.count("-") >= 2:
+        #     skipc +=1
+        #     continue
+        # digit_positions = [
+        #     i
+        #     for i, ch in enumerate(symbol)
+        #     if ch.isdigit()
+        # ]
 
-        if len(digit_positions) >= 2:
-            skipc +=1
-            continue
-        # =========================
-        # COUNT LETTERS & NUMBERS
-        # =========================
-        letters_count = len(re.findall(r'[A-Za-z]', symbol))
-        numbers_count = len(re.findall(r'\d', symbol))
-        if numbers_count > 4 or (numbers_count < 2 and numbers_count > 0)  or letters_count < 3:
-            skipc +=1
-            continue
+        # if len(digit_positions) >= 2:
+        #     skipc +=1
+        #     continue
+        # # =========================
+        # # COUNT LETTERS & NUMBERS
+        # # =========================
+        # letters_count = len(re.findall(r'[A-Za-z]', symbol))
+        # numbers_count = len(re.findall(r'\d', symbol))
+        # if numbers_count > 4 or (numbers_count < 2 and numbers_count > 0)  or letters_count < 3:
+        #     skipc +=1
+        #     continue
 
         # ADD .NS
         symbols.append(f"{symbol}.NS")

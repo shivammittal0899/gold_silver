@@ -3791,7 +3791,7 @@ def update_delivery_data_route():
 def get_delivery_data():
     log1("inside getting data")
     try:
-
+        
         conn = sqlite3.connect(
             "delivery_history.db"
         )
@@ -3801,11 +3801,6 @@ def get_delivery_data():
             SELECT *
 
             FROM delivery_history
-
-            ORDER BY date DESC,
-                     delivery_score DESC
-
-            
 
         """
 

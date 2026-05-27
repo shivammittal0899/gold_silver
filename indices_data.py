@@ -36,10 +36,10 @@ INDEX_MAP = {
     "NIFTY MICROCAP250": "niftymicrocap250_",
 
     # BANKING
-    "NIFTY BANK": "niftybank",
+    "NIFTY BANK": "nifty_privatebank",
     "NIFTY PSU BANK": "niftypsubank",
     "NIFTY PVT BANK": "niftyprivatebank",
-    "NIFTY FIN SERVICE": "niftyfinancial",
+    "NIFTY FIN SERVICE": "niftyfinance",
 
     # IT
     "NIFTY IT": "niftyit",
@@ -48,7 +48,7 @@ INDEX_MAP = {
 
     # AUTO
     "NIFTY AUTO": "niftyauto",
-    "NIFTY EV": "iftyevnewage",
+    "NIFTY EV": "niftyevnewage",
     "NIFTY MOBILITY": "niftymobility_",
 
     # PHARMA

@@ -4342,6 +4342,7 @@ def analyze_options():
     # =========================
 
     options_df = get_nearby_options(
+        kite,
         index_type
     )
     log1("nearby options fetched")
@@ -4394,7 +4395,7 @@ import pandas as pd
 import pandas as pd
 
 
-def get_weekly_options(kite1, index_name="NIFTY"):
+def get_weekly_options(kite, index_name="NIFTY"):
 
     try:
 
@@ -4402,7 +4403,7 @@ def get_weekly_options(kite1, index_name="NIFTY"):
         # FETCH DIRECTLY FROM API
         # =========================
 
-        instruments = kite1.instruments(exchange="NFO")
+        instruments = kite.instruments(exchange="NFO")
 
         # =========================
         # CONVERT TO DATAFRAME
@@ -4530,7 +4531,7 @@ def get_weekly_options(kite1, index_name="NIFTY"):
 # SELECT STRIKES
 # =========================
 
-def get_nearby_options(index_name="NIFTY"):
+def get_nearby_options(kite,index_name="NIFTY"):
     access_token = read_access_token()
 
     kite_local = KiteConnect(api_key=API_KEY)
@@ -4541,7 +4542,7 @@ def get_nearby_options(index_name="NIFTY"):
     # quote = kite_local.quote([str(nifty_token)])
     quote = kite_local.quote(["NSE:NIFTY 50"])
     log1("inside nearby options")
-    df = get_weekly_options(kite_local, index_name)
+    df = get_weekly_options(kite, index_name)
     log1(f"weekly options fetched {df}")
 
     # =========================

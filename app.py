@@ -4404,52 +4404,24 @@ def get_weekly_options(kite_local, index_name="NIFTY"):
         # =========================
 
         instruments = kite_local.instruments(exchange="NFO")
-        log1("Total Instruments:")
-        # instruments = kite_local.instruments("NFO")
-        # =========================
-        # CONVERT TO DATAFRAME
-        # =========================
 
         df = pd.DataFrame(instruments)
 
-        # =========================
-        # DEBUG
-        # =========================
-
         log1(f"Total Instruments:, {len(df)}")
 
-        # =========================
-        # KEEP ONLY OPTIONS
-        # =========================
-
-        df = df[
-
-            (df["segment"] == "NFO-OPT")
-
-            &
-
-            (df["instrument_type"].isin(["CE", "PE"]))
-
-        ]
+        df = df[(df["segment"] == "NFO-OPT") & (df["instrument_type"].isin(["CE", "PE"]))]
 
         # =========================
         # FILTER INDEX
         # =========================
 
         if index_name == "NIFTY":
-
             df = df[
-
                 df["tradingsymbol"].str.startswith("NIFTY")
-
             ]
-
         elif index_name == "BANKNIFTY":
-
             df = df[
-
                 df["tradingsymbol"].str.startswith("BANKNIFTY")
-
             ]
 
         # =========================
@@ -4549,13 +4521,11 @@ def get_nearby_options(kite,index_name="NIFTY"):
     # =========================
     # GET SPOT PRICE
     # =========================
-    
-
-    
     log1(quote)
 
     # spot = quote[str(nifty_token)]["last_price"]
     spot = quote["NSE:NIFTY 50"]["last_price"]
+    log1(f"spot price --- {spot}")
 
     # =========================
     # UNIQUE STRIKES

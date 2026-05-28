@@ -4405,7 +4405,7 @@ def get_weekly_options(kite_local, index_name="NIFTY"):
 
         instruments = kite_local.instruments(exchange="NFO")
         log1("Total Instruments:")
-        instruments = kite_local.instruments("NFO")
+        # instruments = kite_local.instruments("NFO")
         # =========================
         # CONVERT TO DATAFRAME
         # =========================

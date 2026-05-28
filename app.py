@@ -4376,7 +4376,7 @@ def analyze_options():
             if result_item:
 
                 result.append(result_item)
-
+    log1(result)
     return jsonify(result)
 
 # =========================

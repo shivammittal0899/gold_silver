@@ -4342,8 +4342,6 @@ def analyze_options():
     # =========================
 
     options_df = get_nearby_options(
-
-        kite,
         index_type
     )
     log1("nearby options fetched")
@@ -4532,9 +4530,14 @@ def get_weekly_options(kite, index_name="NIFTY"):
 # SELECT STRIKES
 # =========================
 
-def get_nearby_options(kite, index_name="NIFTY"):
+def get_nearby_options(index_name="NIFTY"):
+    access_token = read_access_token()
+
+    kite_local = KiteConnect(api_key=API_KEY)
+    kite_local.set_access_token(access_token)
+
     log1("inside nearby options")
-    df = get_weekly_options(kite, index_name)
+    df = get_weekly_options(kite_local, index_name)
     log1(f"weekly options fetched {df}")
 
     # =========================
@@ -4544,7 +4547,7 @@ def get_nearby_options(kite, index_name="NIFTY"):
     niftybank_token = INSTRUMENT_MAP.get("NIFTY BANK")
     log1(f"nifty_token ---- {nifty_token}")
 
-    quote = kite.quote([str(nifty_token)])
+    quote = kite_local.quote([str(nifty_token)])
     log1(quote)
 
     spot = quote[str(nifty_token)]["last_price"]

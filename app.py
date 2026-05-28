@@ -4388,44 +4388,145 @@ from collections import defaultdict
 import pandas as pd
 
 
+# =========================
+# GET WEEKLY OPTIONS
+# DIRECT FROM KITE API
+# =========================
+
+import pandas as pd
+
+
 def get_weekly_options(kite, index_name="NIFTY"):
 
-    instruments = kite.instruments("NFO")
+    try:
 
-    df = pd.DataFrame(instruments)
+        # =========================
+        # FETCH DIRECTLY FROM API
+        # =========================
 
-    # =========================
-    # FILTER INDEX OPTIONS
-    # =========================
+        instruments = kite.instruments(exchange="NFO")
 
-    df = df[
+        # =========================
+        # CONVERT TO DATAFRAME
+        # =========================
 
-        (df["name"] == index_name)
+        df = pd.DataFrame(instruments)
 
-        &
+        # =========================
+        # DEBUG
+        # =========================
 
-        (df["segment"] == "NFO-OPT")
+        print("Total Instruments:", len(df))
 
-    ]
+        # =========================
+        # KEEP ONLY OPTIONS
+        # =========================
 
-    # =========================
-    # SORT EXPIRIES
-    # =========================
+        df = df[
 
-    df["expiry"] = pd.to_datetime(df["expiry"])
+            (df["segment"] == "NFO-OPT")
 
-    expiries = sorted(df["expiry"].unique())
+            &
 
-    # PRESENT WEEK + NEXT WEEK
-    selected_expiries = expiries[:2]
+            (df["instrument_type"].isin(["CE", "PE"]))
 
-    df = df[
+        ]
 
-        df["expiry"].isin(selected_expiries)
+        # =========================
+        # FILTER INDEX
+        # =========================
 
-    ]
+        if index_name == "NIFTY":
 
-    return df
+            df = df[
+
+                df["tradingsymbol"].str.startswith("NIFTY")
+
+            ]
+
+        elif index_name == "BANKNIFTY":
+
+            df = df[
+
+                df["tradingsymbol"].str.startswith("BANKNIFTY")
+
+            ]
+
+        # =========================
+        # CONVERT EXPIRY
+        # =========================
+
+        df["expiry"] = pd.to_datetime(df["expiry"])
+
+        # =========================
+        # SORT EXPIRIES
+        # =========================
+
+        expiries = sorted(
+
+            df["expiry"].dropna().unique()
+
+        )
+
+        print("Expiries:", expiries)
+
+        # =========================
+        # NO EXPIRY FOUND
+        # =========================
+
+        if len(expiries) == 0:
+
+            print("No Weekly Expiry Found")
+
+            return pd.DataFrame()
+
+        # =========================
+        # PRESENT + NEXT WEEK
+        # =========================
+
+        selected_expiries = expiries[:2]
+
+        # =========================
+        # FILTER EXPIRIES
+        # =========================
+
+        df = df[
+
+            df["expiry"].isin(selected_expiries)
+
+        ]
+
+        # =========================
+        # KEEP IMPORTANT COLUMNS
+        # =========================
+
+        df = df[[
+
+            "instrument_token",
+
+            "tradingsymbol",
+
+            "expiry",
+
+            "strike",
+
+            "instrument_type",
+
+            "lot_size"
+
+        ]]
+
+        print(df.head())
+
+        return df
+
+    except Exception as e:
+
+        import traceback
+
+        traceback.print_exc()
+
+        return pd.DataFrame()
 
 # =========================
 # SELECT STRIKES

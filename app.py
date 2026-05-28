@@ -4540,19 +4540,21 @@ def get_nearby_options(kite, index_name="NIFTY"):
     # =========================
     # GET SPOT PRICE
     # =========================
+    nifty_token = INSTRUMENT_MAP.get("NIFTY 50")
+    niftybank_token = INSTRUMENT_MAP.get("NIFTY BANK")
+    # if index_name == "NIFTY":
 
-    if index_name == "NIFTY":
+    #     quote_symbol = "NSE:NIFTY 50"
 
-        quote_symbol = "NSE:NIFTY 50"
+    # else:
 
-    else:
+    #     quote_symbol = "NSE:NIFTY BANK"
 
-        quote_symbol = "NSE:NIFTY BANK"
-
-    quote = kite.quote([quote_symbol])
+    quote = kite.quote([nifty_token])
     log1(quote)
 
-    spot = quote[quote_symbol]["last_price"]
+    # spot = quote[quote_symbol]["last_price"]
+    spot = quote[str(nifty_token)]["last_price"]
 
     # =========================
     # UNIQUE STRIKES

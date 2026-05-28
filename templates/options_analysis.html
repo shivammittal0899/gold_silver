@@ -10,7 +10,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>Options Analysis</title>
+    <title>Options Analysis Dashboard</title>
 
     <!-- Bootstrap -->
     <link rel="stylesheet"
@@ -47,7 +47,7 @@
 
             background: white;
 
-            border-radius: 10px;
+            border-radius: 12px;
 
             padding: 20px;
 
@@ -59,7 +59,7 @@
 
             display: grid;
 
-            grid-template-columns: 1fr 1fr 200px 150px;
+            grid-template-columns: 250px 200px 200px;
 
             gap: 15px;
 
@@ -73,9 +73,37 @@
 
         }
 
+        .loading {
+
+            display: none;
+
+            margin-top: 10px;
+
+            color: blue;
+
+            font-weight: bold;
+
+        }
+
         table.dataTable tbody tr:hover {
 
-            background-color: #f1f5ff !important;
+            background-color: #eef4ff !important;
+
+        }
+
+        .bullish {
+
+            color: green;
+
+            font-weight: bold;
+
+        }
+
+        .bearish {
+
+            color: red;
+
+            font-weight: bold;
 
         }
 
@@ -87,7 +115,11 @@
 
 <div class="card-box">
 
-    <h2 class="mb-4">Options Analysis Dashboard</h2>
+    <h2 class="mb-4">
+
+        Options Analysis Dashboard
+
+    </h2>
 
     <!-- =========================
          FILTERS
@@ -95,31 +127,29 @@
 
     <div class="top-controls">
 
-        <!-- NIFTY OPTIONS -->
+        <!-- INDEX -->
         <div>
 
             <label class="form-label">
-                Select NIFTY Options
+
+                Select Index
+
             </label>
 
-            <select id="niftyOptions"
-                    class="form-select"
-                    multiple>
+            <select id="indexType"
+                    class="form-select">
 
-            </select>
+                <option value="NIFTY">
 
-        </div>
+                    NIFTY
 
-        <!-- BANKNIFTY OPTIONS -->
-        <div>
+                </option>
 
-            <label class="form-label">
-                Select BANKNIFTY Options
-            </label>
+                <option value="BANKNIFTY">
 
-            <select id="bankniftyOptions"
-                    class="form-select"
-                    multiple>
+                    BANKNIFTY
+
+                </option>
 
             </select>
 
@@ -129,17 +159,31 @@
         <div>
 
             <label class="form-label">
+
                 Timeframe
+
             </label>
 
             <select id="timeframe"
                     class="form-select">
 
-                <option value="1minute">1 Min</option>
+                <option value="minute">
 
-                <option value="5minute">5 Min</option>
+                    1 Minute
 
-                <option value="30minute">30 Min</option>
+                </option>
+
+                <option value="5minute">
+
+                    5 Minute
+
+                </option>
+
+                <option value="30minute">
+
+                    30 Minute
+
+                </option>
 
             </select>
 
@@ -151,11 +195,18 @@
             <button class="btn btn-primary w-100"
                     onclick="runAnalysis()">
 
-                Analyze
+                Run Analysis
 
             </button>
 
         </div>
+
+    </div>
+
+    <div class="loading"
+         id="loadingText">
+
+        Fetching Option Analysis...
 
     </div>
 
@@ -173,25 +224,23 @@
 
             <th>Symbol</th>
 
+            <th>Strike</th>
+
+            <th>Type</th>
+
+            <th>Expiry</th>
+
             <th>LTP</th>
+
+            <th>Open</th>
+
+            <th>High</th>
+
+            <th>Low</th>
 
             <th>Volume</th>
 
-            <th>OI</th>
-
-            <th>OI Change</th>
-
-            <th>IV</th>
-
-            <th>Delta</th>
-
-            <th>Theta</th>
-
-            <th>Gamma</th>
-
-            <th>Vega</th>
-
-            <th>PCR</th>
+            <th>Volume Ratio</th>
 
             <th>Trend</th>
 
@@ -212,149 +261,97 @@
     let table;
 
     // =========================
-    // INIT SELECT2
-    // =========================
-
-    $('#niftyOptions').select2({
-
-        placeholder: "Select NIFTY Options"
-
-    });
-
-    $('#bankniftyOptions').select2({
-
-        placeholder: "Select BANKNIFTY Options"
-
-    });
-
-    // =========================
-    // SAMPLE DATA
-    // Replace with API
-    // =========================
-
-    const niftyData = [
-
-        "NIFTY24JUN25000CE",
-        "NIFTY24JUN25000PE",
-        "NIFTY24JUN25100CE",
-        "NIFTY24JUN25100PE"
-
-    ];
-
-    const bankniftyData = [
-
-        "BANKNIFTY24JUN55000CE",
-        "BANKNIFTY24JUN55000PE",
-        "BANKNIFTY24JUN55100CE",
-        "BANKNIFTY24JUN55100PE"
-
-    ];
-
-    // =========================
-    // LOAD OPTIONS
-    // =========================
-
-    function loadOptions() {
-
-        niftyData.forEach(item => {
-
-            $('#niftyOptions').append(
-                new Option(item, item)
-            );
-
-        });
-
-        bankniftyData.forEach(item => {
-
-            $('#bankniftyOptions').append(
-                new Option(item, item)
-            );
-
-        });
-
-    }
-
-    // =========================
     // RUN ANALYSIS
     // =========================
 
     async function runAnalysis() {
 
-        const nifty = $('#niftyOptions').val();
-
-        const banknifty = $('#bankniftyOptions').val();
-
-        const timeframe = $('#timeframe').val();
-
-        const symbols = [
-
-            ...nifty,
-
-            ...banknifty
-
-        ];
-
-        if (symbols.length === 0) {
-
-            alert("Please select options");
-
-            return;
-
-        }
-
         try {
 
-            const response = await fetch("/analyze_options", {
+            $("#loadingText").show();
 
-                method: "POST",
+            const index = $("#indexType").val();
 
-                headers: {
+            const timeframe = $("#timeframe").val();
 
-                    "Content-Type": "application/json"
+            const response = await fetch(
 
-                },
+                "/analyze_options",
 
-                body: JSON.stringify({
+                {
 
-                    symbols: symbols,
+                    method: "POST",
 
-                    timeframe: timeframe
+                    headers: {
 
-                })
+                        "Content-Type": "application/json"
 
-            });
+                    },
+
+                    body: JSON.stringify({
+
+                        index: index,
+
+                        timeframe: timeframe
+
+                    })
+
+                }
+
+            );
 
             const data = await response.json();
 
             renderTable(data);
 
+            $("#loadingText").hide();
+
         }
 
-        catch (error) {
+        catch(error) {
 
             console.error(error);
 
-            alert("Error fetching analysis");
+            $("#loadingText").hide();
+
+            alert("Error Fetching Analysis");
 
         }
 
     }
 
     // =========================
-    // TABLE
+    // TABLE RENDER
     // =========================
 
     function renderTable(data) {
 
+        // DESTROY OLD TABLE
         if ($.fn.DataTable.isDataTable('#optionsTable')) {
 
             $('#optionsTable').DataTable().destroy();
 
         }
 
-        $('#optionsTable tbody').empty();
+        // EMPTY TABLE
+        $("#optionsTable tbody").empty();
 
+        // APPEND ROWS
         data.forEach(item => {
+
+            let trendClass = "";
+
+            if (item.trend === "Bullish") {
+
+                trendClass = "bullish";
+
+            }
+
+            else if (item.trend === "Bearish") {
+
+                trendClass = "bearish";
+
+            }
 
             let row = `
 
@@ -362,27 +359,29 @@
 
                     <td>${item.symbol || "-"}</td>
 
+                    <td>${item.strike || "-"}</td>
+
+                    <td>${item.type || "-"}</td>
+
+                    <td>${item.expiry || "-"}</td>
+
                     <td>${item.ltp || "-"}</td>
 
-                    <td>${item.volume || "-"}</td>
+                    <td>${item.open || "-"}</td>
 
-                    <td>${item.oi || "-"}</td>
+                    <td>${item.high || "-"}</td>
 
-                    <td>${item.oi_change || "-"}</td>
+                    <td>${item.low || "-"}</td>
 
-                    <td>${item.iv || "-"}</td>
+                    <td>${formatNumber(item.volume)}</td>
 
-                    <td>${item.delta || "-"}</td>
+                    <td>${item.volume_ratio || "-"}</td>
 
-                    <td>${item.theta || "-"}</td>
+                    <td class="${trendClass}">
 
-                    <td>${item.gamma || "-"}</td>
+                        ${item.trend || "-"}
 
-                    <td>${item.vega || "-"}</td>
-
-                    <td>${item.pcr || "-"}</td>
-
-                    <td>${item.trend || "-"}</td>
+                    </td>
 
                     <td>${item.signal || "-"}</td>
 
@@ -390,27 +389,40 @@
 
             `;
 
-            $('#optionsTable tbody').append(row);
+            $("#optionsTable tbody").append(row);
 
         });
 
+        // INIT DATATABLE
         table = $('#optionsTable').DataTable({
 
             pageLength: 25,
 
             scrollX: true,
 
-            order: [[1, 'desc']]
+            order: [[9, 'desc']]
 
         });
 
     }
 
     // =========================
-    // INIT
+    // FORMAT NUMBER
     // =========================
 
-    loadOptions();
+    function formatNumber(value) {
+
+        if (value == null) return "-";
+
+        return Intl.NumberFormat('en-IN').format(value);
+
+    }
+
+    // =========================
+    // AUTO LOAD
+    // =========================
+
+    runAnalysis();
 
 </script>
 

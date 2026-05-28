@@ -4544,7 +4544,7 @@ def get_nearby_options(kite, index_name="NIFTY"):
     niftybank_token = INSTRUMENT_MAP.get("NIFTY BANK")
     log1(f"nifty_token ---- {nifty_token}")
 
-    quote = kite.quote([nifty_token])
+    quote = kite.quote(nifty_token)
     log1(quote)
 
     spot = quote[str(nifty_token)]["last_price"]

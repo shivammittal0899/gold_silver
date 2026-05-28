@@ -4310,6 +4310,7 @@ def process_option(row, timeframe):
         timeframe
 
     )
+    log1(f"process option complete {len(analysis)}")
 
     if analysis is None:
 
@@ -4593,15 +4594,19 @@ def analyze_option(kite, instrument_token, timeframe):
         to_date = datetime.now()
 
         from_date = to_date - timedelta(days=5)
+        access_token = read_access_token()
 
-        candles = kite.historical_data(
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
+
+        candles = kite_local.historical_data(
 
             instrument_token,
             from_date,
             to_date,
             "minute"
         )
-
+        
         df = pd.DataFrame(candles)
         log1(f"analyze option data fetched {len(df)}")
 
@@ -4657,7 +4662,7 @@ def analyze_option(kite, instrument_token, timeframe):
 
     except Exception as e:
 
-        print(e)
+        log1(f"error in fetching data process -- {e}")
 
         return None
 

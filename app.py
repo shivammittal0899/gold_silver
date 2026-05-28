@@ -4538,7 +4538,8 @@ def get_nearby_options(index_name="NIFTY"):
     nifty_token = INSTRUMENT_MAP.get("NIFTY 50")
     # niftybank_token = INSTRUMENT_MAP.get("NIFTY BANK")
     log1(f"nifty_token ---- {nifty_token}")
-    quote = kite_local.quote([str(nifty_token)])
+    # quote = kite_local.quote([str(nifty_token)])
+    quote = kite_local.quote(["NSE:NIFTY 50"])
     log1("inside nearby options")
     df = get_weekly_options(kite_local, index_name)
     log1(f"weekly options fetched {df}")
@@ -4551,7 +4552,8 @@ def get_nearby_options(index_name="NIFTY"):
     
     log1(quote)
 
-    spot = quote[str(nifty_token)]["last_price"]
+    # spot = quote[str(nifty_token)]["last_price"]
+    spot = quote["NSE:NIFTY 50"]["last_price"]
 
     # =========================
     # UNIQUE STRIKES

@@ -4535,7 +4535,7 @@ def get_weekly_options(kite, index_name="NIFTY"):
 def get_nearby_options(kite, index_name="NIFTY"):
     log1("inside nearby options")
     df = get_weekly_options(kite, index_name)
-    log1("weekly options fetched")
+    log1(f"weekly options fetched {df}")
 
     # =========================
     # GET SPOT PRICE

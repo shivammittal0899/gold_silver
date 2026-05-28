@@ -3797,18 +3797,13 @@ def get_delivery_data():
         )
 
         query = """
-
             SELECT *
-
             FROM delivery_history
-
         """
-
         df = pd.read_sql(
             query,
             conn
         )
-
         conn.close()
         log1("sending data")
         log1(df)
@@ -4291,6 +4286,60 @@ def refresh_fundamentals():
             "message": str(e)
 
         })
+
+
+# =========================
+# ROUTE
+# =========================
+
+@app.route('/options_analysis')
+def options_analysis():
+    return render_template("options_analysis.html")
+
+@app.route('/analyze_options', methods=['POST'])
+def analyze_options():
+
+    data = request.json
+
+    symbols = data.get("symbols", [])
+
+    timeframe = data.get("timeframe")
+
+    result = []
+
+    for symbol in symbols:
+
+        result.append({
+
+            "symbol": symbol,
+
+            "ltp": 250,
+
+            "volume": 120000,
+
+            "oi": 500000,
+
+            "oi_change": 5.2,
+
+            "iv": 14.5,
+
+            "delta": 0.52,
+
+            "theta": -2.1,
+
+            "gamma": 0.001,
+
+            "vega": 5.4,
+
+            "pcr": 1.1,
+
+            "trend": "Bullish",
+
+            "signal": "Long Build-up"
+
+        })
+
+    return jsonify(result)
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
     init_watchlist_db()   # 🔥 MUST BE FIRST

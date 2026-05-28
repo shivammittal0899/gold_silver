@@ -4394,7 +4394,7 @@ import pandas as pd
 import pandas as pd
 
 
-def get_weekly_options(kite, index_name="NIFTY"):
+def get_weekly_options(kite1, index_name="NIFTY"):
 
     try:
 
@@ -4402,7 +4402,7 @@ def get_weekly_options(kite, index_name="NIFTY"):
         # FETCH DIRECTLY FROM API
         # =========================
 
-        instruments = kite.instruments(exchange="NFO")
+        instruments = kite1.instruments(exchange="NFO")
 
         # =========================
         # CONVERT TO DATAFRAME

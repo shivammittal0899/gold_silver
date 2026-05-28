@@ -4301,45 +4301,258 @@ def analyze_options():
 
     data = request.json
 
-    symbols = data.get("symbols", [])
+    timeframe = data.get("timeframe", "5minute")
 
-    timeframe = data.get("timeframe")
+    index_type = data.get("index", "NIFTY")
+
+    # =========================
+    # GET OPTIONS
+    # =========================
+
+    options_df = get_nearby_options(
+
+        kite,
+        index_type
+    )
 
     result = []
 
-    for symbol in symbols:
+    # =========================
+    # LOOP OPTIONS
+    # =========================
+
+    for _, row in options_df.iterrows():
+
+        analysis = analyze_option(
+
+            kite,
+
+            row["instrument_token"],
+
+            timeframe
+
+        )
+
+        if analysis is None:
+
+            continue
 
         result.append({
 
-            "symbol": symbol,
+            "symbol": row["tradingsymbol"],
 
-            "ltp": 250,
+            "strike": row["strike"],
 
-            "volume": 120000,
+            "type": row["instrument_type"],
 
-            "oi": 500000,
+            "expiry": str(row["expiry"].date()),
 
-            "oi_change": 5.2,
-
-            "iv": 14.5,
-
-            "delta": 0.52,
-
-            "theta": -2.1,
-
-            "gamma": 0.001,
-
-            "vega": 5.4,
-
-            "pcr": 1.1,
-
-            "trend": "Bullish",
-
-            "signal": "Long Build-up"
+            **analysis
 
         })
 
     return jsonify(result)
+
+# =========================
+# GET WEEKLY OPTIONS
+# =========================
+
+from datetime import datetime
+from collections import defaultdict
+import pandas as pd
+
+
+def get_weekly_options(kite, index_name="NIFTY"):
+
+    instruments = kite.instruments("NFO")
+
+    df = pd.DataFrame(instruments)
+
+    # =========================
+    # FILTER INDEX OPTIONS
+    # =========================
+
+    df = df[
+
+        (df["name"] == index_name)
+
+        &
+
+        (df["segment"] == "NFO-OPT")
+
+    ]
+
+    # =========================
+    # SORT EXPIRIES
+    # =========================
+
+    df["expiry"] = pd.to_datetime(df["expiry"])
+
+    expiries = sorted(df["expiry"].unique())
+
+    # PRESENT WEEK + NEXT WEEK
+    selected_expiries = expiries[:2]
+
+    df = df[
+
+        df["expiry"].isin(selected_expiries)
+
+    ]
+
+    return df
+
+# =========================
+# SELECT STRIKES
+# =========================
+
+def get_nearby_options(kite, index_name="NIFTY"):
+
+    df = get_weekly_options(kite, index_name)
+
+    # =========================
+    # GET SPOT PRICE
+    # =========================
+
+    if index_name == "NIFTY":
+
+        quote_symbol = "NSE:NIFTY 50"
+
+    else:
+
+        quote_symbol = "NSE:NIFTY BANK"
+
+    quote = kite.quote([quote_symbol])
+
+    spot = quote[quote_symbol]["last_price"]
+
+    # =========================
+    # UNIQUE STRIKES
+    # =========================
+
+    strikes = sorted(df["strike"].unique())
+
+    # =========================
+    # FIND ATM
+    # =========================
+
+    atm = min(
+
+        strikes,
+
+        key=lambda x: abs(x - spot)
+
+    )
+
+    atm_index = strikes.index(atm)
+
+    # =========================
+    # 6 ABOVE + 6 BELOW
+    # =========================
+
+    selected_strikes = strikes[
+
+        max(0, atm_index - 6):
+
+        atm_index + 7
+
+    ]
+
+    # =========================
+    # FILTER STRIKES
+    # =========================
+
+    df = df[
+
+        df["strike"].isin(selected_strikes)
+
+    ]
+
+    # KEEP CE + PE
+    df = df[
+
+        df["instrument_type"].isin(["CE", "PE"])
+
+    ]
+
+    return df
+
+# =========================
+# OPTION ANALYSIS
+# =========================
+
+def analyze_option(kite, instrument_token, timeframe):
+
+    try:
+
+        from datetime import datetime, timedelta
+
+        to_date = datetime.now()
+
+        from_date = to_date - timedelta(days=5)
+
+        candles = kite.historical_data(
+
+            instrument_token,
+            from_date,
+            to_date,
+            timeframe
+        )
+
+        df = pd.DataFrame(candles)
+
+        if df.empty:
+
+            return None
+
+        latest = df.iloc[-1]
+
+        # =========================
+        # SIMPLE ANALYSIS
+        # =========================
+
+        trend = "Bullish"
+
+        if latest["close"] < latest["open"]:
+
+            trend = "Bearish"
+
+        volume_avg = df["volume"].tail(10).mean()
+
+        volume_ratio = latest["volume"] / volume_avg
+
+        signal = "Normal"
+
+        if volume_ratio > 2:
+
+            signal = "High Volume"
+
+        return {
+
+            "ltp": round(latest["close"], 2),
+
+            "open": round(latest["open"], 2),
+
+            "high": round(latest["high"], 2),
+
+            "low": round(latest["low"], 2),
+
+            "volume": int(latest["volume"]),
+
+            "volume_ratio": round(volume_ratio, 2),
+
+            "trend": trend,
+
+            "signal": signal
+
+        }
+
+    except Exception as e:
+
+        print(e)
+
+        return None
+
+
 # ---------------------- MAIN ----------------------
 if __name__ == "__main__":
     init_watchlist_db()   # 🔥 MUST BE FIRST

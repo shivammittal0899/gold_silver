@@ -4403,8 +4403,9 @@ def get_weekly_options(kite, index_name="NIFTY"):
         # FETCH DIRECTLY FROM API
         # =========================
 
-        instruments = kite.instruments(exchange="NFO")
-
+        # instruments = kite.instruments(exchange="NFO")
+        instruments = kite.instruments("NFO")
+        log1("Total Instruments:")
         # =========================
         # CONVERT TO DATAFRAME
         # =========================

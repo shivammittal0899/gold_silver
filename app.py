@@ -4414,7 +4414,7 @@ def get_weekly_options(kite, index_name="NIFTY"):
         # DEBUG
         # =========================
 
-        print("Total Instruments:", len(df))
+        log1("Total Instruments:", len(df))
 
         # =========================
         # KEEP ONLY OPTIONS
@@ -4535,6 +4535,9 @@ def get_nearby_options(index_name="NIFTY"):
 
     kite_local = KiteConnect(api_key=API_KEY)
     kite_local.set_access_token(access_token)
+    nifty_token = INSTRUMENT_MAP.get("NIFTY 50")
+    # niftybank_token = INSTRUMENT_MAP.get("NIFTY BANK")
+    log1(f"nifty_token ---- {nifty_token}")
     quote = kite_local.quote([str(nifty_token)])
     log1("inside nearby options")
     df = get_weekly_options(kite_local, index_name)
@@ -4543,9 +4546,7 @@ def get_nearby_options(index_name="NIFTY"):
     # =========================
     # GET SPOT PRICE
     # =========================
-    nifty_token = INSTRUMENT_MAP.get("NIFTY 50")
-    niftybank_token = INSTRUMENT_MAP.get("NIFTY BANK")
-    log1(f"nifty_token ---- {nifty_token}")
+    
 
     
     log1(quote)

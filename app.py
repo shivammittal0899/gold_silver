@@ -4416,7 +4416,7 @@ def get_weekly_options(kite_local, index_name="NIFTY"):
         # DEBUG
         # =========================
 
-        log1("Total Instruments:", len(df))
+        log1(f"Total Instruments:, {len(df)}")
 
         # =========================
         # KEEP ONLY OPTIONS

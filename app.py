@@ -4345,7 +4345,7 @@ def analyze_options():
         kite,
         index_type
     )
-    log1("nearby options fetched")
+    log1(f"nearby options fetched --- {options_df}")
 
     result = []
 
@@ -4423,7 +4423,7 @@ def get_weekly_options(kite_local, index_name="NIFTY"):
             df = df[
                 df["tradingsymbol"].str.startswith("BANKNIFTY")
             ]
-
+        log1(f"Total Instruments:, {len(df)}, {df.columns}")
         # =========================
         # CONVERT EXPIRY
         # =========================
@@ -4516,7 +4516,7 @@ def get_nearby_options(kite,index_name="NIFTY"):
     quote = kite_local.quote(["NSE:NIFTY 50"])
     log1("inside nearby options")
     df = get_weekly_options(kite_local, index_name)
-    log1(f"weekly options fetched {df}")
+    log1(f"weekly options fetched {df[-1]}")
 
     # =========================
     # GET SPOT PRICE

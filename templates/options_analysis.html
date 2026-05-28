@@ -302,6 +302,15 @@
 
             const data = await response.json();
 
+            if (!Array.isArray(data)) {
+
+                console.error(data);
+
+                alert("Backend Error");
+
+                return;
+            }
+
             renderTable(data);
 
             $("#loadingText").hide();

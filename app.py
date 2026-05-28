@@ -4295,6 +4295,38 @@ def refresh_fundamentals():
 @app.route('/options_analysis')
 def options_analysis():
     return render_template("options_analysis.html")
+from concurrent.futures import ThreadPoolExecutor
+
+
+def process_option(row, timeframe):
+
+    analysis = analyze_option(
+
+        kite,
+
+        row["instrument_token"],
+
+        timeframe
+
+    )
+
+    if analysis is None:
+
+        return None
+
+    return {
+
+        "symbol": row["tradingsymbol"],
+
+        "strike": row["strike"],
+
+        "type": row["instrument_type"],
+
+        "expiry": str(pd.to_datetime(row["expiry"]).date()),
+
+        **analysis
+
+    }
 
 @app.route('/analyze_options', methods=['POST'])
 def analyze_options():
@@ -4321,35 +4353,28 @@ def analyze_options():
     # LOOP OPTIONS
     # =========================
 
-    for _, row in options_df.iterrows():
 
-        analysis = analyze_option(
+    with ThreadPoolExecutor(max_workers=5) as executor:
 
-            kite,
+        futures = [
 
-            row["instrument_token"],
+            executor.submit(
+                process_option,
+                row,
+                timeframe
+            )
 
-            timeframe
+            for _, row in options_df.iterrows()
 
-        )
+        ]
 
-        if analysis is None:
+        for future in futures:
 
-            continue
+            result_item = future.result()
 
-        result.append({
+            if result_item:
 
-            "symbol": row["tradingsymbol"],
-
-            "strike": row["strike"],
-
-            "type": row["instrument_type"],
-
-            "expiry": str(row["expiry"].date()),
-
-            **analysis
-
-        })
+                result.append(result_item)
 
     return jsonify(result)
 
@@ -4422,6 +4447,7 @@ def get_nearby_options(kite, index_name="NIFTY"):
         quote_symbol = "NSE:NIFTY BANK"
 
     quote = kite.quote([quote_symbol])
+    log1(quote)
 
     spot = quote[quote_symbol]["last_price"]
 
@@ -4518,7 +4544,11 @@ def analyze_option(kite, instrument_token, timeframe):
 
         volume_avg = df["volume"].tail(10).mean()
 
-        volume_ratio = latest["volume"] / volume_avg
+        volume_ratio = 0
+
+        if volume_avg > 0:
+
+            volume_ratio = latest["volume"] / volume_avg
 
         signal = "Normal"
 

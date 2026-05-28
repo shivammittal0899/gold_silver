@@ -4299,6 +4299,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 def process_option(row, timeframe):
+    log1(f"process option {row}")
 
     analysis = analyze_option(
 
@@ -4345,7 +4346,7 @@ def analyze_options():
         kite,
         index_type
     )
-    log1(f"nearby options fetched --- {options_df}")
+    log1(f"nearby options fetched --- {len(options_df)}")
 
     result = []
 
@@ -4456,7 +4457,7 @@ def get_weekly_options(kite_local, index_name="NIFTY"):
         # PRESENT + NEXT WEEK
         # =========================
 
-        selected_expiries = expiries[:2]
+        selected_expiries = expiries[:1]
 
         # =========================
         # FILTER EXPIRIES
@@ -4583,6 +4584,7 @@ def get_nearby_options(kite,index_name="NIFTY"):
 # =========================
 
 def analyze_option(kite, instrument_token, timeframe):
+    log1(f"analyze option starts {instrument_token}")
 
     try:
 
@@ -4597,10 +4599,11 @@ def analyze_option(kite, instrument_token, timeframe):
             instrument_token,
             from_date,
             to_date,
-            timeframe
+            "minute"
         )
 
         df = pd.DataFrame(candles)
+        log1(f"analyze option data fetched {len(df)}")
 
         if df.empty:
 

@@ -4516,7 +4516,7 @@ def get_nearby_options(kite,index_name="NIFTY"):
     quote = kite_local.quote(["NSE:NIFTY 50"])
     log1("inside nearby options")
     df = get_weekly_options(kite_local, index_name)
-    log1(f"weekly options fetched {df[-1]}")
+    log1(f"weekly options fetched {df.tail(1)}")
 
     # =========================
     # GET SPOT PRICE

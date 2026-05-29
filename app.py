@@ -4379,8 +4379,7 @@ def analyze_options():
                 result.append(result_item)
     result.sort(
         key=lambda x: (
-            int(x.get("strike", 0)),
-            0 if x.get("type") == "CE" else 1
+            int(x.get("strike", 0))
         )
     )
     log1(result)
@@ -4568,7 +4567,7 @@ def get_nearby_options(kite,index_name="NIFTY"):
 
     selected_strikes = strikes[
 
-        max(0, atm_index - 6):
+        max(0, atm_index - 2):
 
         atm_index + 7
 

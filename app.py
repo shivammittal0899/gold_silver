@@ -4377,6 +4377,12 @@ def analyze_options():
             if result_item:
 
                 result.append(result_item)
+    result.sort(
+        key=lambda x: (
+            x.get("strike", 0),
+            0 if x.get("type") == "CE" else 1
+        )
+    )
     log1(result)
     return jsonify(result)
 
@@ -4533,7 +4539,14 @@ def get_nearby_options(kite,index_name="NIFTY"):
     # UNIQUE STRIKES
     # =========================
 
-    strikes = sorted(df["strike"].unique())
+    # Keep only 100-point strikes
+    strikes = sorted([
+        strike
+        for strike in df["strike"].unique()
+        if strike % 100 == 0
+    ])
+
+    log1(f"100-point strikes: {strikes[:10]}")
 
     # =========================
     # FIND ATM

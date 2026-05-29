@@ -381,7 +381,6 @@ def data_analysis(df, timeframe):
         "ret12": float(ret12),
         "trend": trend,
         "l_high": (last_high),
-        # "l_high": float(last_high),
         "l_low": float(last_low),
         "highlow": highlow,
         "vwap": vwap_a,

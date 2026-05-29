@@ -4380,11 +4380,11 @@ def analyze_options():
     for item in result[:5]:
         log1(f"{type(item.get("strike"))}, {item.get("strike")}")
     
-    result.sort(
-        key=lambda x: (
-            int(x.get("strike", 0))
-        )
-    )
+    # result.sort(
+    #     key=lambda x: (
+    #         int(x.get("strike", 0))
+    #     )
+    # )
     log1(result)
     return jsonify(result)
 
@@ -4572,7 +4572,7 @@ def get_nearby_options(kite,index_name="NIFTY"):
 
         max(0, atm_index - 2):
 
-        atm_index + 7
+        atm_index + 2
 
     ]
 

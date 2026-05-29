@@ -4379,7 +4379,7 @@ def analyze_options():
                 result.append(result_item)
     result.sort(
         key=lambda x: (
-            x.get("strike", 0),
+            int(x.get("strike", 0)),
             0 if x.get("type") == "CE" else 1
         )
     )

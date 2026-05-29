@@ -4377,6 +4377,9 @@ def analyze_options():
             if result_item:
 
                 result.append(result_item)
+    for item in result[:5]:
+        log1(f"{type(item.get("strike"))}, {item.get("strike")}")
+    
     result.sort(
         key=lambda x: (
             int(x.get("strike", 0))

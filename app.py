@@ -4678,7 +4678,7 @@ def analyze_option(kite, instrument_token, timeframe):
         }
         result.update(df_analysis if isinstance(df_analysis, dict) else {})
 
-        return 
+        return result
 
     except Exception as e:
 

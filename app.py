@@ -4641,45 +4641,43 @@ def analyze_option(kite, instrument_token, timeframe):
         df_analysis, df = stock_data_analysis(df, "1d")
         log1(df_analysis)
 
-        trend = "Bullish"
+        # trend = "Bullish"
 
-        if latest["close"] < latest["open"]:
+        # if latest["close"] < latest["open"]:
 
-            trend = "Bearish"
+        #     trend = "Bearish"
 
-        volume_avg = df["volume"].tail(10).mean()
+        # volume_avg = df["volume"].tail(10).mean()
 
-        volume_ratio = 0
+        # volume_ratio = 0
 
-        if volume_avg > 0:
+        # if volume_avg > 0:
 
-            volume_ratio = latest["volume"] / volume_avg
+        #     volume_ratio = latest["volume"] / volume_avg
 
-        signal = "Normal"
+        # signal = "Normal"
 
-        if volume_ratio > 2:
+        # if volume_ratio > 2:
 
-            signal = "High Volume"
+        #     signal = "High Volume"
+        result = {
 
-        return {
+            "ltp": round(latest["Close"], 2),
 
-            "ltp": round(latest["close"], 2),
+            "open": round(latest["Open"], 2),
 
-            "open": round(latest["open"], 2),
+            "high": round(latest["High"], 2),
 
-            "high": round(latest["high"], 2),
+            "low": round(latest["Low"], 2),
 
-            "low": round(latest["low"], 2),
-
-            "volume": int(latest["volume"]),
-
-            "volume_ratio": round(volume_ratio, 2),
-
-            "trend": trend,
-
-            "signal": signal
+            "volume": int(latest["Volume"]),
+            "OI": round(oi, 2),
+            "OI_change": round(oi_change, 2)
 
         }
+        result.update(df_analysis if isinstance(df_analysis, dict) else {})
+
+        return 
 
     except Exception as e:
 

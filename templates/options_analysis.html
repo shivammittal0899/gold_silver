@@ -232,20 +232,21 @@
 
             <th>LTP</th>
 
-            <th>Open</th>
+            <th>Return6</th>
 
             <th>High</th>
 
             <th>Low</th>
+            <th>Signal</th>
 
             <th>Volume</th>
 
             <th>Volume Ratio</th>
 
             <th>Trend</th>
-
-            <th>Signal</th>
-
+            <th>VWAP</th>
+            <th>RSI</th>
+            <th>Price Tenkan</th>
         </tr>
 
         </thead>
@@ -375,24 +376,21 @@
                     <td>${item.expiry || "-"}</td>
 
                     <td>${item.ltp || "-"}</td>
-
-                    <td>${item.open || "-"}</td>
+                    <td>${item.ret6 || "-"}</td>
 
                     <td>${item.high || "-"}</td>
 
                     <td>${item.low || "-"}</td>
 
+                    <td>${item.signal || "-"}</td>
                     <td>${formatNumber(item.volume)}</td>
 
                     <td>${item.volume_ratio || "-"}</td>
-
-                    <td class="${trendClass}">
-
-                        ${item.trend || "-"}
-
-                    </td>
-
-                    <td>${item.signal || "-"}</td>
+                    <td>${item.trend || "-"}</td>
+                    <td>${item.vwap || "-"}</td>
+                    <td>${item.rsi || "-"}</td>
+                    <td>${item.price_tenkan || "-"}</td>
+                    
 
                 </tr>
 

@@ -4648,13 +4648,13 @@ def analyze_option(kite, instrument_token, timeframe):
 
         #     trend = "Bearish"
 
-        # volume_avg = df["volume"].tail(10).mean()
+        volume_avg = df["Volume"].tail(10).mean()
 
-        # volume_ratio = 0
+        volume_ratio = 0
 
-        # if volume_avg > 0:
+        if volume_avg > 0:
 
-        #     volume_ratio = latest["volume"] / volume_avg
+            volume_ratio = latest["Volume"] / volume_avg
 
         # signal = "Normal"
 
@@ -4671,7 +4671,7 @@ def analyze_option(kite, instrument_token, timeframe):
 
             "low": round(latest["Low"], 2),
 
-            "volume": int(latest["Volume"]),
+            "volume_ratio": round(volume_avg, 2),
             "OI": round(oi, 2),
             "OI_change": round(oi_change, 2)
 

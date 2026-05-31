@@ -239,8 +239,6 @@
             <th>Low</th>
             <th>Signal</th>
 
-            <th>Volume</th>
-
             <th>Volume Ratio</th>
 
             <th>Trend</th>
@@ -349,17 +347,17 @@
         // APPEND ROWS
         data.forEach(item => {
 
-            let trendClass = "";
+            let signalClass = "";
 
-            if (item.trend === "Bullish") {
+            if (item.signal === "Strong Buy") {
 
-                trendClass = "bullish";
+                signalClass = "bullish";
 
             }
 
-            else if (item.trend === "Bearish") {
+            else if (item.signal === "Strong Sell") {
 
-                trendClass = "bearish";
+                signalClass = "bearish";
 
             }
 
@@ -382,8 +380,7 @@
 
                     <td>${item.low || "-"}</td>
 
-                    <td>${item.signal || "-"}</td>
-                    <td>${formatNumber(item.volume)}</td>
+                    <td class = "${signalClass}">${item.signal || "-"}</td>
 
                     <td>${item.volume_ratio || "-"}</td>
                     <td>${item.trend || "-"}</td>

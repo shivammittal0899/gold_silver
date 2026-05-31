@@ -424,8 +424,8 @@ def stock_data_analysis(df, timeframe):
 
     data = {
         "price": float(price),
-        "ret6": float(ret6),
-        "ret12": float(ret12),
+        "ret6": round(float(ret6), 2),
+        "ret12": round(float(ret12), 2),
         "trend": trend,
         "l_high": (last_high),
         # "l_high": float(last_high),

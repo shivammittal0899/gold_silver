@@ -4299,7 +4299,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 def process_option(row, timeframe):
-    log1(f"process option {row}")
+    # log1(f"process option {row}")
 
     analysis = analyze_option(
 
@@ -4310,7 +4310,7 @@ def process_option(row, timeframe):
         timeframe
 
     )
-    log1(f"process option complete {len(analysis)}")
+    # log1(f"process option complete {len(analysis)}")
 
     if analysis is None:
 
@@ -4347,7 +4347,7 @@ def analyze_options():
         kite,
         index_type
     )
-    log1(f"nearby options fetched --- {len(options_df)}")
+    # log1(f"nearby options fetched --- {len(options_df)}")
 
     result = []
 
@@ -4377,15 +4377,15 @@ def analyze_options():
             if result_item:
 
                 result.append(result_item)
-    for item in result[:5]:
-        log1(f"{type(item.get("strike"))}, {item.get("strike")}")
+    # for item in result[:5]:
+    #     log1(f"{type(item.get("strike"))}, {item.get("strike")}")
     
     # result.sort(
     #     key=lambda x: (
     #         int(x.get("strike", 0))
     #     )
     # )
-    log1(result)
+    # log1(result)
     return jsonify(result)
 
 # =========================
@@ -4417,7 +4417,7 @@ def get_weekly_options(kite_local, index_name="NIFTY"):
 
         df = pd.DataFrame(instruments)
 
-        log1(f"Total Instruments:, {len(df)}")
+        # log1(f"Total Instruments:, {len(df)}")
 
         df = df[(df["segment"] == "NFO-OPT") & (df["instrument_type"].isin(["CE", "PE"]))]
 
@@ -4433,7 +4433,7 @@ def get_weekly_options(kite_local, index_name="NIFTY"):
             df = df[
                 df["tradingsymbol"].str.startswith("BANKNIFTY")
             ]
-        log1(f"Total Instruments:, {len(df)}, {df.columns}")
+        # log1(f"Total Instruments:, {len(df)}, {df.columns}")
         # =========================
         # CONVERT EXPIRY
         # =========================
@@ -4450,7 +4450,7 @@ def get_weekly_options(kite_local, index_name="NIFTY"):
 
         )
 
-        print("Expiries:", expiries)
+        # print("Expiries:", expiries)
 
         # =========================
         # NO EXPIRY FOUND
@@ -4458,7 +4458,7 @@ def get_weekly_options(kite_local, index_name="NIFTY"):
 
         if len(expiries) == 0:
 
-            print("No Weekly Expiry Found")
+            log1("No Weekly Expiry Found")
 
             return pd.DataFrame()
 
@@ -4472,30 +4472,19 @@ def get_weekly_options(kite_local, index_name="NIFTY"):
         # FILTER EXPIRIES
         # =========================
 
-        df = df[
-
-            df["expiry"].isin(selected_expiries)
-
-        ]
+        df = df[df["expiry"].isin(selected_expiries)]
 
         # =========================
         # KEEP IMPORTANT COLUMNS
         # =========================
 
         df = df[[
-
             "instrument_token",
-
             "tradingsymbol",
-
             "expiry",
-
             "strike",
-
             "instrument_type",
-
             "lot_size"
-
         ]]
 
         print(df.head())
@@ -4521,12 +4510,9 @@ def get_nearby_options(kite,index_name="NIFTY"):
     kite_local.set_access_token(access_token)
     nifty_token = INSTRUMENT_MAP.get("NIFTY 50")
     # niftybank_token = INSTRUMENT_MAP.get("NIFTY BANK")
-    log1(f"nifty_token ---- {nifty_token}")
     # quote = kite_local.quote([str(nifty_token)])
     quote = kite_local.quote(["NSE:NIFTY 50"])
-    log1("inside nearby options")
     df = get_weekly_options(kite_local, index_name)
-    log1(f"weekly options fetched {df.tail(1)}")
 
     # =========================
     # GET SPOT PRICE
@@ -4570,9 +4556,9 @@ def get_nearby_options(kite,index_name="NIFTY"):
 
     selected_strikes = strikes[
 
-        max(0, atm_index - 2):
+        max(0, atm_index - 4):
 
-        atm_index + 2
+        atm_index + 4
 
     ]
 
@@ -4600,7 +4586,6 @@ def get_nearby_options(kite,index_name="NIFTY"):
 # =========================
 
 def analyze_option(kite, instrument_token, timeframe):
-    log1(f"analyze option starts {instrument_token}")
 
     try:
 
@@ -4615,15 +4600,14 @@ def analyze_option(kite, instrument_token, timeframe):
         kite_local.set_access_token(access_token)
 
         candles = kite_local.historical_data(
-
             instrument_token,
             from_date,
             to_date,
-            "minute"
+            timeframe,
+            oi=True
         )
         
         df = pd.DataFrame(candles)
-        log1(f"analyze option data fetched {len(df)}")
 
         if df.empty:
 
@@ -4631,9 +4615,31 @@ def analyze_option(kite, instrument_token, timeframe):
 
         latest = df.iloc[-1]
 
+        oi = 0
+        oi_change = 0
+
+        if len(df) >= 2:
+
+            previous = df.iloc[-2]
+
+            oi = int(latest.get("oi", 0))
+
+            oi_change = oi - int(previous.get("oi", 0))
         # =========================
         # SIMPLE ANALYSIS
         # =========================
+        df.rename(columns={
+
+            'open':'Open',
+            'high':'High',
+            'low':'Low',
+            'close':'Close',
+            'volume':'Volume',
+            'oi':'OI'
+
+        }, inplace=True)
+        df_analysis, df = stock_data_analysis(df, "1d")
+        log1(df_analysis)
 
         trend = "Bullish"
 

@@ -4367,6 +4367,7 @@ def analyze_options():
             result_item = future.result()
             if result_item:
                 result.append(result_item)
+    log1(len(options_df_bank))
     with ThreadPoolExecutor(max_workers=5) as executor:
         futures = [
             executor.submit(
@@ -4391,7 +4392,7 @@ def analyze_options():
     #         int(x.get("strike", 0))
     #     )
     # )
-    # log1(result)
+    log1(result)
     jsonify({"nifty": result,"banknifty": result_bank})
 
 # =========================

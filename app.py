@@ -4557,14 +4557,14 @@ def get_nearby_options(kite,index_name="NIFTY"):
 
     atm = min(strikes,key=lambda x: abs(x - spot))
     atm_index = strikes.index(atm)
-    selected_strikes = strikes[max(0, atm_index - 4):atm_index + 4]
+    selected_strikes = strikes[max(0, atm_index - 2):atm_index + 2]
     df = df[df["strike"].isin(selected_strikes)]
     # KEEP CE + PE
     df = df[df["instrument_type"].isin(["CE", "PE"])]
     
     atm = min(strikes_bank,key=lambda x: abs(x - spot_bank))
     atm_index = strikes_bank.index(atm)
-    selected_strikes = strikes_bank[max(0, atm_index - 4):atm_index + 4]
+    selected_strikes = strikes_bank[max(0, atm_index - 2):atm_index + 2]
     df_bank = df_bank[df_bank["strike"].isin(selected_strikes)]
     # KEEP CE + PE
     df_bank = df_bank[df_bank["instrument_type"].isin(["CE", "PE"])]

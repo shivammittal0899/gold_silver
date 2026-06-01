@@ -240,7 +240,35 @@
             <th>Signal</th>
 
             <th>Volume Ratio</th>
+            <th>OI Change</th>
 
+            <th>Trend</th>
+            <th>VWAP</th>
+            <th>RSI</th>
+            <th>Price Tenkan</th>
+        </tr>
+
+        </thead>
+
+        <tbody></tbody>
+
+    </table>
+    <table id="optionsTableBank"
+           class="display nowrap"
+           style="width:100%">
+        <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>Strike</th>
+            <th>Type</th>
+            <th>Expiry</th>
+            <th>LTP</th>
+            <th>Return6</th>
+            <th>High</th>
+            <th>Low</th>
+            <th>Signal</th>
+            <th>Volume Ratio</th>
+            <th>OI Change</th>
             <th>Trend</th>
             <th>VWAP</th>
             <th>RSI</th>
@@ -278,54 +306,33 @@
                 "/analyze_options",
 
                 {
-
                     method: "POST",
-
                     headers: {
-
                         "Content-Type": "application/json"
-
                     },
-
                     body: JSON.stringify({
-
                         index: index,
-
                         timeframe: timeframe
-
                     })
-
                 }
-
             );
-
             const data = await response.json();
-
             if (!response.ok) {
-
                 console.error(data);
-
                 alert(data.message || "Backend Error");
-
                 return;
             }
-
             if (!data.nifty || !data.banknifty) {
-
                 console.error(data);
-
                 alert("Invalid response format");
-
                 return;
             }
             console.log(data)
             const niftyData = data.nifty;
-
             const bankNiftyData = data.banknifty;
-
-            
-
-            renderTable(niftyData);
+            let niftysum = renderTable(niftyData);
+            let bankniftysum = renderTable(bankNiftyData);
+            console.log(niftyData)
 
             $("#loadingText").hide();
 
@@ -346,83 +353,127 @@
     // =========================
     // TABLE RENDER
     // =========================
+    function table_signal(signal) {
+        if (signal == "Strong Buy") {
+            return 2
+        }
+        if (signal == "Buy") {
+            return 1
+        }
+        if (signal == "Strong Sell") {
+            return -2
+        }
+        if (signal == "Sell") {
+            return -1
+        }
+        return 0
+    }
+    function row_data(item) {
+        let row = `
+            <tr>
+                <td>${item.symbol || "-"}</td>
+                <td>${item.strike || "-"}</td>
+                <td>${item.type || "-"}</td>
+                <td>${item.expiry || "-"}</td>
+                <td>${item.ltp || "-"}</td>
+                <td>${item.ret6 || "-"}</td>
+                <td>${item.high || "-"}</td>
+                <td>${item.low || "-"}</td>
+                <td class = "${signalClass}">${item.signal || "-"}</td>
+                <td>${item.volume_ratio || "-"}</td>
+                <td>${item.OI_change || "-"}</td>
+                <td>${item.trend || "-"}</td>
+                <td>${item.vwap || "-"}</td>
+                <td>${item.rsi || "-"}</td>
+                <td>${item.price_tenkan || "-"}</td>
+            </tr>
 
+        `;
+        return row
+    }
     function renderTable(data) {
-
         // DESTROY OLD TABLE
         if ($.fn.DataTable.isDataTable('#optionsTable')) {
-
             $('#optionsTable').DataTable().destroy();
-
         }
-
+        signal_pe = 0
+        signal_ce = 0
+        pe_oi = 0
+        ce_oi = 0
         // EMPTY TABLE
         $("#optionsTable tbody").empty();
 
         // APPEND ROWS
         data.forEach(item => {
-
+            if (item.type == "PE") {
+                signal_pe += table_signal(item.signal)
+                pe_oi += int(item.OI)
+            }
+            if (item.type == "CE") {
+                signal_ce += table_signal(item.signal)
+                ce_oi += int(item.OI)
+            }
             let signalClass = "";
-
             if (item.signal === "Strong Buy") {
-
                 signalClass = "bullish";
-
             }
-
             else if (item.signal === "Strong Sell") {
-
                 signalClass = "bearish";
-
             }
-
-            let row = `
-
-                <tr>
-
-                    <td>${item.symbol || "-"}</td>
-
-                    <td>${item.strike || "-"}</td>
-
-                    <td>${item.type || "-"}</td>
-
-                    <td>${item.expiry || "-"}</td>
-
-                    <td>${item.ltp || "-"}</td>
-                    <td>${item.ret6 || "-"}</td>
-
-                    <td>${item.high || "-"}</td>
-
-                    <td>${item.low || "-"}</td>
-
-                    <td class = "${signalClass}">${item.signal || "-"}</td>
-
-                    <td>${item.volume_ratio || "-"}</td>
-                    <td>${item.trend || "-"}</td>
-                    <td>${item.vwap || "-"}</td>
-                    <td>${item.rsi || "-"}</td>
-                    <td>${item.price_tenkan || "-"}</td>
-                    
-
-                </tr>
-
-            `;
-
+            let row = row_data(item)
             $("#optionsTable tbody").append(row);
-
         });
 
         // INIT DATATABLE
         table = $('#optionsTable').DataTable({
-
             pageLength: 25,
-
             scrollX: true,
+            order: [[2, 'desc']]
+        });
+        pcr = round(pe_oi/ce_oi,3)
+        return [pcr, pe_oi, ce_oi, signal_pe, signal_ce]
+    }
+    function renderTableBank(data) {
+        // DESTROY OLD TABLE
+        if ($.fn.DataTable.isDataTable('#optionsTableBank')) {
+            $('#optionsTableBank').DataTable().destroy();
+        }
+        signal_pe = 0
+        signal_ce = 0
+        pe_oi = 0
+        ce_oi = 0
+        // EMPTY TABLE
+        $("#optionsTableBank tbody").empty();
 
-            order: [[9, 'desc']]
-
+        // APPEND ROWS
+        data.forEach(item => {
+            if (item.type == "PE") {
+                signal_pe += table_signal(item.signal)
+                pe_oi += int(item.OI)
+            }
+            if (item.type == "CE") {
+                signal_ce += table_signal(item.signal)
+                ce_oi += int(item.OI)
+            }
+            let signalClass = "";
+            if (item.signal === "Strong Buy") {
+                signalClass = "bullish";
+            }
+            else if (item.signal === "Strong Sell") {
+                signalClass = "bearish";
+            }
+            let row = row_data(item)
+            $("#optionsTableBank tbody").append(row);
         });
 
+        // INIT DATATABLE
+        table = $('#optionsTableBank').DataTable({
+            pageLength: 25,
+            scrollX: true,
+            order: [[2, 'desc']]
+        });
+        pcr = round(pe_oi/ce_oi,3)
+        return [pcr, pe_oi, ce_oi, signal_pe, signal_ce]
     }
 
     // =========================

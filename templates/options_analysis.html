@@ -407,11 +407,11 @@
         data.forEach(item => {
             if (item.type == "PE") {
                 signal_pe += table_signal(item.signal)
-                pe_oi += int(item.OI)
+                pe_oi += item.OI
             }
             if (item.type == "CE") {
                 signal_ce += table_signal(item.signal)
-                ce_oi += int(item.OI)
+                ce_oi += item.OI
             }
             let signalClass = "";
             if (item.signal === "Strong Buy") {

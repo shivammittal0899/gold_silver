@@ -300,19 +300,30 @@
             );
 
             const data = await response.json();
+
+            if (!response.ok) {
+
+                console.error(data);
+
+                alert(data.message || "Backend Error");
+
+                return;
+            }
+
+            if (!data.nifty || !data.banknifty) {
+
+                console.error(data);
+
+                alert("Invalid response format");
+
+                return;
+            }
             console.log(data)
             const niftyData = data.nifty;
 
             const bankNiftyData = data.banknifty;
 
-            if (!Array.isArray(data)) {
-
-                console.error(data);
-
-                alert("Backend Error");
-
-                return;
-            }
+            
 
             renderTable(niftyData);
 

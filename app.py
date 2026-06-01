@@ -4299,21 +4299,12 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 def process_option(row, timeframe):
-    # log1(f"process option {row}")
-
     analysis = analyze_option(
-
         kite,
-
         row["instrument_token"],
-
         timeframe
-
     )
-    # log1(f"process option complete {len(analysis)}")
-
     if analysis is None:
-
         return None
 
     return {
@@ -4515,16 +4506,11 @@ def get_nearby_options(kite,index_name="NIFTY"):
 
     kite_local = KiteConnect(api_key=API_KEY)
     kite_local.set_access_token(access_token)
-    nifty_token = INSTRUMENT_MAP.get("NIFTY 50")
-    # niftybank_token = INSTRUMENT_MAP.get("NIFTY BANK")
-    # quote = kite_local.quote([str(nifty_token)])
+
     quote = kite_local.quote(["NSE:NIFTY 50"])
     quote_bank = kite_local.quote(["NSE:NIFTY BANK"])
-    log1(quote_bank)
     df = get_weekly_options(kite_local, index_name)
     df_bank = get_weekly_options(kite_local, "BANKNIFTY")
-    # log1(f"Bank Nifty data - {df_bank}")
-
     # =========================
     # GET SPOT PRICE
     # =========================
@@ -4580,9 +4566,7 @@ def analyze_option(kite, instrument_token, timeframe):
     try:
 
         from datetime import datetime, timedelta
-
         to_date = datetime.now()
-
         from_date = to_date - timedelta(days=5)
         access_token = read_access_token()
 
@@ -4598,11 +4582,8 @@ def analyze_option(kite, instrument_token, timeframe):
         )
         
         df = pd.DataFrame(candles)
-
         if df.empty:
-
             return None
-
         latest = df.iloc[-1]
 
         oi = 0
@@ -4611,9 +4592,7 @@ def analyze_option(kite, instrument_token, timeframe):
         if len(df) >= 2:
 
             previous = df.iloc[-2]
-
             oi = int(latest.get("oi", 0))
-
             oi_change = oi - int(previous.get("oi", 0))
         # =========================
         # SIMPLE ANALYSIS
@@ -4631,7 +4610,9 @@ def analyze_option(kite, instrument_token, timeframe):
 
         df_analysis, df = stock_data_analysis(df, "1d")
         latest = df.iloc[-1]
+        log1("Latest value ------------------")
         log1(latest)
+        log1("Latest value ------------------ Close")
 
         # trend = "Bullish"
 
@@ -4662,7 +4643,7 @@ def analyze_option(kite, instrument_token, timeframe):
 
             "low": round(latest["Low"], 2),
 
-            "volume_ratio": round(volume_avg, 2),
+            "volume_ratio": round(volume_ratio, 2),
             "OI": round(oi, 2),
             "OI_change": round(oi_change, 2)
 

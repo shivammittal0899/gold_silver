@@ -4628,9 +4628,10 @@ def analyze_option(kite, instrument_token, timeframe):
             'oi':'OI'
 
         }, inplace=True)
+
         df_analysis, df = stock_data_analysis(df, "1d")
-        log1(df_analysis)
         latest = df.iloc[-1]
+        log1(latest)
 
         # trend = "Bullish"
 

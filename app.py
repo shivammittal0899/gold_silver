@@ -4383,8 +4383,8 @@ def analyze_options():
 
 
 
-    for item in result_bank[:5]:
-        log1(f"{type(item.get("strike"))}, {item.get("strike")}")
+    # for item in result_bank[:5]:
+    #     log1(f"{type(item.get("strike"))}, {item.get("strike")}")
     
     # result.sort(
     #     key=lambda x: (
@@ -4392,7 +4392,7 @@ def analyze_options():
     #     )
     # )
     # log1(result)
-    return jsonify(result)
+    return [jsonify(result), jsonify(result_bank)]
 
 # =========================
 # GET WEEKLY OPTIONS

@@ -300,6 +300,7 @@
             );
 
             const data = await response.json();
+            console.log(data)
 
             if (!Array.isArray(data)) {
 
@@ -310,9 +311,9 @@
                 return;
             }
 
-            renderTable(data);
+            // renderTable(data);
 
-            $("#loadingText").hide();
+            // $("#loadingText").hide();
 
         }
 

@@ -300,10 +300,10 @@
             );
 
             const data = await response.json();
+            console.log(data)
             const niftyData = data.nifty;
 
             const bankNiftyData = data.banknifty;
-            console.log(data)
 
             if (!Array.isArray(data)) {
 

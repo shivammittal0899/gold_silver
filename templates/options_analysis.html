@@ -435,6 +435,7 @@
         return [pcr, pe_oi, ce_oi, signal_pe, signal_ce]
     }
     function renderTableBank(data) {
+        console.log(data)
         // DESTROY OLD TABLE
         if ($.fn.DataTable.isDataTable('#optionsTableBank')) {
             $('#optionsTableBank').DataTable().destroy();

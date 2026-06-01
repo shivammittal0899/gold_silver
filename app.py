@@ -4343,13 +4343,11 @@ def analyze_options():
     # GET OPTIONS
     # =========================
 
-    options_df = get_nearby_options(
-        kite,
-        index_type
-    )
+    options_df, options_df_bank = get_nearby_options(kite,index_type)
     # log1(f"nearby options fetched --- {len(options_df)}")
 
     result = []
+    result_bank = []
 
     # =========================
     # LOOP OPTIONS
@@ -4357,28 +4355,36 @@ def analyze_options():
 
 
     with ThreadPoolExecutor(max_workers=5) as executor:
-
         futures = [
-
             executor.submit(
                 process_option,
                 row,
                 timeframe
             )
-
             for _, row in options_df.iterrows()
-
         ]
-
         for future in futures:
-
             result_item = future.result()
-
             if result_item:
-
                 result.append(result_item)
-    # for item in result[:5]:
-    #     log1(f"{type(item.get("strike"))}, {item.get("strike")}")
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [
+            executor.submit(
+                process_option,
+                row,
+                timeframe
+            )
+            for _, row in options_df_bank.iterrows()
+        ]
+        for future in futures:
+            result_item = future.result()
+            if result_item:
+                result_bank.append(result_item)
+
+
+
+    for item in result_bank[:5]:
+        log1(f"{type(item.get("strike"))}, {item.get("strike")}")
     
     # result.sort(
     #     key=lambda x: (
@@ -4516,7 +4522,7 @@ def get_nearby_options(kite,index_name="NIFTY"):
     log1(quote_bank)
     df = get_weekly_options(kite_local, index_name)
     df_bank = get_weekly_options(kite_local, "BANKNIFTY")
-    log1(f"Bank Nifty data - {df_bank}")
+    # log1(f"Bank Nifty data - {df_bank}")
 
     # =========================
     # GET SPOT PRICE
@@ -4524,6 +4530,7 @@ def get_nearby_options(kite,index_name="NIFTY"):
 
     # spot = quote[str(nifty_token)]["last_price"]
     spot = quote["NSE:NIFTY 50"]["last_price"]
+    spot_bank = quote_bank["NSE:NIFTY BANK"]["last_price"]
 
     # =========================
     # UNIQUE STRIKES
@@ -4535,6 +4542,11 @@ def get_nearby_options(kite,index_name="NIFTY"):
         for strike in df["strike"].unique()
         if strike % 100 == 0
     ])
+    strikes_bank = sorted([
+        strikes_bank
+        for strikes_bank in df_bank["strike"].unique()
+        if strikes_bank % 100 == 0
+    ])
 
     log1(f"100-point strikes: {strikes[:10]}")
 
@@ -4542,46 +4554,21 @@ def get_nearby_options(kite,index_name="NIFTY"):
     # FIND ATM
     # =========================
 
-    atm = min(
-
-        strikes,
-
-        key=lambda x: abs(x - spot)
-
-    )
-
+    atm = min(strikes,key=lambda x: abs(x - spot))
     atm_index = strikes.index(atm)
-
-    # =========================
-    # 6 ABOVE + 6 BELOW
-    # =========================
-
-    selected_strikes = strikes[
-
-        max(0, atm_index - 4):
-
-        atm_index + 4
-
-    ]
-
-    # =========================
-    # FILTER STRIKES
-    # =========================
-
-    df = df[
-
-        df["strike"].isin(selected_strikes)
-
-    ]
-
+    selected_strikes = strikes[max(0, atm_index - 4):atm_index + 4]
+    df = df[df["strike"].isin(selected_strikes)]
     # KEEP CE + PE
-    df = df[
+    df = df[df["instrument_type"].isin(["CE", "PE"])]
+    
+    atm = min(strikes_bank,key=lambda x: abs(x - spot_bank))
+    atm_index = strikes_bank.index(atm)
+    selected_strikes = strikes_bank[max(0, atm_index - 4):atm_index + 4]
+    df_bank = df_bank[df_bank["strike"].isin(selected_strikes)]
+    # KEEP CE + PE
+    df_bank = df_bank[df_bank["instrument_type"].isin(["CE", "PE"])]
 
-        df["instrument_type"].isin(["CE", "PE"])
-
-    ]
-
-    return df
+    return df, df_bank
 
 # =========================
 # OPTION ANALYSIS

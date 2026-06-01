@@ -4584,19 +4584,6 @@ def analyze_option(kite, instrument_token, timeframe):
         df = pd.DataFrame(candles)
         if df.empty:
             return None
-        latest = df.iloc[-1]
-
-        oi = 0
-        oi_change = 0
-
-        if len(df) >= 2:
-
-            previous = df.iloc[-2]
-            oi = int(latest.get("oi", 0))
-            oi_change = oi - int(previous.get("oi", 0))
-        # =========================
-        # SIMPLE ANALYSIS
-        # =========================
         df.rename(columns={
 
             'open':'Open',
@@ -4607,9 +4594,21 @@ def analyze_option(kite, instrument_token, timeframe):
             'oi':'OI'
 
         }, inplace=True)
-
-        df_analysis, df = stock_data_analysis(df, "1d")
         latest = df.iloc[-1]
+        oi = 0
+        oi_change = 0
+
+        if len(df) >= 2:
+
+            previous = df.iloc[-2]
+            oi = int(latest.get("OI", 0))
+            oi_change = oi - int(previous.get("OI", 0))
+        # =========================
+        # SIMPLE ANALYSIS
+        # =========================
+        
+        df_analysis, df = stock_data_analysis(df, "1d")
+        # latest = df.iloc[-1]
         log1("Latest value ------------------")
         log1(latest)
         log1("Latest value ------------------ Close")

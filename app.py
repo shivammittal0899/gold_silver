@@ -4515,15 +4515,15 @@ def get_nearby_options(kite,index_name="NIFTY"):
     quote_bank = kite_local.quote(["NSE:NIFTY BANK"])
     log1(quote_bank)
     df = get_weekly_options(kite_local, index_name)
+    df_bank = get_weekly_options(kite_local, "BANKNIFTY")
+    log1(f"Bank Nifty data - {df_bank}")
 
     # =========================
     # GET SPOT PRICE
     # =========================
-    log1(quote)
 
     # spot = quote[str(nifty_token)]["last_price"]
     spot = quote["NSE:NIFTY 50"]["last_price"]
-    log1(f"spot price --- {spot}")
 
     # =========================
     # UNIQUE STRIKES

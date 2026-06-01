@@ -4512,6 +4512,8 @@ def get_nearby_options(kite,index_name="NIFTY"):
     # niftybank_token = INSTRUMENT_MAP.get("NIFTY BANK")
     # quote = kite_local.quote([str(nifty_token)])
     quote = kite_local.quote(["NSE:NIFTY 50"])
+    quote_bank = kite_local.quote(["NSE:NIFTY BANK"])
+    log1(quote_bank)
     df = get_weekly_options(kite_local, index_name)
 
     # =========================

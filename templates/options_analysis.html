@@ -369,6 +369,14 @@
         return 0
     }
     function row_data(item) {
+
+        let signalClass = "";
+        if (item.signal === "Strong Buy") {
+            signalClass = "bullish";
+        }
+        else if (item.signal === "Strong Sell") {
+            signalClass = "bearish";
+        }
         let row = `
             <tr>
                 <td>${item.symbol || "-"}</td>
@@ -454,13 +462,6 @@
             if (item.type == "CE") {
                 signal_ce += table_signal(item.signal)
                 ce_oi += int(item.OI)
-            }
-            let signalClass = "";
-            if (item.signal === "Strong Buy") {
-                signalClass = "bullish";
-            }
-            else if (item.signal === "Strong Sell") {
-                signalClass = "bearish";
             }
             let row = row_data(item)
             $("#optionsTableBank tbody").append(row);

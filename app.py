@@ -4392,7 +4392,7 @@ def analyze_options():
     #     )
     # )
     # log1(result)
-    return [jsonify(result), jsonify(result_bank)]
+    jsonify({"nifty": result,"banknifty": result_bank})
 
 # =========================
 # GET WEEKLY OPTIONS

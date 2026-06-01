@@ -300,6 +300,9 @@
             );
 
             const data = await response.json();
+            const niftyData = data.nifty;
+
+            const bankNiftyData = data.banknifty;
             console.log(data)
 
             if (!Array.isArray(data)) {
@@ -311,9 +314,9 @@
                 return;
             }
 
-            // renderTable(data);
+            renderTable(niftyData);
 
-            // $("#loadingText").hide();
+            $("#loadingText").hide();
 
         }
 

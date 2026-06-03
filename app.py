@@ -4367,6 +4367,7 @@ def analyze_options():
     Analyze selected options
     """
     try:
+        log1("analyse options")
         data = request.json
         selected_strikes = data.get('selected_strikes', {})
         timeframe = data.get('timeframe', '5minute')
@@ -4374,6 +4375,7 @@ def analyze_options():
         
         nifty_options = selected_strikes.get('nifty', [])
         banknifty_options = selected_strikes.get('banknifty', [])
+        log1(nifty_options)
         access_token = read_access_token()
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
@@ -4385,10 +4387,11 @@ def analyze_options():
         nifty_analysis = []
         for strike in nifty_options:
             for option_type in ['CE', 'PE']:
+                analysis = "None"
                 # symbol = f"NIFTY{expiry}{option_type}{strike}"
-                analysis = fetch_and_analyze_option(symbol, strike, option_type, 'NIFTY', timeframe)
-                if analysis:
-                    nifty_analysis.append(analysis)
+                # analysis = fetch_and_analyze_option("symbol", strike, option_type, 'NIFTY', timeframe)
+                # if analysis:
+                #     nifty_analysis.append(analysis)
         
         # Analyze Bank Nifty options
         banknifty_analysis = []

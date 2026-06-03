@@ -4306,10 +4306,10 @@ def analyze_index():
         timeframe = data.get('timeframe', '5minute')
         
         # Fetch Nifty 50 data
-        nifty_data = fetch_and_analyze('NSE:NIFTY50', 'NIFTY 50', timeframe)
+        nifty_data = fetch_and_analyze('NSE:NIFTY 50', 'NIFTY 50', timeframe)
         
         # Fetch Bank Nifty data
-        banknifty_data = fetch_and_analyze('NSE:NIFTYBANK', 'BANK NIFTY', timeframe)
+        banknifty_data = fetch_and_analyze('NSE:NIFTY BANK', 'BANK NIFTY', timeframe)
         
         return jsonify({
             'status': 'success',
@@ -4370,6 +4370,7 @@ def get_historical_data(symbol, timeframe):
     Get historical OHLCV data from Kite
     """
     try:
+        log1("historical data")
         # Get instrument token
         quote = kite.quote(symbol)
         token = quote['instrument_token']

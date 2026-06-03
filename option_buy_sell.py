@@ -1,0 +1,765 @@
+"""
+Ichimoku + Volume + OI Participation Strategy with Capital Backtest
+- Uses starting capital = ₹2,000,000
+- Outputs: trades CSV, performance metrics with equity curve in INR
+"""
+
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+import math
+from ta.trend import ADXIndicator
+from ta.momentum import RSIIndicator
+from strategy_fun import *
+from kiteconnect import KiteConnect
+import time
+
+
+STOP_FLAG = False      # global controller
+kite = None
+
+# Place market sell (to exit/short) — change transaction_type to "SELL"
+# def kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity):
+#     # Place market buy
+#     # print(time.now())
+#     order_id = kite.place_order(
+#         variety = kite.VARIETY_REGULAR,      # regular order
+#         exchange = exchange,
+#         tradingsymbol = tradingsymbol,
+#         transaction_type = buy_sell,            # or "SELL"
+#         quantity = quantity,
+#         order_type = "MARKET",
+#         product = "NRML",                    # NRML for futures (or MIS for intraday margin intraday)
+#         validity = "DAY"
+#     )
+#     print(f"Placed {buy_sell} of {tradingsymbol} quantity is {quantity} order id: {order_id}")
+#     return order_id
+
+def fetch_with_retry(symbol, interval, retries=3, delay=5):
+    for attempt in range(retries):
+        try:
+            time_correction = timedelta(hours=5, minutes=30)
+            # time_correction = 0
+            time_now = datetime.now() + time_correction
+            time_delay = time_now - timedelta(days=30)
+            # print(time_delay, time_now)
+            instrument = kite.ltp(f"MCX:{symbol}")[f"MCX:{symbol}"]['instrument_token']
+            data = kite.historical_data(
+                instrument_token=instrument,
+                from_date=time_delay,
+                to_date=time_now,
+                interval=interval,
+                oi = True
+            )
+            df = pd.DataFrame(data)
+            log(df['date'].iloc[-1])
+            return df
+        except Exception as e:
+            print(f"⚠️ Attempt {attempt+1} failed: {e}")
+            if attempt < retries - 1:
+                time.sleep(delay)
+            else:
+                raise
+
+
+# def cancel_order(orderid):
+#     try:
+#         kite.cancel_order(
+#                         variety=kite.VARIETY_REGULAR,
+#                         order_id=orderid
+#                         )
+#     except Exception as e: 
+#         log(f"Stoploss cancel error {e}")
+# order_id = kite.place_order(
+#                 variety=kite.VARIETY_REGULAR,
+#                 exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+#                 tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+#                 transaction_type=kite.TRANSACTION_TYPE_SELL,
+#                 quantity=quantity,                                # MCX lot size
+#                 product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+#                 order_type=kite.ORDER_TYPE_SLM,
+#                 trigger_price=stoploss_val,                        # initial SL trigger
+#                 validity=kite.VALIDITY_DAY
+#             )
+# sl_orderid = order_id
+
+# kite.modify_order(
+#         variety=kite.VARIETY_REGULAR,
+#         order_id=sl_orderid,
+#         trigger_price=stoploss_val                         # new SL trigger
+#     )
+
+
+
+# order_id = kite.place_order(
+#                 variety=kite.VARIETY_REGULAR,
+#                 exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+#                 tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+#                 transaction_type=kite.TRANSACTION_TYPE_BUY,
+#                 quantity=quantity,                                # MCX lot size
+#                 product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+#                 order_type=kite.ORDER_TYPE_SLM,
+#                 trigger_price=stoploss_val,                        # initial SL trigger
+#                 validity=kite.VALIDITY_DAY
+#             )
+# def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val):
+#     if transaction == "SELL":
+#         order_id = kite.place_order(
+#                     variety=kite.VARIETY_REGULAR,
+#                     exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+#                     tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+#                     transaction_type=kite.TRANSACTION_TYPE_SELL,
+#                     quantity=quantity,                                # MCX lot size
+#                     product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+#                     order_type=kite.ORDER_TYPE_SLM,
+#                     trigger_price=stoploss_val,                        # initial SL trigger
+#                     validity=kite.VALIDITY_DAY
+#                 )
+#     elif transaction == "BUY":
+#         order_id = kite.place_order(
+#                     variety=kite.VARIETY_REGULAR,
+#                     exchange=kite.EXCHANGE_MCX,                # 🔴 MCX
+#                     tradingsymbol=tradingsymbol,           # ⚠️ Correct MCX symbol
+#                     transaction_type=kite.TRANSACTION_TYPE_BUY,
+#                     quantity=quantity,                                # MCX lot size
+#                     product=kite.PRODUCT_NRML,                 # 🔴 NRML for futures
+#                     order_type=kite.ORDER_TYPE_SLM,
+#                     trigger_price=stoploss_val,                        # initial SL trigger
+#                     validity=kite.VALIDITY_DAY
+#                 )
+#     return order_id
+
+
+def place_sl_order(tradingsymbol, transaction, quantity, stoploss_val, kite_instance=None):
+    global kite
+
+    # ✅ Use passed kite OR fallback to global
+    kite_obj = kite_instance if kite_instance is not None else kite
+
+    if not kite_obj:
+        raise Exception("❌ Kite instance not available")
+
+    if transaction == "SELL":
+        # order_id = kite_obj.place_order(
+        #     variety=kite_obj.VARIETY_REGULAR,
+        #     exchange=kite_obj.EXCHANGE_MCX,
+        #     tradingsymbol=tradingsymbol,
+        #     transaction_type=kite_obj.TRANSACTION_TYPE_SELL,
+        #     quantity=quantity,
+        #     product=kite_obj.PRODUCT_NRML,
+        #     order_type=kite_obj.ORDER_TYPE_SLM,
+        #     trigger_price=stoploss_val,
+        #     # market_protection=2,
+        #     validity=kite_obj.VALIDITY_DAY
+        # )
+        order_id = kite_obj.place_order(
+            variety=kite_obj.VARIETY_REGULAR,
+            exchange=kite_obj.EXCHANGE_MCX,
+            tradingsymbol=tradingsymbol,
+            transaction_type=kite_obj.TRANSACTION_TYPE_SELL,
+            quantity=quantity,
+            product=kite_obj.PRODUCT_NRML,
+            order_type=kite_obj.ORDER_TYPE_SLM,   # 👈 IMPORTANT
+            trigger_price=stoploss_val,
+            validity=kite_obj.VALIDITY_DAY
+        )
+
+    elif transaction == "BUY":
+        order_id = kite_obj.place_order(
+            variety=kite_obj.VARIETY_REGULAR,
+            exchange=kite_obj.EXCHANGE_MCX,
+            tradingsymbol=tradingsymbol,
+            transaction_type=kite_obj.TRANSACTION_TYPE_BUY,
+            quantity=quantity,
+            product=kite_obj.PRODUCT_NRML,
+            order_type=kite_obj.ORDER_TYPE_SLM,
+            trigger_price=stoploss_val,
+            market_protection=2,
+            validity=kite_obj.VALIDITY_DAY
+        )
+    else:
+        raise ValueError("❌ Invalid transaction type (BUY/SELL expected)")
+
+    return order_id
+
+def modify_sl_order(sl_orderid, stoploss_val, transaction, kite_instance=None):
+    global kite
+
+    kite_obj = kite_instance if kite_instance is not None else kite
+
+    if not kite_obj:
+        raise Exception("❌ Kite instance not available")
+
+    return kite_obj.modify_order(
+        variety=kite_obj.VARIETY_REGULAR,
+        order_id=sl_orderid,
+        trigger_price=stoploss_val,
+        market_protection=2
+    )
+
+def cancel_order(orderid, kite_instance=None):
+    global kite
+
+    kite_obj = kite_instance if kite_instance is not None else kite
+
+    if not kite_obj:
+        raise Exception("❌ Kite instance not available")
+
+    try:
+        return kite_obj.cancel_order(
+            variety=kite_obj.VARIETY_REGULAR,
+            order_id=orderid
+        )
+    except Exception as e:
+        log(f"❌ Stoploss cancel error: {e}")
+
+def kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity, kite_instance=None):
+    global kite
+
+    kite_obj = kite_instance if kite_instance is not None else kite
+
+    if not kite_obj:
+        raise Exception("❌ Kite instance not available")
+
+    order_id = kite_obj.place_order(
+        variety=kite_obj.VARIETY_REGULAR,
+        exchange=exchange,
+        tradingsymbol=tradingsymbol,
+        transaction_type=buy_sell,
+        quantity=quantity,
+        order_type=kite_obj.ORDER_TYPE_MARKET,
+        product=kite_obj.PRODUCT_NRML,
+        validity=kite_obj.VALIDITY_DAY
+    )
+
+    log(f"✅ {buy_sell} ORDER | {tradingsymbol} | Qty={quantity} | OrderID={order_id}")
+
+    return order_id
+    
+def backtest_with_capital(p):
+    # ==============================
+    # 🔧 C`ONFIGURATION
+    # ==============================
+
+    capital = p['starting_capital']
+    trades = []
+    position = 0
+    entry_price = None
+    entry_time = None
+    position_size = 0
+    total_diff = 0
+    # exchange = "MCX"
+    symbol = "GOLDM26APRFUT"   # example instrument
+    tradingsymbol = "GOLDM26APRFUT"
+    interval = "30minute"
+    days = 6
+    qty = p['quantity']
+    print()
+    log(qty)
+    sl_orderid = None
+    rsl_orderid = None
+    el_sl_orderid = None
+    while  not STOP_FLAG:
+        print(STOP_FLAG)
+        try:
+            now = datetime.now() + timedelta(hours=5, minutes=30)
+            # now = datetime.now() 
+            log(f'Present Time: {now}')
+            market_open  = (now.hour > 9) or (now.hour == 9 and now.minute >= 20)
+            # market_open  = (now.hour >= 8)
+            market_close = (now.hour > 23) or (now.hour == 23 and now.minute >= 30)
+            time23 = (now.hour >= 23)
+
+            if not (market_open and not market_close):
+                print("🕘 MCX Market Closed — sleeping...")
+                log("🕘 MCX Market Closed — sleeping...")
+                wait_until_next_15min_plus30()
+                # time.sleep(600)
+                continue
+
+            df = fetch_with_retry(symbol, interval)
+
+            df.rename(columns={'open':'Open','high':'High','low':'Low','close':'Close','volume':'Volume','oi':'OI'}, inplace=True)
+            log(f"✅ Data fetched: {len(df)} bars | Last candle at {df['date'].iloc[-1]}")
+            df = normalize(df)
+            df = compute_adx(df)
+            df = compute_ichimoku(df, p['tenkan'], p['kijun'], p['senkou_b'])
+            df['ATR'] = ATR(df, 14)
+            # Calculate RSI (14-period default)
+            df['RSI'] = RSIIndicator(close=df['Close'], window=14).rsi()
+            print(f"✅ Data fetched: {len(df)} bars | Last candle at {df.index[-1]}")
+            df = generate_signals(df, p)
+            
+            i = -2
+            cur = df.iloc[i]
+            nxt = df.iloc[i+1]
+            t_next = df.index[i+1]
+            exchange = "MCX"
+            log(f"{cur['final_entry_long']} -- {cur['exit_long_final']} -- {cur['final_entry_short']} -- {cur['final_exit_short']}")
+            # Fetch all open positions
+            positions = kite.positions()
+
+            # Filter the position list
+            pos = next((p for p in positions["net"] if p["tradingsymbol"] == symbol), None)
+            position1 = position
+            if pos:
+                log(f"🟢 Symbol: {pos['tradingsymbol']}")
+                log(f"📊 Quantity: {pos['quantity']}")
+                log(f"💰 Avg Price: {pos['average_price']}")
+                log(f"📈 P&L: {pos['pnl']}")
+                if pos['quantity'] > 0:
+                    position1 = 1
+                    entry_price = pos['average_price']
+                elif pos['quantity'] < 0:
+                    position1 = -1
+                    entry_price = pos['average_price']
+                else:
+                    position1 = 0
+
+                if position1 != position:
+                    if rsl_orderid != None:
+                        if position1 == 0:  
+                            # cancel_order(rsl_orderid)
+                            try:
+                                cancel_order(rsl_orderid)
+                            except Exception as e: 
+                                log(f"Reverse stoploss cancel error {e}")
+                        rsl_orderid = None
+                    if sl_orderid != None:
+                        sl_orderid = None
+                    position = position1
+                if (position != 0) and (el_sl_orderid != None):
+                    try:
+                        cancel_order(el_sl_orderid)
+                    except Exception as e: 
+                        log(f"Entry stoploss cancel error {e}")
+                    el_sl_orderid = None
+
+            else:
+                log(f"⚪ No open position in {symbol}")
+                # position = 0
+            log(position)
+            if position == 0:
+                if rsl_orderid != None:
+                    # cancel_order(rsl_orderid)
+                    try:
+                        cancel_order(rsl_orderid)
+                    except Exception as e: 
+                        log(f"Reverse stoploss cancel error {e}")
+                rsl_orderid = None
+                if sl_orderid != None:
+                    sl_orderid = None
+                sl_orderid = None
+            # print(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")        
+            log(f"Time: {df['datetime'].iloc[i]}, Market Regime: {df['Market_Regime'].iloc[i]}, open: {df['Open'].iloc[i]}, close: {df['Close'].iloc[i]}")
+            if (now.hour, now.minute) >= (23, 24):
+                log(f"time is 23:24")
+                if (position == 1 and (nxt['exit_long_final'] or nxt['final_entry_short'] or nxt['exit_long_final_end'])) :
+                
+                    exit_price = nxt['Close']
+                    price_diff = exit_price - entry_price
+                    total_diff +=price_diff
+                    pnl_price_units = price_diff * position_size
+                    pnl_inr = pnl_price_units * p['contract_value'] - position_size * p['commission'] * p['contract_value'] 
+                    pnl_diff = price_diff - p['commission'] 
+                    total_pnl_diff += pnl_diff
+                    capital += pnl_inr
+                    trades.append({
+                        'entry_time': entry_time, 'exit_time': t_next, 'side': 'long',
+                        'entry_price': entry_price, 'exit_price': exit_price, 'difference': price_diff, 'total_diff': total_diff,
+                        'pnl_diff': pnl_diff, 'total_pnl_diff': total_pnl_diff,
+                        'contracts': position_size, 'pnl_inr': pnl_inr, 'capital': capital
+                    })
+                    position = 0
+                    buy_sell = "SELL"
+                    quantity = qty
+                    if sl_orderid != None:
+                        cancel_order(sl_orderid)
+                        sl_orderid = None
+                    if rsl_orderid != None:
+                        cancel_order(rsl_orderid)
+                        rsl_orderid = None
+                    kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                    log(f"Exit long: (Entry price - {entry_price}), (Exit price - {exit_price}), (PnL diff -- {price_diff})")
+
+                elif (position == -1 and (nxt['final_exit_short_end'])):## or nxt['final_entry_long'] or nxt['exit_long_final_end'])) :
+                # if position == 1 and cur['exit_long_final']:
+                    exit_price = nxt['Close']
+                    price_diff = entry_price - exit_price
+                    total_diff +=price_diff
+                    pnl_price_units = price_diff * position_size
+                    pnl_inr = pnl_price_units * p['contract_value'] - position_size * p['commission'] * p['contract_value'] 
+                    pnl_diff = price_diff - p['commission'] 
+                    total_pnl_diff += pnl_diff
+                    capital += pnl_inr
+                    trades.append({
+                        'entry_time': entry_time, 'exit_time': t_next, 'side': 'short',
+                        'entry_price': entry_price, 'exit_price': exit_price, 'difference': price_diff, 'total_diff': total_diff,
+                        'pnl_diff': pnl_diff, 'total_pnl_diff': total_pnl_diff,
+                        'contracts': position_size, 'pnl_inr': pnl_inr, 'capital': capital
+                    })
+                    position = 0
+                    buy_sell = "BUY"
+                    quantity = qty
+                    if sl_orderid != None:
+                        cancel_order(sl_orderid)
+                        sl_orderid = None
+                    if rsl_orderid != None:
+                        cancel_order(rsl_orderid)
+                        rsl_orderid = None
+                    kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                    log(f"Exit short: (Entry price - {entry_price}), (Exit price - {exit_price}), (PnL diff -- {price_diff})")
+                
+                if position == 0:
+
+                    if (nxt['final_entry_long'] and (not nxt['exit_long_final_end'])) and (dt3 or dt4):
+                        # print(capital)
+                        risk_amount = p['risk_per_trade'] * capital
+                        position_size = np.floor(risk_amount / (nxt['Close']))
+                        if position_size <= 0: position_size = 1
+                        entry_price = nxt['Close'] + p['slippage']
+                        entry_time = t_next
+                        position = 1
+                        buy_sell = "BUY"
+                        quantity = qty
+                        if el_sl_orderid != None:
+                            cancel_order(el_sl_orderid)
+                            el_sl_orderid = None
+                        kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                        print("Buy price. ",entry_time, entry_price)
+                        log(f"Buy price. ,{entry_time}, {entry_price}")
+                        # print("Buy price. ",entry_time, entry_price)
+                        # print(position_size)
+                    elif (nxt['final_entry_short']) and (dt3 or dt4): ##  and (not nxt['final_exit_short_end'])
+                        risk_amount = p['risk_per_trade'] * capital
+                        # position_size = math.floor(risk_amount / (df['Close'].std() or 1))
+                        position_size = np.floor(risk_amount / (nxt['Close']))
+                        if position_size <= 0: position_size = 1
+                        entry_price = nxt['Close'] - p['slippage']
+                        entry_time = t_next
+                        position = -1
+                        buy_sell = "SELL"
+                        quantity = qty
+                        if el_sl_orderid != None:
+                            cancel_order(el_sl_orderid)
+                            el_sl_orderid = None
+                        kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                        print("Sell price. ",entry_time, entry_price)
+                        log(f"Sell price. ,{entry_time}, {entry_price}")
+                log("Now wait for next 5 minutes")
+                time.sleep(500)
+            # if position == 1 and cur['exit_long_final']:
+            if position == 1 and (cur['exit_long_final']):
+                exit_price = nxt['Open'] - p['slippage']
+                price_diff = exit_price - entry_price
+                total_diff +=price_diff
+                pnl_price_units = price_diff * position_size
+                pnl_inr = pnl_price_units * p['contract_value'] - p['commission']
+                capital += pnl_inr
+                trades.append({
+                    'entry_time': entry_time, 'exit_time': t_next, 'side': 'long',
+                    'entry_price': entry_price, 'exit_price': exit_price, 'difference': price_diff, 'total_diff': total_diff,
+                    'contracts': position_size, 'pnl_inr': pnl_inr, 'capital': capital
+                })
+                position = 0
+                buy_sell = "SELL"
+                quantity = qty
+                if sl_orderid != None:
+                    cancel_order(sl_orderid)
+                    sl_orderid = None
+                if rsl_orderid != None:
+                    cancel_order(rsl_orderid)
+                    rsl_orderid = None
+                kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                log(f"Exit long: (Entry price - {entry_price}), (Exit price - {exit_price}), (PnL diff -- {price_diff})")
+
+            # elif position == -1 and (cur['final_exit_short']):
+            elif position == -1 and (cur['final_exit_short']):
+                exit_price = nxt['Open'] + p['slippage']
+                price_diff = entry_price - exit_price
+                total_diff +=price_diff
+                pnl_price_units = price_diff * position_size
+                pnl_inr = pnl_price_units * p['contract_value'] - p['commission']
+                capital += pnl_inr
+                trades.append({
+                    'entry_time': entry_time, 'exit_time': t_next, 'side': 'short',
+                    'entry_price': entry_price, 'exit_price': exit_price, 'difference': price_diff, 'total_diff': total_diff,
+                    'contracts': position_size, 'pnl_inr': pnl_inr, 'capital': capital
+                })
+                position = 0
+                buy_sell = "BUY"
+                quantity = qty
+                if sl_orderid != None:
+                    cancel_order(sl_orderid)
+                    sl_orderid = None
+                if rsl_orderid != None:
+                    cancel_order(rsl_orderid)
+                    rsl_orderid = None
+                kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                log(f"Exit short: (Entry price - {entry_price}), (Exit price - {exit_price}), (PnL diff -- {price_diff})")
+            if sl_orderid != None and position == 0:
+                cancel_order(sl_orderid)
+                sl_orderid = None
+            if rsl_orderid != None and position == 0:
+                cancel_order(rsl_orderid)
+                rsl_orderid = None
+                # print(capital)
+            # Entry logic
+            if position == 0:
+                if cur['final_entry_long']:
+                    # print(capital)
+                    risk_amount = p['risk_per_trade'] * capital
+                    # position_size = math.floor(risk_amount / (df['Close']))
+                    position_size = np.floor(risk_amount / (nxt['Open']))
+                    if position_size <= 0: position_size = 1
+                    entry_price = nxt['Open'] + p['slippage']
+                    entry_time = t_next
+                    position = 1
+                    buy_sell = "BUY"
+                    quantity = qty
+                    if el_sl_orderid != None:
+                        cancel_order(el_sl_orderid)
+                        el_sl_orderid = None
+                    kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                    print("Buy price. ",entry_time, entry_price)
+                    log(f"Buy price. ,{entry_time}, {entry_price}")
+                    # print(position_size)
+                elif cur['final_entry_short']:
+                    # print(capital)
+                    risk_amount = p['risk_per_trade'] * capital
+                    # position_size = math.floor(risk_amount / (df['Close'].std() or 1))
+                    position_size = np.floor(risk_amount / (nxt['Open']))
+                    if position_size <= 0: position_size = 1
+                    entry_price = nxt['Open'] - p['slippage']
+                    entry_time = t_next
+                    position = -1
+                    buy_sell = "SELL"
+                    quantity = qty
+                    if el_sl_orderid != None:
+                        cancel_order(el_sl_orderid)
+                        el_sl_orderid = None
+                    kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                    print("Sell price. ",entry_time, entry_price)
+                    log(f"Sell price. ,{entry_time}, {entry_price}")
+            
+            if position == 1:
+                stoploss_val, reverse_sl_val = stopless_point(cur, position, entry_price, df.iloc[i-1])
+                if (sl_orderid != None) and (stoploss_val != 0):
+                    log(f"MSL placed: {sl_orderid} {stoploss_val}")
+                    try:
+                        modify_sl_order(sl_orderid, stoploss_val, "SELL")
+                    except Exception as e: 
+                        log(f"MSL order error {e}")
+                        if "Trigger price" in e:
+                            cancel_order(sl_orderid)
+                            sl_orderid = None
+                            buy_sell = "SELL"
+                            quantity = qty
+                            kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                            log(f"Error occured so MSL order canceled and exit long position")
+                    log("MSL Placed")
+                elif (sl_orderid == None) and (stoploss_val != 0):
+                    quantity = qty
+                    log(f"SL placed: {sl_orderid} {stoploss_val}")
+                    sl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, stoploss_val)
+                    log("SL Placed")
+                elif (sl_orderid != None) and (stoploss_val == 0):
+                    # cancel_order(sl_orderid)
+                    try:
+                        cancel_order(sl_orderid)
+                    except Exception as e: 
+                        log(f"Stoploss cancel error {e}")
+                    log("SL Canceled")
+                    sl_orderid = None
+                else:
+                    sl_orderid = None
+                
+                if (rsl_orderid != None) and (reverse_sl_val != 0):
+                    log(f"MRSL placed: {rsl_orderid} {reverse_sl_val}")
+                    try:
+                        modify_sl_order(rsl_orderid, reverse_sl_val, "SELL")
+                    except Exception as e: 
+                        log(f"Modify stoploss error {e}")
+                        if "Trigger price" in e:
+                            cancel_order(rsl_orderid)
+                            rsl_orderid = None
+                            buy_sell = "SELL"
+                            quantity = qty
+                            kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                            log(f"Error occured so MRSL order canceled and take short position")
+                    log("MRSL Placed")
+                elif (rsl_orderid == None) and (reverse_sl_val != 0) and (stoploss_val != 0):
+                    quantity = qty
+                    log(f"RSL placed: {rsl_orderid} {reverse_sl_val}")
+                    rsl_orderid = place_sl_order(tradingsymbol, "SELL", quantity, reverse_sl_val)
+                    log("RSL Placed")
+                elif (rsl_orderid != None) and (reverse_sl_val == 0):
+                    # cancel_order(rsl_orderid)
+                    try:
+                        cancel_order(rsl_orderid)
+                    except Exception as e: 
+                        log(f"Reverse stoploss cancel error {e}")
+                    log("RSL Canceled")
+                    rsl_orderid = None
+                else:
+                    rsl_orderid = None
+
+
+            elif position == -1:
+                stoploss_val, reverse_sl_val = stopless_point_short(cur, position)
+                if (sl_orderid != None) and (stoploss_val != 0):
+                    log(f"MSL placed: {sl_orderid} {stoploss_val} start")
+                    try:
+                        modify_sl_order(sl_orderid, stoploss_val, "BUY")
+                    except Exception as e:
+                        log(f"Error - {e}")
+                        if "Trigger price" in e:
+                            cancel_order(sl_orderid)
+                            sl_orderid = None
+                            buy_sell = "BUY"
+                            quantity = qty
+                            kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                            log(f"Error occured so SL order canceled and exit from short position")
+                    log(f"SLM placed: {sl_orderid} {stoploss_val}")
+                elif (sl_orderid == None) and (stoploss_val != 0):
+                    quantity = qty
+                    sl_orderid = place_sl_order(tradingsymbol, "BUY", quantity, stoploss_val)
+                    log(f"SL placed: {sl_orderid} {stoploss_val}")
+
+                elif (sl_orderid != None) and (stoploss_val == 0):
+                    cancel_order(sl_orderid)
+                    sl_orderid = None
+                else:
+                    sl_orderid = None
+                
+                if (rsl_orderid != None) and (reverse_sl_val != 0):
+                    log(f"MRSL placed: {rsl_orderid} {reverse_sl_val}")
+                    try:
+                        modify_sl_order(rsl_orderid, reverse_sl_val, "BUY")
+                    except Exception as e:
+                        log(f"Error - {e}")
+                        if "Trigger price" in e:
+                            cancel_order(rsl_orderid)
+                            rsl_orderid = None
+                            buy_sell = "BUY"
+                            quantity = qty
+                            kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                            log(f"Error occured so RSL order canceled and take long position")
+
+                    log("MRSL Placed")
+                elif (rsl_orderid == None) and (reverse_sl_val != 0) and (stoploss_val != 0):
+                    quantity = qty
+                    log(f"RSL placed: {rsl_orderid} {reverse_sl_val}")
+                    rsl_orderid = place_sl_order(tradingsymbol, "BUY", quantity, reverse_sl_val)
+                    log("RSL Placed")
+                elif (rsl_orderid != None) and (reverse_sl_val == 0):
+                    cancel_order(rsl_orderid)
+                    log("RSL Canceled")
+                    rsl_orderid = None
+                else:
+                    rsl_orderid = None
+
+
+            else: 
+                if sl_orderid != None:
+                    cancel_order(sl_orderid)
+                    sl_orderid = None
+                if rsl_orderid != None:
+                    cancel_order(rsl_orderid)
+                    rsl_orderid = None
+                if (position == 0):
+                    entry_sl_val = stoploss_entry_point(cur, df.iloc[i-1])
+                    if (el_sl_orderid == None) and (entry_sl_val != 0):
+                        quantity = qty
+                        try:
+                            el_sl_orderid = place_sl_order(tradingsymbol, "BUY", quantity, entry_sl_val)
+                            log(f"ESL placed: {el_sl_orderid} {entry_sl_val}")
+                        except Exception as e:
+                            log(f"Error occured during ESL order placing Error is -- {e}")
+                            if "Trigger price" in e:
+                                # cancel_order(el_sl_orderid)
+                                el_sl_orderid = None
+                                buy_sell = "BUY"
+                                quantity = qty
+                                kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                                log(f"Error occured so ESL order not placed and take long position")
+                        
+                    elif (el_sl_orderid != None) and (entry_sl_val != 0):
+                        try:
+                            modify_sl_order(el_sl_orderid, entry_sl_val, "BUY")
+                        except Exception as e:
+                            if "Trigger price" in e:
+                                cancel_order(el_sl_orderid)
+                                el_sl_orderid = None
+                                buy_sell = "BUY"
+                                quantity = qty
+                                kite_app_buy_sell(exchange, tradingsymbol, buy_sell, quantity)
+                                log(f"Error occured so ESL order canceled and take long position")
+                        log(f"ESL M placed: {el_sl_orderid} {entry_sl_val}")
+                    elif (el_sl_orderid != None) and (entry_sl_val == 0):
+                        cancel_order(el_sl_orderid)
+                        log("RSL Canceled")
+                        el_sl_orderid = None
+                    else:
+                        el_sl_orderid = None
+                    
+        except Exception as e:
+            log(f"⚠️ Error: {e}")
+            if sl_orderid != None:
+                cancel_order(sl_orderid)
+                sl_orderid = None
+            if rsl_orderid != None:
+                cancel_order(rsl_orderid)
+                rsl_orderid = None
+            if el_sl_orderid != None:
+                cancel_order(el_sl_orderid)
+                el_sl_orderid = None
+            
+        log("#########################################################################")
+        if time23:
+            wait_until_next_25min()
+        else:
+            wait_until_next_15min_plus30()
+        
+
+
+def log(msg):
+    with open("static/logs.txt", "a") as f:
+        f.write(f"{datetime.now().strftime('%H:%M:%S')}  {msg}\n")
+
+def log_df(df, title="DataFrame"):
+    text = df.to_string()
+    log(f"\n----- {title} -----\n{text}\n---------------------\n")
+
+def stop_strategy():
+    global STOP_FLAG
+    STOP_FLAG = True
+    log("⛔ Strategy STOP requested.")
+
+def run_strategy(API_KEY, ACCESS_TOKEN, params):
+    """
+    params = {
+        'quantity': 10,
+        'other_params': ...
+    }
+    """
+    global kite, STOP_FLAG
+    STOP_FLAG = False     # reset when starting
+
+    kite = KiteConnect(api_key=API_KEY)
+    kite.set_access_token(ACCESS_TOKEN)
+
+    quantity = params["quantity"]
+    log(f"🚀 Strategy Started | Qty = {quantity}")
+    log(f"🚀 Strategy Started | Param = {params}")
+
+    # while not STOP_FLAG:
+    try:
+        # 🔥 your real function:
+        backtest_with_capital(params)    # includes your logic
+    except Exception as e:
+        log(f"⚠ Error: {str(e)}")
+    # time.sleep(15)
+
+    log("🟢 Strategy stopped successfully.")
+

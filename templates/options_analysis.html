@@ -1,496 +1,488 @@
-<!-- templates/options_analysis.html -->
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Options Analysis Dashboard</title>
-
-    <!-- Bootstrap -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-
-    <!-- JQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-    <!-- DataTables -->
-    <link rel="stylesheet"
-          href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
-    <!-- Select2 -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
-          rel="stylesheet" />
-
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nifty Options Trading - Fresh Start</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
-
-            background: #f5f7fb;
-
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             padding: 20px;
-
-            font-family: Arial;
-
         }
 
-        .card-box {
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
 
+        /* Header */
+        .header {
             background: white;
-
-            border-radius: 12px;
-
-            padding: 20px;
-
-            box-shadow: 0px 2px 10px rgba(0,0,0,0.08);
-
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
         }
 
-        .top-controls {
-
-            display: grid;
-
-            grid-template-columns: 250px 200px 200px;
-
-            gap: 15px;
-
+        .header h1 {
+            color: #667eea;
             margin-bottom: 20px;
-
+            font-size: 32px;
         }
 
-        .select2-container {
-
-            width: 100% !important;
-
+        /* Timeframe Selection */
+        .timeframe-section {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+            flex-wrap: wrap;
         }
 
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Analysis Section */
+        .analysis-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .analysis-section h2 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        /* Table Styles */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table thead {
+            background: #f8f9fa;
+        }
+
+        table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+            white-space: nowrap;
+        }
+
+        table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        table tr:hover {
+            background: #f8f9fa;
+        }
+
+        /* Data styling */
+        .positive {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .negative {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .neutral {
+            color: #666;
+        }
+
+        .signal-buy {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .signal-sell {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .signal-neutral {
+            background: #e2e3e5;
+            color: #383d41;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Loading */
         .loading {
-
             display: none;
-
-            margin-top: 10px;
-
-            color: blue;
-
-            font-weight: bold;
-
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 600;
         }
 
-        table.dataTable tbody tr:hover {
-
-            background-color: #eef4ff !important;
-
+        .loading.show {
+            display: block;
         }
 
-        .bullish {
-
-            color: green;
-
-            font-weight: bold;
-
+        /* Status Messages */
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
         }
 
-        .bearish {
-
-            color: red;
-
-            font-weight: bold;
-
+        .error.show {
+            display: block;
         }
 
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .success.show {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .timeframe-section {
+                flex-direction: column;
+            }
+
+            .form-group select {
+                width: 100%;
+                min-width: auto;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            table th,
+            table td {
+                padding: 8px 5px;
+            }
+        }
     </style>
-
 </head>
-
 <body>
 
-<div class="card-box">
+    <div class="container">
 
-    <h2 class="mb-4">
+        <!-- HEADER WITH TIMEFRAME SELECTION -->
+        <div class="header">
+            <h1>📊 Nifty Options Trading Analysis</h1>
+            
+            <div class="timeframe-section">
+                <div class="form-group">
+                    <label for="timeframe">Select Timeframe:</label>
+                    <select id="timeframe">
+                        <option value="1minute">1 Minute</option>
+                        <option value="5minute" selected>5 Minute</option>
+                        <option value="15minute">15 Minute</option>
+                        <option value="30minute">30 Minute</option>
+                        <option value="60minute">60 Minute</option>
+                    </select>
+                </div>
 
-        Options Analysis Dashboard
+                <button class="btn btn-primary" onclick="analyzeIndexes()">
+                    🔄 Analyze Now
+                </button>
+            </div>
 
-    </h2>
-
-    <!-- =========================
-         FILTERS
-    ========================== -->
-
-    <div class="top-controls">
-
-        <!-- INDEX -->
-        <div>
-
-            <label class="form-label">
-
-                Select Index
-
-            </label>
-
-            <select id="indexType"
-                    class="form-select">
-
-                <option value="NIFTY">
-
-                    NIFTY
-
-                </option>
-
-                <option value="BANKNIFTY">
-
-                    BANKNIFTY
-
-                </option>
-
-            </select>
-
+            <div class="loading" id="loading">⏳ Analyzing indexes...</div>
+            <div class="error" id="error"></div>
+            <div class="success" id="success"></div>
         </div>
 
-        <!-- TIMEFRAME -->
-        <div>
+        <!-- NIFTY 50 ANALYSIS -->
+        <div class="analysis-section">
+            <h2>NIFTY 50 Analysis</h2>
 
-            <label class="form-label">
-
-                Timeframe
-
-            </label>
-
-            <select id="timeframe"
-                    class="form-select">
-
-                <option value="minute">
-
-                    1 Minute
-
-                </option>
-
-                <option value="5minute">
-
-                    5 Minute
-
-                </option>
-
-                <option value="30minute">
-
-                    30 Minute
-
-                </option>
-
-            </select>
-
+            <div class="table-wrapper">
+                <table id="niftyTable">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>LTP</th>
+                            <th>Return %</th>
+                            <th>High</th>
+                            <th>Low</th>
+                            <th>Signal</th>
+                            <th>HL Trend</th>
+                            <th>VWAP</th>
+                            <th>RSI</th>
+                            <th>Price Tenkan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="10" style="text-align: center; padding: 20px; color: #999;">
+                                Click "Analyze Now" to fetch data
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- BUTTON -->
-        <div class="d-flex align-items-end">
+        <!-- BANK NIFTY ANALYSIS -->
+        <div class="analysis-section">
+            <h2>BANK NIFTY Analysis</h2>
 
-            <button class="btn btn-primary w-100"
-                    onclick="runAnalysis()">
-
-                Run Analysis
-
-            </button>
-
+            <div class="table-wrapper">
+                <table id="bankniftyTable">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th>LTP</th>
+                            <th>Return %</th>
+                            <th>High</th>
+                            <th>Low</th>
+                            <th>Signal</th>
+                            <th>HL Trend</th>
+                            <th>VWAP</th>
+                            <th>RSI</th>
+                            <th>Price Tenkan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="10" style="text-align: center; padding: 20px; color: #999;">
+                                Click "Analyze Now" to fetch data
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
     </div>
 
-    <div class="loading"
-         id="loadingText">
+    <script>
+        // Analyze Indexes
+        async function analyzeIndexes() {
+            try {
+                const timeframe = document.getElementById('timeframe').value;
+                
+                // Show loading
+                document.getElementById('loading').classList.add('show');
+                document.getElementById('error').classList.remove('show');
+                document.getElementById('success').classList.remove('show');
 
-        Fetching Option Analysis...
-
-    </div>
-
-    <!-- =========================
-         TABLE
-    ========================== -->
-
-    <table id="optionsTable"
-           class="display nowrap"
-           style="width:100%">
-
-        <thead>
-
-        <tr>
-
-            <th>Symbol</th>
-
-            <th>Strike</th>
-
-            <th>Type</th>
-
-            <th>Expiry</th>
-
-            <th>LTP</th>
-
-            <th>Return6</th>
-
-            <th>High</th>
-
-            <th>Low</th>
-            <th>Signal</th>
-
-            <th>Volume Ratio</th>
-            <th>OI Change</th>
-
-            <th>Trend</th>
-            <th>VWAP</th>
-            <th>RSI</th>
-            <th>Price Tenkan</th>
-        </tr>
-
-        </thead>
-
-        <tbody></tbody>
-
-    </table>
-    <table id="optionsTableBank"
-           class="display nowrap"
-           style="width:100%">
-        <thead>
-        <tr>
-            <th>Symbol</th>
-            <th>Strike</th>
-            <th>Type</th>
-            <th>Expiry</th>
-            <th>LTP</th>
-            <th>Return6</th>
-            <th>High</th>
-            <th>Low</th>
-            <th>Signal</th>
-            <th>Volume Ratio</th>
-            <th>OI Change</th>
-            <th>Trend</th>
-            <th>VWAP</th>
-            <th>RSI</th>
-            <th>Price Tenkan</th>
-        </tr>
-
-        </thead>
-
-        <tbody></tbody>
-
-    </table>
-
-</div>
-
-<script>
-
-    let table;
-
-    // =========================
-    // RUN ANALYSIS
-    // =========================
-
-    async function runAnalysis() {
-
-        try {
-
-            $("#loadingText").show();
-
-            const index = $("#indexType").val();
-
-            const timeframe = $("#timeframe").val();
-
-            const response = await fetch(
-
-                "/analyze_options",
-
-                {
-                    method: "POST",
+                // Fetch data
+                const response = await fetch('/analyze_index', {
+                    method: 'POST',
                     headers: {
-                        "Content-Type": "application/json"
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        index: index,
                         timeframe: timeframe
                     })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Analysis failed');
                 }
-            );
-            const data = await response.json();
-            if (!response.ok) {
-                console.error(data);
-                alert(data.message || "Backend Error");
+
+                // Update tables
+                updateNiftyTable(data.nifty);
+                updateBankNiftyTable(data.banknifty);
+
+                // Show success
+                document.getElementById('success').textContent = `✅ Analysis completed for ${timeframe}`;
+                document.getElementById('success').classList.add('show');
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('error').textContent = `❌ Error: ${error.message}`;
+                document.getElementById('error').classList.add('show');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        // Update Nifty Table
+        function updateNiftyTable(data) {
+            const tbody = document.querySelector('#niftyTable tbody');
+            tbody.innerHTML = '';
+
+            if (!data) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #999;">No data</td></tr>';
                 return;
             }
-            if (!data.nifty || !data.banknifty) {
-                console.error(data);
-                alert("Invalid response format");
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${data.symbol}</td>
+                <td><strong>₹${formatNumber(data.ltp)}</strong></td>
+                <td class="${data.return >= 0 ? 'positive' : 'negative'}">
+                    ${data.return >= 0 ? '+' : ''}${data.return.toFixed(2)}%
+                </td>
+                <td>₹${formatNumber(data.high)}</td>
+                <td>₹${formatNumber(data.low)}</td>
+                <td>${getSignalBadge(data.signal)}</td>
+                <td><strong>${data.hl_trend}</strong></td>
+                <td>₹${formatNumber(data.vwap)}</td>
+                <td>${data.rsi.toFixed(2)}</td>
+                <td>₹${formatNumber(data.price_tenkan)}</td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        // Update BankNifty Table
+        function updateBankNiftyTable(data) {
+            const tbody = document.querySelector('#bankniftyTable tbody');
+            tbody.innerHTML = '';
+
+            if (!data) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #999;">No data</td></tr>';
                 return;
             }
-            console.log(data)
-            const niftyData = data.nifty;
-            const bankNiftyData = data.banknifty;
-            let niftysum = renderTable(niftyData);
-            let bankniftysum = renderTableBank(bankNiftyData);
-            
 
-            $("#loadingText").hide();
-
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${data.symbol}</td>
+                <td><strong>₹${formatNumber(data.price)}</strong></td>
+                <td class="${data.return >= 0 ? 'positive' : 'negative'}">
+                    ${data.return >= 0 ? '+' : ''}${data.return.toFixed(2)}%
+                </td>
+                <td>₹${formatNumber(data.high)}</td>
+                <td>₹${formatNumber(data.low)}</td>
+                <td>${getSignalBadge(data.signal)}</td>
+                <td><strong>${data.hl_trend}</strong></td>
+                <td>₹${formatNumber(data.vwap)}</td>
+                <td>${data.rsi.toFixed(2)}</td>
+                <td>₹${formatNumber(data.price_tenkan)}</td>
+            `;
+            tbody.appendChild(row);
         }
 
-        catch(error) {
-
-            console.error(error);
-
-            $("#loadingText").hide();
-
-            alert("Error Fetching Analysis");
-
-        }
-
-    }
-
-    // =========================
-    // TABLE RENDER
-    // =========================
-    function table_signal(signal) {
-        if (signal == "Strong Buy") {
-            return 2
-        }
-        if (signal == "Buy") {
-            return 1
-        }
-        if (signal == "Strong Sell") {
-            return -2
-        }
-        if (signal == "Sell") {
-            return -1
-        }
-        return 0
-    }
-    function row_data(item) {
-
-        let signalClass = "";
-        if (item.signal === "Strong Buy") {
-            signalClass = "bullish";
-        }
-        else if (item.signal === "Strong Sell") {
-            signalClass = "bearish";
-        }
-        let row = `
-            <tr>
-                <td>${item.symbol || "-"}</td>
-                <td>${item.strike || "-"}</td>
-                <td>${item.type || "-"}</td>
-                <td>${item.expiry || "-"}</td>
-                <td>${item.ltp || "-"}</td>
-                <td>${item.ret6 || "-"}</td>
-                <td>${item.high || "-"}</td>
-                <td>${item.low || "-"}</td>
-                <td class = "${signalClass}">${item.signal || "-"}</td>
-                <td>${item.volume_ratio || "-"}</td>
-                <td>${item.OI_change || "-"}</td>
-                <td>${item.trend || "-"}</td>
-                <td>${item.vwap || "-"}</td>
-                <td>${item.rsi || "-"}</td>
-                <td>${item.price_tenkan || "-"}</td>
-            </tr>
-
-        `;
-        return row
-    }
-    function renderTable(data) {
-        // DESTROY OLD TABLE
-        if ($.fn.DataTable.isDataTable('#optionsTable')) {
-            $('#optionsTable').DataTable().destroy();
-        }
-        signal_pe = 0
-        signal_ce = 0
-        pe_oi = 0
-        ce_oi = 0
-        // EMPTY TABLE
-        $("#optionsTable tbody").empty();
-
-        // APPEND ROWS
-        data.forEach(item => {
-            if (item.type == "PE") {
-                signal_pe += table_signal(item.signal)
-                pe_oi += item.OI
+        // Get Signal Badge
+        function getSignalBadge(signal) {
+            if (signal.includes('BUY')) {
+                return `<span class="signal-buy">${signal}</span>`;
+            } else if (signal.includes('SELL')) {
+                return `<span class="signal-sell">${signal}</span>`;
+            } else {
+                return `<span class="signal-neutral">${signal}</span>`;
             }
-            if (item.type == "CE") {
-                signal_ce += table_signal(item.signal)
-                ce_oi += item.OI
-            }
-            let row = row_data(item)
-            $("#optionsTable tbody").append(row);
-        });
-
-        // INIT DATATABLE
-        table = $('#optionsTable').DataTable({
-            pageLength: 25,
-            scrollX: true,
-            order: [[1, 'desc']]
-        });
-        let pcr = pe_oi/ce_oi
-        return [pcr, pe_oi, ce_oi, signal_pe, signal_ce]
-    }
-    function renderTableBank(data) {
-        console.log(data)
-        // DESTROY OLD TABLE
-        if ($.fn.DataTable.isDataTable('#optionsTableBank')) {
-            $('#optionsTableBank').DataTable().destroy();
         }
-        signal_pe = 0
-        signal_ce = 0
-        pe_oi = 0
-        ce_oi = 0
-        // EMPTY TABLE
-        $("#optionsTableBank tbody").empty();
 
-        // APPEND ROWS
-        data.forEach(item => {
-            if (item.type == "PE") {
-                signal_pe += table_signal(item.signal)
-                pe_oi += item.OI
-            }
-            if (item.type == "CE") {
-                signal_ce += table_signal(item.signal)
-                ce_oi += item.OI
-            }
-            let row = row_data(item)
-            $("#optionsTableBank tbody").append(row);
+        // Format Number
+        function formatNumber(num) {
+            if (num === 0 || !num) return '0.00';
+            return num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // Load on page ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ Page ready');
         });
-
-        // INIT DATATABLE
-        table = $('#optionsTableBank').DataTable({
-            pageLength: 25,
-            scrollX: true,
-            order: [[1, 'desc']]
-        });
-        let pcr = pe_oi/ce_oi
-        return [pcr, pe_oi, ce_oi, signal_pe, signal_ce]
-    }
-
-    // =========================
-    // FORMAT NUMBER
-    // =========================
-
-    function formatNumber(value) {
-
-        if (value == null) return "-";
-
-        return Intl.NumberFormat('en-IN').format(value);
-
-    }
-
-    // =========================
-    // AUTO LOAD
-    // =========================
-
-    runAnalysis();
-
-</script>
+    </script>
 
 </body>
-
 </html>

@@ -4286,15 +4286,132 @@ def refresh_fundamentals():
             "message": str(e)
 
         })
+import logging
 
-
-# =========================
-# ROUTE
-# =========================
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 @app.route('/options_analysis')
 def options_analysis():
     return render_template("options_analysis.html")
+
+
+@app.route('/analyze_index', methods=['POST'])
+def analyze_index():
+    """
+    Analyze Nifty 50 and Bank Nifty
+    """
+    try:
+        data = request.json
+        timeframe = data.get('timeframe', '5minute')
+        
+        # Fetch Nifty 50 data
+        nifty_data = fetch_and_analyze('NSE:NIFTY50', 'NIFTY 50', timeframe)
+        
+        # Fetch Bank Nifty data
+        banknifty_data = fetch_and_analyze('NSE:NIFTYBANK', 'BANK NIFTY', timeframe)
+        
+        return jsonify({
+            'status': 'success',
+            'nifty': nifty_data,
+            'banknifty': banknifty_data,
+            'timeframe': timeframe,
+        })
+    
+    except Exception as e:
+        logger.error(f"Error in analyze_index: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+
+def fetch_and_analyze(symbol, name, timeframe):
+    """
+    Fetch data and analyze
+    """
+    try:
+        # Get historical data
+        df = get_historical_data(symbol, timeframe)
+        
+        if df is None or len(df) < 2:
+            return {
+                'symbol': name,
+                'ltp': 0,
+                'return': 0,
+                'high': 0,
+                'low': 0,
+                'signal': 'NO_DATA',
+                'hl_trend': 'N/A',
+                'vwap': 0,
+                'rsi': 0,
+                'price_tenkan': 0,
+            }
+        
+        # Run analysis
+        analysis = data_analysis(df, timeframe)
+        analysis['symbol'] = name
+        
+        return analysis
+    
+    except Exception as e:
+        logger.error(f"Error fetching {symbol}: {e}")
+        return {
+            'symbol': name,
+            'ltp': 0,
+            'return': 0,
+            'high': 0,
+            'low': 0,
+            'signal': 'ERROR',
+            'hl_trend': 'N/A',
+            'vwap': 0,
+            'rsi': 0,
+            'price_tenkan': 0,
+        }
+
+def get_historical_data(symbol, timeframe):
+    """
+    Get historical OHLCV data from Kite
+    """
+    try:
+        # Get instrument token
+        quote = kite.quote(symbol)
+        token = quote['instrument_token']
+        
+        # Define date range
+        to_date = datetime.now()
+        from_date = to_date - timedelta(days=30)
+        
+        # Fetch data
+        data = kite.historical_data(
+            instrument_token=token,
+            from_date=from_date.date(),
+            to_date=to_date.date(),
+            interval=timeframe
+        )
+        
+        if not data:
+            return None
+        
+        # Convert to DataFrame
+        df = pd.DataFrame(data)
+        df['date'] = pd.to_datetime(df['date'])
+        df = df.sort_values('date')
+        
+        return df
+    
+    except Exception as e:
+        logger.error(f"Error fetching historical data for {symbol}: {e}")
+        return None
+
+# ============================================
+# ERROR HANDLER
+# ============================================
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'status': 'error', 'message': 'Not found'}), 404
+# =========================
+# ROUTE
+# =========================
+
+
 from concurrent.futures import ThreadPoolExecutor
 
 

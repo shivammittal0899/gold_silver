@@ -4509,18 +4509,18 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         df = get_historical_data(item['token'], "option", timeframe, kite_local)
         log1(df.tail(5))
         
-        # if df is None or len(df) < 2:
-        #     return None
+        if df is None or len(df) < 2:
+            return None
         
-        # # analysis = options_analysis(df, timeframe)
+        analysis = stock_data_analysis(df, timeframe)
         # analysis = {}
-        # analysis['symbol'] = symbol
-        # analysis['strike'] = strike
-        # analysis['type'] = option_type
-        # analysis['expiry'] = expiry
+        analysis['symbol'] = symbol
+        analysis['strike'] = item['strike']
+        analysis['type'] = item['type']
+        analysis['expiry'] = item['expiry']
         
-        # return analysis
-        return "None"
+        return analysis
+        # return "None"
     
     except Exception as e:
         logger.error(f"Error fetching {symbol}: {e}")

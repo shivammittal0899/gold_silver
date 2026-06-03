@@ -4354,9 +4354,12 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
             }
         
         # Run analysis
-        analysis = data_analysis(df, timeframe)
+        analysis = stock_data_analysis(df, timeframe)
         analysis['symbol'] = name
-        
+        analysis['high'] = df['High']
+        analysis['low'] = df['Low']
+        analysis['open'] = df['Open']
+        analysis['volume'] = df['Volume']
         return analysis
     
     except Exception as e:

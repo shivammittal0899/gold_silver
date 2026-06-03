@@ -338,6 +338,7 @@
                             <th>Symbol</th>
                             <th>LTP</th>
                             <th>Return %</th>
+                            <th>Return6 %</th>
                             <th>High</th>
                             <th>Low</th>
                             <th>Signal</th>
@@ -419,13 +420,16 @@
             row.innerHTML = `
                 <td>${data.symbol}</td>
                 <td><strong>₹${formatNumber(data.ltp)}</strong></td>
-                <td class="${data.return >= 0 ? 'positive' : 'negative'}">
-                    ${data.return >= 0 ? '+' : ''}${data.return.toFixed(2)}%
+                <td class="${data.ret1 >= 0 ? 'positive' : 'negative'}">
+                    ${data.ret1 >= 0 ? '+' : ''}${data.ret1.toFixed(2)}%
+                </td>
+                <td class="${data.ret6 >= 0 ? 'positive' : 'negative'}">
+                    ${data.ret6 >= 0 ? '+' : ''}${data.ret6.toFixed(2)}%
                 </td>
                 <td>₹${formatNumber(data.high)}</td>
                 <td>₹${formatNumber(data.low)}</td>
                 <td>${getSignalBadge(data.signal)}</td>
-                <td><strong>${data.hl_trend}</strong></td>
+                <td><strong>${data.trend}</strong></td>
                 <td>₹${formatNumber(data.vwap)}</td>
                 <td>${data.rsi.toFixed(2)}</td>
                 <td>₹${formatNumber(data.price_tenkan)}</td>

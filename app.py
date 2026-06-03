@@ -4388,6 +4388,7 @@ def analyze_options():
             analysis = fetch_and_analyze_option(kite_local, item, 'NIFTY', timeframe)
             if analysis:
                 nifty_analysis.append(analysis)
+        log1(nifty_analysis)
         # for strike in nifty_options:
         #     for option_type in ['CE', 'PE']:
         #         analysis = "None"
@@ -4518,7 +4519,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         analysis['strike'] = item['strike']
         analysis['type'] = item['type']
         analysis['expiry'] = item['expiry']
-        
+        log1(analysis)
         return analysis
         # return "None"
     

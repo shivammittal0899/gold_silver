@@ -681,16 +681,16 @@
                     <td>${option.strike}</td>
                     <td><strong>${option.type}</strong></td>
                     <td>${option.expiry}</td>
-                    <td>₹${option.ltp}</td>
-                    <td class="${option.return >= 0 ? 'positive' : 'negative'}">
-                        ${option.return >= 0 ? '+' : ''}${option.return.toFixed(2)}%
+                    <td>₹${option.price}</td>
+                    <td class="${option.ret1 >= 0 ? 'positive' : 'negative'}">
+                        ${option.ret1 >= 0 ? '+' : ''}${option.ret1}%
                     </td>
                     <td>₹${option.high}</td>
                     <td>₹${option.low}</td>
                     <td>${getSignalBadge(option.signal)}</td>
                     <td>${option.volume_ratio}</td>
                     <td class="${option.oi_change >= 0 ? 'positive' : 'negative'}">
-                        ${option.oi_change >= 0 ? '+' : ''}${option.oi_change.toFixed(2)}%
+                        ${option.oi_change >= 0 ? '+' : ''}${option.oi_change}%
                     </td>
                     <td><strong>${option.trend}</strong></td>
                     <td>₹${option.vwap}</td>

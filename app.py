@@ -4381,7 +4381,7 @@ def analyze_options():
         kite_local.set_access_token(access_token)
 
         nifty_strike = get_option_tokens(kite_local, nifty_options, "NIFTY")
-        niftybank_strike = get_option_tokens(kite_local, nifty_options, "BANK NIFTY")
+        niftybank_strike = get_option_tokens(kite_local, nifty_options, "BANKNIFTY")
         log1(nifty_strike)
         # Analyze Nifty options
         nifty_analysis = []

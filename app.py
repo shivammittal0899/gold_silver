@@ -4305,6 +4305,8 @@ def analyze_index():
         access_token = read_access_token()
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
+        quote = kite_local.quote(['NSE:NIFTY 50'])
+        log1(quote)
         
         data = request.json
         timeframe = data.get('timeframe', '5minute')

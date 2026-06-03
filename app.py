@@ -4381,13 +4381,16 @@ def analyze_options():
         kite_local.set_access_token(access_token)
 
         nifty_strike = get_option_tokens(kite_local, nifty_options, "NIFTY")
-        niftybank_strike = get_option_tokens(kite_local, nifty_options, "BANKNIFTY")
-        log1(nifty_strike)
+        niftybank_strike = get_option_tokens(kite_local, banknifty_options, "BANKNIFTY")
         # Analyze Nifty options
         nifty_analysis = []
-        for strike in nifty_options:
-            for option_type in ['CE', 'PE']:
-                analysis = "None"
+        for item in nifty_strike:
+            analysis = fetch_and_analyze_option(kite_local, item, 'NIFTY', timeframe)
+            if analysis:
+                nifty_analysis.append(analysis)
+        # for strike in nifty_options:
+        #     for option_type in ['CE', 'PE']:
+        #         analysis = "None"
                 # symbol = f"NIFTY{expiry}{option_type}{strike}"
                 # analysis = fetch_and_analyze_option("symbol", strike, option_type, 'NIFTY', timeframe)
                 # if analysis:
@@ -4494,14 +4497,17 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
             'price_tenkan': 0,
         }
 
-def fetch_and_analyze_option(symbol, strike, option_type, index, expiry, timeframe):
+def fetch_and_analyze_option(kite_local, item, name, timeframe):
+    symbol = item['symbol']
     """
     Fetch data and analyze (for options)
     """
     try:
         
-        log1(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
-        # df = get_historical_data('NFO:' + symbol, timeframe)
+        log1("in option analysis")
+        # log1(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
+        df = get_historical_data(item['token'], name, timeframe, kite_local)
+        log1(df.tail())
         
         # if df is None or len(df) < 2:
         #     return None
@@ -4525,8 +4531,10 @@ def get_historical_data(symbol, name, timeframe, kite_local):
     Get historical OHLCV data from Kite
     """
     try:
-        
-        token = INSTRUMENT_MAP.get(name)
+        if "NIFTY" in symbol:
+            token = INSTRUMENT_MAP.get(name)
+        else:
+            token = symbol
         # Define date range
         to_date = datetime.now()
         from_date = to_date - timedelta(days=5)

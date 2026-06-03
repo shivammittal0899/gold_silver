@@ -4338,7 +4338,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         # quote = kite_local.quote([symbol])
         # log1(quote)
         df = get_historical_data(symbol, name, timeframe, kite_local)
-        
+        log1(df.tail(5))
         if df is None or len(df) < 2:
             return {
                 'symbol': name,

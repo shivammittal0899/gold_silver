@@ -4291,6 +4291,29 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def get_nifty_expiry():
+    """Get nearest weekly expiry date"""
+    try:
+        today = datetime.now()
+        # Friday expiry
+        expiry = today + timedelta(days=(4 - today.weekday()) % 7 or 7)
+        return expiry.strftime("%d%b%y").upper()
+    except:
+        return datetime.now().strftime("%d%b%y").upper()
+def get_atm_strike(price, interval=100):
+    """Get ATM strike based on price"""
+    return int(round(price / interval) * interval)
+
+def get_nearby_strikes(atm_strike, count=5, interval=100):
+    """Get nearby strikes"""
+    strikes = []
+    for i in range(-count, count + 1):
+        strikes.append(atm_strike + (i * interval))
+    return sorted(strikes)
+
+
+    
+
 @app.route('/options_analysis')
 def options_analysis():
     return render_template("options_analysis.html")
@@ -4315,11 +4338,21 @@ def analyze_index():
         
         # Fetch Bank Nifty data
         banknifty_data = fetch_and_analyze('NSE:NIFTY BANK', 'NIFTY BANK', timeframe, kite_local)
+        # Get ATM and nearby strikes
+        nifty_atm = get_atm_strike(nifty_data['price'], 100)
+        banknifty_atm = get_atm_strike(banknifty_data['price'], 100)
         
+        nifty_strikes = get_nearby_strikes(nifty_atm, count=5, interval=100)
+        banknifty_strikes = get_nearby_strikes(banknifty_atm, count=5, interval=100)
+        
+        expiry = get_nifty_expiry()
         return jsonify({
             'status': 'success',
             'nifty': nifty_data,
             'banknifty': banknifty_data,
+            'nifty_strikes': nifty_strikes,
+            'banknifty_strikes': banknifty_strikes,
+            'expiry': expiry,
             'timeframe': timeframe,
         })
     
@@ -4327,18 +4360,57 @@ def analyze_index():
         logger.error(f"Error in analyze_index: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 400
 
+
+@app.route('/analyze_options', methods=['POST'])
+def analyze_options():
+    """
+    Analyze selected options
+    """
+    try:
+        data = request.json
+        selected_strikes = data.get('selected_strikes', {})
+        timeframe = data.get('timeframe', '5minute')
+        expiry = data.get('expiry', '')
+        
+        nifty_options = selected_strikes.get('nifty', [])
+        banknifty_options = selected_strikes.get('banknifty', [])
+        
+        # Analyze Nifty options
+        nifty_analysis = []
+        for strike in nifty_options:
+            for option_type in ['CE', 'PE']:
+                symbol = f"NIFTY{expiry}{option_type}{strike}"
+                analysis = fetch_and_analyze_option(symbol, strike, option_type, 'NIFTY', expiry, timeframe)
+                if analysis:
+                    nifty_analysis.append(analysis)
+        
+        # Analyze Bank Nifty options
+        banknifty_analysis = []
+        for strike in banknifty_options:
+            for option_type in ['CE', 'PE']:
+                symbol = f"BANKNIFTY{expiry}{option_type}{strike}"
+                analysis = fetch_and_analyze_option(symbol, strike, option_type, 'BANKNIFTY', expiry, timeframe)
+                if analysis:
+                    banknifty_analysis.append(analysis)
+        
+        return jsonify({
+            'status': 'success',
+            'nifty_options': nifty_analysis,
+            'banknifty_options': banknifty_analysis,
+        })
+    
+    except Exception as e:
+        logger.error(f"Error in analyze_options: {e}")
+        return jsonify({'status': 'error', 'message': str(e)}), 400
+    
+
 def fetch_and_analyze(symbol, name, timeframe, kite_local):
     """
     Fetch data and analyze
     """
     try:
         # Get historical data
-        # quote = kite_local.quote(['NSE:NIFTY 50'])
-        # log1(quote)
-        # quote = kite_local.quote([symbol])
-        # log1(quote)
         df = get_historical_data(symbol, name, timeframe, kite_local)
-        # log1(df.tail(5))
         if df is None or len(df) < 2:
             return {
                 'symbol': name,
@@ -4354,29 +4426,14 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
             }
         
         # Run analysis
-        log1("analysis start here")
         analysis = {
             'symbol': name,
             'high': float(df['High'].iloc[-1]),
             'low': float(df['Low'].iloc[-1]),
             'open': float(df['Open'].iloc[-1]),
         }
-        log1(analysis)
         data, df = stock_data_analysis(df, timeframe)
-        log1("analysis send here")
-        # log1(analysis)
         analysis.update(data if isinstance(data, dict) else {})
-        # analysis['symbol'] = name
-        # log1("analysis add name")
-        # analysis['high'] = float(df['High'].iloc[-1])
-        # log1("analysis add high")
-        # analysis['low'] = float(df['Low'].iloc[-1])
-        # log1("analysis add low")
-        # analysis['open'] = float(df['Open'].iloc[-1])
-        # log1("analysis add open")
-        # analysis['volume'] = int(df['Volume'].iloc[-1])
-        # log1("analysis add volume")
-        log1(analysis)
         return analysis
     
     except Exception as e:
@@ -4394,19 +4451,38 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
             'price_tenkan': 0,
         }
 
+def fetch_and_analyze_option(symbol, strike, option_type, index, expiry, timeframe):
+    """
+    Fetch data and analyze (for options)
+    """
+    try:
+        log1(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
+        # df = get_historical_data('NFO:' + symbol, timeframe)
+        
+        # if df is None or len(df) < 2:
+        #     return None
+        
+        # # analysis = options_analysis(df, timeframe)
+        # analysis = {}
+        # analysis['symbol'] = symbol
+        # analysis['strike'] = strike
+        # analysis['type'] = option_type
+        # analysis['expiry'] = expiry
+        
+        # return analysis
+        return "None"
+    
+    except Exception as e:
+        logger.error(f"Error fetching {symbol}: {e}")
+        return None
+
 def get_historical_data(symbol, name, timeframe, kite_local):
     """
     Get historical OHLCV data from Kite
     """
     try:
-        log1(f"{symbol} historical data")
-        # Get instrument token
-        # quote = kite_local.quote(["NSE:NIFTY 50"])
-        # token1 = quote['instrument_token']
-        token = INSTRUMENT_MAP.get(name)
-        log1(f"{symbol} token fetched  --- {token}")
-
         
+        token = INSTRUMENT_MAP.get(name)
         # Define date range
         to_date = datetime.now()
         from_date = to_date - timedelta(days=5)
@@ -4434,7 +4510,6 @@ def get_historical_data(symbol, name, timeframe, kite_local):
             'oi':'OI'
 
         }, inplace=True)
-        log1(df.tail(5))
         # df['date'] = pd.to_datetime(df['date'])
         # df = df.sort_values('date')
         

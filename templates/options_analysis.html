@@ -228,8 +228,15 @@
             display: block;
         }
 
+        .empty-message {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
+            
             .container {
                 padding: 10px;
             }
@@ -254,7 +261,9 @@
             .btn {
                 width: 100%;
             }
-
+            .strikes-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
             table {
                 font-size: 12px;
             }
@@ -278,8 +287,8 @@
                 <div class="form-group">
                     <label for="timeframe">Select Timeframe:</label>
                     <select id="timeframe">
-                        <option value="minute">1 Minute</option>
-                        <option value="5minute" selected>5 Minute</option>
+                        <option value="minute" selected>1 Minute</option>
+                        <option value="5minute">5 Minute</option>
                         <option value="15minute">15 Minute</option>
                         <option value="30minute">30 Minute</option>
                         <option value="60minute">60 Minute</option>
@@ -295,68 +304,142 @@
             <div class="error" id="error"></div>
             <div class="success" id="success"></div>
         </div>
-
-        <!-- NIFTY 50 ANALYSIS -->
+        <!-- INDEX ANALYSIS & STRIKE SELECTION -->
         <div class="analysis-section">
-            <h2>NIFTY 50 Analysis</h2>
+            <h2>Index Analysis & Strike Selection</h2>
 
-            <div class="table-wrapper">
-                <table id="niftyTable">
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>LTP</th>
-                            <th>Return %</th>
-                            <th>Return6 %</th>
-                            <th>High</th>
-                            <th>Low</th>
-                            <th>Signal</th>
-                            <th>HL Trend</th>
-                            <th>VWAP</th>
-                            <th>RSI</th>
-                            <th>Price Tenkan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="10" style="text-align: center; padding: 20px; color: #999;">
-                                Click "Analyze Now" to fetch data
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Nifty 50 -->
+            <div id="niftySection">
+                <h3>NIFTY 50</h3>
+                <div class="table-wrapper">
+                    <table id="niftyTable">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>LTP</th>
+                                <th>Return %</th>
+                                <th>Return6 %</th>
+                                <th>High</th>
+                                <th>Low</th>
+                                <th>Signal</th>
+                                <th>HL Trend</th>
+                                <th>VWAP</th>
+                                <th>RSI</th>
+                                <th>Price Tenkan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="10" style="text-align: center; padding: 20px; color: #999;">Click "Analyze Now"</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="strike-selection">
+                    <h3 style="margin-top: 0;">Select Nifty 50 Strikes</h3>
+                    <div class="strikes-grid" id="niftyStrikes"></div>
+                </div>
             </div>
+
+            <!-- Bank Nifty -->
+            <div id="bankNiftySection">
+                <h3>BANK NIFTY</h3>
+                <div class="table-wrapper">
+                    <table id="bankNiftyTable">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>LTP</th>
+                                <th>Return %</th>
+                                <th>Return6 %</th>
+                                <th>High</th>
+                                <th>Low</th>
+                                <th>Signal</th>
+                                <th>HL Trend</th>
+                                <th>VWAP</th>
+                                <th>RSI</th>
+                                <th>Price Tenkan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="10" style="text-align: center; padding: 20px; color: #999;">Click "Analyze Now"</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="strike-selection">
+                    <h3 style="margin-top: 0;">Select Bank Nifty Strikes</h3>
+                    <div class="strikes-grid" id="bankNiftyStrikes"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-secondary" onclick="analyzeSelectedOptions()" id="analyzeOptionsBtn" style="display:none; margin-top: 20px;">
+                📊 Analyze Selected Options
+            </button>
         </div>
+        <!-- OPTIONS ANALYSIS -->
+        <div class="analysis-section" id="optionsAnalysisSection" style="display:none;">
+            <h2>Options Analysis</h2>
 
-        <!-- BANK NIFTY ANALYSIS -->
-        <div class="analysis-section">
-            <h2>BANK NIFTY Analysis</h2>
+            <!-- Nifty Options -->
+            <div id="niftyOptionsDiv">
+                <h3>NIFTY 50 Options</h3>
+                <div class="table-wrapper">
+                    <table id="niftyOptionsTable">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Strike</th>
+                                <th>Type</th>
+                                <th>Expiry</th>
+                                <th>LTP</th>
+                                <th>Return6</th>
+                                <th>High</th>
+                                <th>Low</th>
+                                <th>Signal</th>
+                                <th>Volume Ratio</th>
+                                <th>OI Change</th>
+                                <th>Trend</th>
+                                <th>VWAP</th>
+                                <th>RSI</th>
+                                <th>Price Tenkan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="15" style="text-align: center; padding: 20px; color: #999;">No data</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-            <div class="table-wrapper">
-                <table id="bankniftyTable">
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th>LTP</th>
-                            <th>Return %</th>
-                            <th>Return6 %</th>
-                            <th>High</th>
-                            <th>Low</th>
-                            <th>Signal</th>
-                            <th>HL Trend</th>
-                            <th>VWAP</th>
-                            <th>RSI</th>
-                            <th>Price Tenkan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="10" style="text-align: center; padding: 20px; color: #999;">
-                                Click "Analyze Now" to fetch data
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- Bank Nifty Options -->
+            <div id="bankNiftyOptionsDiv">
+                <h3>BANK NIFTY Options</h3>
+                <div class="table-wrapper">
+                    <table id="bankNiftyOptionsTable">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Strike</th>
+                                <th>Type</th>
+                                <th>Expiry</th>
+                                <th>LTP</th>
+                                <th>Return6</th>
+                                <th>High</th>
+                                <th>Low</th>
+                                <th>Signal</th>
+                                <th>Volume Ratio</th>
+                                <th>OI Change</th>
+                                <th>Trend</th>
+                                <th>VWAP</th>
+                                <th>RSI</th>
+                                <th>Price Tenkan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="15" style="text-align: center; padding: 20px; color: #999;">No data</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -393,8 +476,13 @@
                 // Update tables
                 updateNiftyTable(data.nifty);
                 updateBankNiftyTable(data.banknifty);
+                // Display strikes
+                displayStrikes('niftyStrikes', data.nifty_strikes);
+                displayStrikes('bankNiftyStrikes', data.banknifty_strikes);
 
-                // Show success
+                // Show analyze button
+                document.getElementById('analyzeOptionsBtn').style.display = 'block';
+
                 document.getElementById('success').textContent = `✅ Analysis completed for ${timeframe}`;
                 document.getElementById('success').classList.add('show');
 
@@ -406,10 +494,9 @@
                 document.getElementById('loading').classList.remove('show');
             }
         }
-
-        // Update Nifty Table
-        function updateNiftyTable(data) {
-            const tbody = document.querySelector('#niftyTable tbody');
+        // Update Index Table
+        function updateIndexTable(tableId, data) {
+            const tbody = document.querySelector(`#${tableId} tbody`);
             tbody.innerHTML = '';
 
             if (!data) {
@@ -437,39 +524,180 @@
             `;
             tbody.appendChild(row);
         }
+        // // Update Nifty Table
+        // function updateNiftyTable(data) {
+        //     const tbody = document.querySelector('#niftyTable tbody');
+        //     tbody.innerHTML = '';
 
-        // Update BankNifty Table
-        function updateBankNiftyTable(data) {
-            const tbody = document.querySelector('#bankniftyTable tbody');
-            tbody.innerHTML = '';
+        //     if (!data) {
+        //         tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #999;">No data</td></tr>';
+        //         return;
+        //     }
 
-            if (!data) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #999;">No data</td></tr>';
-                return;
-            }
+        //     const row = document.createElement('tr');
+        //     row.innerHTML = `
+        //         <td>${data.symbol}</td>
+        //         <td><strong>₹${formatNumber(data.price)}</strong></td>
+        //         <td class="${data.ret1 >= 0 ? 'positive' : 'negative'}">
+        //             ${data.ret1 >= 0 ? '+' : ''}${data.ret1}%
+        //         </td>
+        //         <td class="${data.ret6 >= 0 ? 'positive' : 'negative'}">
+        //             ${data.ret6 >= 0 ? '+' : ''}${data.ret6}%
+        //         </td>
+        //         <td>₹${formatNumber(data.high)}</td>
+        //         <td>₹${formatNumber(data.low)}</td>
+        //         <td>${getSignalBadge(data.signal)}</td>
+        //         <td><strong>${data.trend}</strong></td>
+        //         <td>₹${formatNumber(data.vwap)}</td>
+        //         <td>${data.rsi.toFixed(2)}</td>
+        //         <td>₹${formatNumber(data.price_tenkan)}</td>
+        //     `;
+        //     tbody.appendChild(row);
+        // }
 
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${data.symbol}</td>
-                <td><strong>₹${formatNumber(data.price)}</strong></td>
-                <td class="${data.ret1 >= 0 ? 'positive' : 'negative'}">
-                    ${data.ret1 >= 0 ? '+' : ''}${data.ret1}%
-                </td>
-                <td class="${data.ret6 >= 0 ? 'positive' : 'negative'}">
-                    ${data.ret6 >= 0 ? '+' : ''}${data.ret6}%
-                </td>
-                <td>₹${formatNumber(data.high)}</td>
-                <td>₹${formatNumber(data.low)}</td>
-                <td>${getSignalBadge(data.signal)}</td>
-                <td><strong>${data.trend}</strong></td>
-                <td>₹${formatNumber(data.vwap)}</td>
-                <td>${data.rsi.toFixed(2)}</td>
-                <td>₹${formatNumber(data.price_tenkan)}</td>
-            `;
-            tbody.appendChild(row);
-        }
+        // // Update BankNifty Table
+        // function updateBankNiftyTable(data) {
+        //     const tbody = document.querySelector('#bankniftyTable tbody');
+        //     tbody.innerHTML = '';
+
+        //     if (!data) {
+        //         tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 20px; color: #999;">No data</td></tr>';
+        //         return;
+        //     }
+
+        //     const row = document.createElement('tr');
+        //     row.innerHTML = `
+        //         <td>${data.symbol}</td>
+        //         <td><strong>₹${formatNumber(data.price)}</strong></td>
+        //         <td class="${data.ret1 >= 0 ? 'positive' : 'negative'}">
+        //             ${data.ret1 >= 0 ? '+' : ''}${data.ret1}%
+        //         </td>
+        //         <td class="${data.ret6 >= 0 ? 'positive' : 'negative'}">
+        //             ${data.ret6 >= 0 ? '+' : ''}${data.ret6}%
+        //         </td>
+        //         <td>₹${formatNumber(data.high)}</td>
+        //         <td>₹${formatNumber(data.low)}</td>
+        //         <td>${getSignalBadge(data.signal)}</td>
+        //         <td><strong>${data.trend}</strong></td>
+        //         <td>₹${formatNumber(data.vwap)}</td>
+        //         <td>${data.rsi.toFixed(2)}</td>
+        //         <td>₹${formatNumber(data.price_tenkan)}</td>
+        //     `;
+        //     tbody.appendChild(row);
+        // }
 
         // Get Signal Badge
+        
+        
+        // Display Strikes
+        function displayStrikes(containerId, strikes) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            strikes.forEach(strike => {
+                const div = document.createElement('div');
+                div.className = 'strike-checkbox';
+                div.innerHTML = `
+                    <input type="checkbox" id="strike_${strike}" value="${strike}">
+                    <label for="strike_${strike}">${strike}</label>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Analyze Selected Options
+        async function analyzeSelectedOptions() {
+            try {
+                const timeframe = document.getElementById('timeframe').value;
+                
+                // Get selected strikes
+                const niftyStrikes = Array.from(document.querySelectorAll('#niftyStrikes input[type="checkbox"]:checked'))
+                    .map(cb => parseInt(cb.value));
+                const bankNiftyStrikes = Array.from(document.querySelectorAll('#bankNiftyStrikes input[type="checkbox"]:checked'))
+                    .map(cb => parseInt(cb.value));
+
+                if (niftyStrikes.length === 0 && bankNiftyStrikes.length === 0) {
+                    alert('Please select at least one strike');
+                    return;
+                }
+
+                document.getElementById('loading').classList.add('show');
+                document.getElementById('error').classList.remove('show');
+
+                const response = await fetch('/analyze_options', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        selected_strikes: {
+                            nifty: niftyStrikes,
+                            banknifty: bankNiftyStrikes
+                        },
+                        timeframe: timeframe,
+                        expiry: expiry
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Analysis failed');
+                }
+
+                // Update options tables
+                updateOptionsTable('niftyOptionsTable', data.nifty_options);
+                updateOptionsTable('bankNiftyOptionsTable', data.banknifty_options);
+
+                // Show options analysis section
+                document.getElementById('optionsAnalysisSection').style.display = 'block';
+
+                document.getElementById('success').textContent = `✅ Options analyzed`;
+                document.getElementById('success').classList.add('show');
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('error').textContent = `❌ Error: ${error.message}`;
+                document.getElementById('error').classList.add('show');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        // Update Options Table
+        function updateOptionsTable(tableId, options) {
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            tbody.innerHTML = '';
+
+            if (!options || options.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="15" style="text-align: center; padding: 20px; color: #999;">No data</td></tr>';
+                return;
+            }
+
+            options.forEach(option => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${option.symbol}</strong></td>
+                    <td>${option.strike}</td>
+                    <td><strong>${option.type}</strong></td>
+                    <td>${option.expiry}</td>
+                    <td>₹${option.ltp}</td>
+                    <td class="${option.return >= 0 ? 'positive' : 'negative'}">
+                        ${option.return >= 0 ? '+' : ''}${option.return.toFixed(2)}%
+                    </td>
+                    <td>₹${option.high}</td>
+                    <td>₹${option.low}</td>
+                    <td>${getSignalBadge(option.signal)}</td>
+                    <td>${option.volume_ratio}</td>
+                    <td class="${option.oi_change >= 0 ? 'positive' : 'negative'}">
+                        ${option.oi_change >= 0 ? '+' : ''}${option.oi_change.toFixed(2)}%
+                    </td>
+                    <td><strong>${option.trend}</strong></td>
+                    <td>₹${option.vwap}</td>
+                    <td>${option.rsi.toFixed(2)}</td>
+                    <td>₹${option.price_tenkan}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
         function getSignalBadge(signal) {
             if (signal.includes('BUY')) {
                 return `<span class="signal-buy">${signal}</span>`;

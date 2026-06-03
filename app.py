@@ -4345,15 +4345,14 @@ def analyze_index():
         nifty_strikes = get_nearby_strikes(nifty_atm, count=5, interval=100)
         banknifty_strikes = get_nearby_strikes(banknifty_atm, count=5, interval=100)
         
-        expiry = get_nifty_expiry()
-        log1(expiry)
+        # expiry = get_nifty_expiry()
+        # log1(expiry)
         return jsonify({
             'status': 'success',
             'nifty': nifty_data,
             'banknifty': banknifty_data,
             'nifty_strikes': nifty_strikes,
             'banknifty_strikes': banknifty_strikes,
-            'expiry': expiry,
             'timeframe': timeframe,
         })
     
@@ -4371,17 +4370,23 @@ def analyze_options():
         data = request.json
         selected_strikes = data.get('selected_strikes', {})
         timeframe = data.get('timeframe', '5minute')
-        expiry = data.get('expiry', '')
+        # expiry = data.get('expiry', '')
         
         nifty_options = selected_strikes.get('nifty', [])
         banknifty_options = selected_strikes.get('banknifty', [])
-        
+        access_token = read_access_token()
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
+
+        nifty_strike = get_option_tokens(kite_local, nifty_options, "NIFTY")
+        niftybank_strike = get_option_tokens(kite_local, nifty_options, "NIFTY BANK")
+        log1(nifty_strike)
         # Analyze Nifty options
         nifty_analysis = []
         for strike in nifty_options:
             for option_type in ['CE', 'PE']:
-                symbol = f"NIFTY{expiry}{option_type}{strike}"
-                analysis = fetch_and_analyze_option(symbol, strike, option_type, 'NIFTY', expiry, timeframe)
+                # symbol = f"NIFTY{expiry}{option_type}{strike}"
+                analysis = fetch_and_analyze_option(symbol, strike, option_type, 'NIFTY', timeframe)
                 if analysis:
                     nifty_analysis.append(analysis)
         
@@ -4389,10 +4394,11 @@ def analyze_options():
         banknifty_analysis = []
         for strike in banknifty_options:
             for option_type in ['CE', 'PE']:
-                symbol = f"BANKNIFTY{expiry}{option_type}{strike}"
-                analysis = fetch_and_analyze_option(symbol, strike, option_type, 'BANKNIFTY', expiry, timeframe)
-                if analysis:
-                    banknifty_analysis.append(analysis)
+                analysis = "NOne"
+                # symbol = f"BANKNIFTY{expiry}{option_type}{strike}"
+                # analysis = fetch_and_analyze_option(symbol, strike, option_type, 'BANKNIFTY', expiry, timeframe)
+                # if analysis:
+                #     banknifty_analysis.append(analysis)
         
         return jsonify({
             'status': 'success',
@@ -4404,6 +4410,41 @@ def analyze_options():
         logger.error(f"Error in analyze_options: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 400
     
+
+
+def get_option_tokens(kite, strikes, index):
+    instruments = kite.instruments("NFO")
+    df = pd.DataFrame(instruments)
+    # NIFTY OPTIONS ONLY
+    df = df[
+        (df["name"] == index)
+        &
+        (df["instrument_type"].isin(["CE", "PE"]))
+    ]
+    # CURRENT WEEK EXPIRY
+    df["expiry"] = pd.to_datetime(df["expiry"])
+    current_expiry = sorted(df["expiry"].unique())[0]
+    df = df[df["expiry"] == current_expiry]
+    # REQUIRED STRIKES
+    df = df[df["strike"].isin(strikes)]
+    result = []
+    for _, row in df.iterrows():
+        result.append({
+            "symbol": row["tradingsymbol"],
+            "strike": int(row["strike"]),
+            "type": row["instrument_type"],
+            "token": row["instrument_token"],
+            "expiry": str(
+                row["expiry"].date()
+            )
+        })
+    return sorted(
+        result,
+        key=lambda x: (
+            x["strike"],
+            x["type"]
+        )
+    )
 
 def fetch_and_analyze(symbol, name, timeframe, kite_local):
     """
@@ -4457,6 +4498,7 @@ def fetch_and_analyze_option(symbol, strike, option_type, index, expiry, timefra
     Fetch data and analyze (for options)
     """
     try:
+        
         log1(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
         # df = get_historical_data('NFO:' + symbol, timeframe)
         

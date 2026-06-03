@@ -4506,7 +4506,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         
         log1("in option analysis")
         # log1(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
-        df = get_historical_data(item['token'], name, timeframe, kite_local)
+        df = get_historical_data(item['token'], "option", timeframe, kite_local)
         log1(df.tail(5))
         
         # if df is None or len(df) < 2:
@@ -4531,7 +4531,7 @@ def get_historical_data(symbol, name, timeframe, kite_local):
     Get historical OHLCV data from Kite
     """
     try:
-        if "NIFTY" in symbol:
+        if name != "option":
             token = INSTRUMENT_MAP.get(name)
         else:
             token = str(symbol)

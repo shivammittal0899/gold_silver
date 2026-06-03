@@ -4381,10 +4381,10 @@ def get_historical_data(symbol, timeframe, kite_local):
     try:
         log1(f"{symbol} historical data")
         # Get instrument token
-        quote = kite_local.quote(["NSE:NIFTY 50"])
-        token1 = quote['instrument_token']
+        # quote = kite_local.quote(["NSE:NIFTY 50"])
+        # token1 = quote['instrument_token']
         token = INSTRUMENT_MAP.get("NIFTY 50")
-        log1(f"{symbol} token fetched {token1} --- {token}")
+        log1(f"{symbol} token fetched  --- {token}")
 
         
         # Define date range

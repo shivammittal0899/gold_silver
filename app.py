@@ -4305,8 +4305,7 @@ def analyze_index():
         access_token = read_access_token()
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
-        quote = kite_local.quote(['NSE:NIFTY 50'])
-        log1(quote)
+        
         
         data = request.json
         timeframe = data.get('timeframe', '5minute')
@@ -4334,6 +4333,10 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
     """
     try:
         # Get historical data
+        quote = kite_local.quote(['NSE:NIFTY 50'])
+        log1(quote)
+        quote = kite_local.quote([symbol])
+        log1(quote)
         df = get_historical_data(symbol, timeframe, kite_local)
         
         if df is None or len(df) < 2:

@@ -4302,14 +4302,18 @@ def analyze_index():
     Analyze Nifty 50 and Bank Nifty
     """
     try:
+        access_token = read_access_token()
+
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
         data = request.json
         timeframe = data.get('timeframe', '5minute')
         
         # Fetch Nifty 50 data
-        nifty_data = fetch_and_analyze('NSE:NIFTY 50', 'NIFTY 50', timeframe)
+        nifty_data = fetch_and_analyze('NSE:NIFTY 50', 'NIFTY 50', timeframe, kite_local)
         
         # Fetch Bank Nifty data
-        banknifty_data = fetch_and_analyze('NSE:NIFTY BANK', 'BANK NIFTY', timeframe)
+        banknifty_data = fetch_and_analyze('NSE:NIFTY BANK', 'BANK NIFTY', timeframe, kite_local)
         
         return jsonify({
             'status': 'success',
@@ -4322,13 +4326,13 @@ def analyze_index():
         logger.error(f"Error in analyze_index: {e}")
         return jsonify({'status': 'error', 'message': str(e)}), 400
 
-def fetch_and_analyze(symbol, name, timeframe):
+def fetch_and_analyze(symbol, name, timeframe, kite_local):
     """
     Fetch data and analyze
     """
     try:
         # Get historical data
-        df = get_historical_data(symbol, timeframe)
+        df = get_historical_data(symbol, timeframe, kite_local)
         
         if df is None or len(df) < 2:
             return {
@@ -4365,14 +4369,14 @@ def fetch_and_analyze(symbol, name, timeframe):
             'price_tenkan': 0,
         }
 
-def get_historical_data(symbol, timeframe):
+def get_historical_data(symbol, timeframe, kite_local):
     """
     Get historical OHLCV data from Kite
     """
     try:
         log1("historical data")
         # Get instrument token
-        quote = kite.quote(symbol)
+        quote = kite_local.quote(symbol)
         token = quote['instrument_token']
         
         # Define date range
@@ -4380,7 +4384,7 @@ def get_historical_data(symbol, timeframe):
         from_date = to_date - timedelta(days=5)
         
         # Fetch data
-        data = kite.historical_data(
+        data = kite_local.historical_data(
             instrument_token=token,
             from_date=from_date.date(),
             to_date=to_date.date(),

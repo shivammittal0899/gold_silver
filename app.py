@@ -4415,18 +4415,16 @@ def analyze_options():
     
 
 
-def get_option_tokens(kite, strikes, index):
-    instruments = kite.instruments("NFO")
+def get_option_tokens(kite_local, strikes, index):
+    log1("options token")
+    instruments = kite_local.instruments("NFO")
     df = pd.DataFrame(instruments)
     # NIFTY OPTIONS ONLY
-    df = df[
-        (df["name"] == index)
-        &
-        (df["instrument_type"].isin(["CE", "PE"]))
-    ]
+    df = df[(df["name"] == index)&(df["instrument_type"].isin(["CE", "PE"]))]
     # CURRENT WEEK EXPIRY
     df["expiry"] = pd.to_datetime(df["expiry"])
     current_expiry = sorted(df["expiry"].unique())[0]
+    log1(f"this week expiry -- {current_expiry}")
     df = df[df["expiry"] == current_expiry]
     # REQUIRED STRIKES
     df = df[df["strike"].isin(strikes)]

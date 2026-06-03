@@ -4355,19 +4355,27 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         
         # Run analysis
         log1("analysis start here")
-        analysis = stock_data_analysis(df, timeframe)
-        log1("analysis send here")
+        analysis = {
+            'symbol': name,
+            'high': float(df['High'].iloc[-1]),
+            'low': float(df['Low'].iloc[-1]),
+            'open': float(df['Open'].iloc[-1]),
+        }
         log1(analysis)
-        analysis['symbol'] = name
-        log1("analysis add name")
-        analysis['high'] = float(df['High'].iloc[-1])
-        log1("analysis add high")
-        analysis['low'] = float(df['Low'].iloc[-1])
-        log1("analysis add low")
-        analysis['open'] = float(df['Open'].iloc[-1])
-        log1("analysis add open")
-        analysis['volume'] = int(df['Volume'].iloc[-1])
-        log1("analysis add volume")
+        data = stock_data_analysis(df, timeframe)
+        log1("analysis send here")
+        # log1(analysis)
+        analysis.update(data if isinstance(data, dict) else {})
+        # analysis['symbol'] = name
+        # log1("analysis add name")
+        # analysis['high'] = float(df['High'].iloc[-1])
+        # log1("analysis add high")
+        # analysis['low'] = float(df['Low'].iloc[-1])
+        # log1("analysis add low")
+        # analysis['open'] = float(df['Open'].iloc[-1])
+        # log1("analysis add open")
+        # analysis['volume'] = int(df['Volume'].iloc[-1])
+        # log1("analysis add volume")
         log1(analysis)
         return analysis
     

@@ -4342,7 +4342,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         if df is None or len(df) < 2:
             return {
                 'symbol': name,
-                'ltp': 0,
+                'ltp': 1,
                 'return': 0,
                 'high': 0,
                 'low': 0,
@@ -4354,6 +4354,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
             }
         
         # Run analysis
+        log1("analysis start here")
         analysis = stock_data_analysis(df, timeframe)
         analysis['symbol'] = name
         analysis['high'] = float(df['High'].iloc[-1])

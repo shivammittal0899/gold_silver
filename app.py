@@ -4531,367 +4531,367 @@ def not_found(error):
 # =========================
 
 
-from concurrent.futures import ThreadPoolExecutor
+# from concurrent.futures import ThreadPoolExecutor
 
 
-def process_option(row, timeframe):
-    analysis = analyze_option(
-        kite,
-        row["instrument_token"],
-        timeframe
-    )
-    if analysis is None:
-        return None
+# def process_option(row, timeframe):
+#     analysis = analyze_option(
+#         kite,
+#         row["instrument_token"],
+#         timeframe
+#     )
+#     if analysis is None:
+#         return None
 
-    return {
+#     return {
 
-        "symbol": row["tradingsymbol"],
+#         "symbol": row["tradingsymbol"],
 
-        "strike": row["strike"],
+#         "strike": row["strike"],
 
-        "type": row["instrument_type"],
+#         "type": row["instrument_type"],
 
-        "expiry": str(pd.to_datetime(row["expiry"]).date()),
+#         "expiry": str(pd.to_datetime(row["expiry"]).date()),
 
-        **analysis
+#         **analysis
 
-    }
+#     }
 
-@app.route('/analyze_options', methods=['POST'])
-def analyze_options():
+# @app.route('/analyze_options', methods=['POST'])
+# def analyze_options():
 
-    data = request.json
+#     data = request.json
 
-    timeframe = data.get("timeframe", "5minute")
+#     timeframe = data.get("timeframe", "5minute")
 
-    index_type = data.get("index", "NIFTY")
+#     index_type = data.get("index", "NIFTY")
 
-    # =========================
-    # GET OPTIONS
-    # =========================
+#     # =========================
+#     # GET OPTIONS
+#     # =========================
 
-    options_df, options_df_bank = get_nearby_options(kite,index_type)
-    # log1(f"nearby options fetched --- {len(options_df)}")
+#     options_df, options_df_bank = get_nearby_options(kite,index_type)
+#     # log1(f"nearby options fetched --- {len(options_df)}")
 
-    result = []
-    result_bank = []
+#     result = []
+#     result_bank = []
 
-    # =========================
-    # LOOP OPTIONS
-    # =========================
-
-
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = [
-            executor.submit(
-                process_option,
-                row,
-                timeframe
-            )
-            for _, row in options_df.iterrows()
-        ]
-        for future in futures:
-            result_item = future.result()
-            if result_item:
-                result.append(result_item)
-    log1(len(options_df_bank))
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        futures = [
-            executor.submit(
-                process_option,
-                row,
-                timeframe
-            )
-            for _, row in options_df_bank.iterrows()
-        ]
-        for future in futures:
-            result_item = future.result()
-            if result_item:
-                result_bank.append(result_item)
+#     # =========================
+#     # LOOP OPTIONS
+#     # =========================
 
 
+#     with ThreadPoolExecutor(max_workers=5) as executor:
+#         futures = [
+#             executor.submit(
+#                 process_option,
+#                 row,
+#                 timeframe
+#             )
+#             for _, row in options_df.iterrows()
+#         ]
+#         for future in futures:
+#             result_item = future.result()
+#             if result_item:
+#                 result.append(result_item)
+#     log1(len(options_df_bank))
+#     with ThreadPoolExecutor(max_workers=5) as executor:
+#         futures = [
+#             executor.submit(
+#                 process_option,
+#                 row,
+#                 timeframe
+#             )
+#             for _, row in options_df_bank.iterrows()
+#         ]
+#         for future in futures:
+#             result_item = future.result()
+#             if result_item:
+#                 result_bank.append(result_item)
 
-    # for item in result_bank[:5]:
-    #     log1(f"{type(item.get("strike"))}, {item.get("strike")}")
+
+
+#     # for item in result_bank[:5]:
+#     #     log1(f"{type(item.get("strike"))}, {item.get("strike")}")
     
-    # result.sort(
-    #     key=lambda x: (
-    #         int(x.get("strike", 0))
-    #     )
-    # )
-    log1(result)
-    return jsonify({"nifty": result,"banknifty": result_bank})
+#     # result.sort(
+#     #     key=lambda x: (
+#     #         int(x.get("strike", 0))
+#     #     )
+#     # )
+#     log1(result)
+#     return jsonify({"nifty": result,"banknifty": result_bank})
 
-# =========================
-# GET WEEKLY OPTIONS
-# =========================
+# # =========================
+# # GET WEEKLY OPTIONS
+# # =========================
 
-from datetime import datetime
-from collections import defaultdict
-import pandas as pd
-
-
-# =========================
-# GET WEEKLY OPTIONS
-# DIRECT FROM KITE API
-# =========================
-
-import pandas as pd
+# from datetime import datetime
+# from collections import defaultdict
+# import pandas as pd
 
 
-def get_weekly_options(kite_local, index_name="NIFTY"):
+# # =========================
+# # GET WEEKLY OPTIONS
+# # DIRECT FROM KITE API
+# # =========================
 
-    try:
+# import pandas as pd
 
-        # =========================
-        # FETCH DIRECTLY FROM API
-        # =========================
 
-        instruments = kite_local.instruments(exchange="NFO")
+# def get_weekly_options(kite_local, index_name="NIFTY"):
 
-        df = pd.DataFrame(instruments)
+#     try:
 
-        # log1(f"Total Instruments:, {len(df)}")
+#         # =========================
+#         # FETCH DIRECTLY FROM API
+#         # =========================
 
-        df = df[(df["segment"] == "NFO-OPT") & (df["instrument_type"].isin(["CE", "PE"]))]
+#         instruments = kite_local.instruments(exchange="NFO")
 
-        # =========================
-        # FILTER INDEX
-        # =========================
+#         df = pd.DataFrame(instruments)
 
-        if index_name == "NIFTY":
-            df = df[
-                df["tradingsymbol"].str.startswith("NIFTY")
-            ]
-        elif index_name == "BANKNIFTY":
-            df = df[
-                df["tradingsymbol"].str.startswith("BANKNIFTY")
-            ]
-        # log1(f"Total Instruments:, {len(df)}, {df.columns}")
-        # =========================
-        # CONVERT EXPIRY
-        # =========================
+#         # log1(f"Total Instruments:, {len(df)}")
 
-        df["expiry"] = pd.to_datetime(df["expiry"])
+#         df = df[(df["segment"] == "NFO-OPT") & (df["instrument_type"].isin(["CE", "PE"]))]
 
-        # =========================
-        # SORT EXPIRIES
-        # =========================
+#         # =========================
+#         # FILTER INDEX
+#         # =========================
 
-        expiries = sorted(
+#         if index_name == "NIFTY":
+#             df = df[
+#                 df["tradingsymbol"].str.startswith("NIFTY")
+#             ]
+#         elif index_name == "BANKNIFTY":
+#             df = df[
+#                 df["tradingsymbol"].str.startswith("BANKNIFTY")
+#             ]
+#         # log1(f"Total Instruments:, {len(df)}, {df.columns}")
+#         # =========================
+#         # CONVERT EXPIRY
+#         # =========================
 
-            df["expiry"].dropna().unique()
+#         df["expiry"] = pd.to_datetime(df["expiry"])
 
-        )
+#         # =========================
+#         # SORT EXPIRIES
+#         # =========================
 
-        # print("Expiries:", expiries)
+#         expiries = sorted(
 
-        # =========================
-        # NO EXPIRY FOUND
-        # =========================
+#             df["expiry"].dropna().unique()
 
-        if len(expiries) == 0:
+#         )
 
-            log1("No Weekly Expiry Found")
+#         # print("Expiries:", expiries)
 
-            return pd.DataFrame()
+#         # =========================
+#         # NO EXPIRY FOUND
+#         # =========================
 
-        # =========================
-        # PRESENT + NEXT WEEK
-        # =========================
+#         if len(expiries) == 0:
 
-        selected_expiries = expiries[:1]
+#             log1("No Weekly Expiry Found")
 
-        # =========================
-        # FILTER EXPIRIES
-        # =========================
+#             return pd.DataFrame()
 
-        df = df[df["expiry"].isin(selected_expiries)]
+#         # =========================
+#         # PRESENT + NEXT WEEK
+#         # =========================
 
-        # =========================
-        # KEEP IMPORTANT COLUMNS
-        # =========================
+#         selected_expiries = expiries[:1]
 
-        df = df[[
-            "instrument_token",
-            "tradingsymbol",
-            "expiry",
-            "strike",
-            "instrument_type",
-            "lot_size"
-        ]]
+#         # =========================
+#         # FILTER EXPIRIES
+#         # =========================
 
-        print(df.head())
+#         df = df[df["expiry"].isin(selected_expiries)]
 
-        return df
+#         # =========================
+#         # KEEP IMPORTANT COLUMNS
+#         # =========================
 
-    except Exception as e:
+#         df = df[[
+#             "instrument_token",
+#             "tradingsymbol",
+#             "expiry",
+#             "strike",
+#             "instrument_type",
+#             "lot_size"
+#         ]]
 
-        import traceback
+#         print(df.head())
 
-        traceback.print_exc()
+#         return df
 
-        return pd.DataFrame()
+#     except Exception as e:
 
-# =========================
-# SELECT STRIKES
-# =========================
+#         import traceback
 
-def get_nearby_options(kite,index_name="NIFTY"):
-    access_token = read_access_token()
+#         traceback.print_exc()
 
-    kite_local = KiteConnect(api_key=API_KEY)
-    kite_local.set_access_token(access_token)
+#         return pd.DataFrame()
 
-    quote = kite_local.quote(["NSE:NIFTY 50"])
-    quote_bank = kite_local.quote(["NSE:NIFTY BANK"])
-    df = get_weekly_options(kite_local, index_name)
-    df_bank = get_weekly_options(kite_local, "BANKNIFTY")
-    # =========================
-    # GET SPOT PRICE
-    # =========================
+# # =========================
+# # SELECT STRIKES
+# # =========================
 
-    # spot = quote[str(nifty_token)]["last_price"]
-    spot = quote["NSE:NIFTY 50"]["last_price"]
-    spot_bank = quote_bank["NSE:NIFTY BANK"]["last_price"]
+# def get_nearby_options(kite,index_name="NIFTY"):
+#     access_token = read_access_token()
 
-    # =========================
-    # UNIQUE STRIKES
-    # =========================
+#     kite_local = KiteConnect(api_key=API_KEY)
+#     kite_local.set_access_token(access_token)
 
-    # Keep only 100-point strikes
-    strikes = sorted([
-        strike
-        for strike in df["strike"].unique()
-        if strike % 100 == 0
-    ])
-    strikes_bank = sorted([
-        strikes_bank
-        for strikes_bank in df_bank["strike"].unique()
-        if strikes_bank % 100 == 0
-    ])
+#     quote = kite_local.quote(["NSE:NIFTY 50"])
+#     quote_bank = kite_local.quote(["NSE:NIFTY BANK"])
+#     df = get_weekly_options(kite_local, index_name)
+#     df_bank = get_weekly_options(kite_local, "BANKNIFTY")
+#     # =========================
+#     # GET SPOT PRICE
+#     # =========================
 
-    log1(f"100-point strikes: {strikes[:10]}")
+#     # spot = quote[str(nifty_token)]["last_price"]
+#     spot = quote["NSE:NIFTY 50"]["last_price"]
+#     spot_bank = quote_bank["NSE:NIFTY BANK"]["last_price"]
 
-    # =========================
-    # FIND ATM
-    # =========================
+#     # =========================
+#     # UNIQUE STRIKES
+#     # =========================
 
-    atm = min(strikes,key=lambda x: abs(x - spot))
-    atm_index = strikes.index(atm)
-    selected_strikes = strikes[max(0, atm_index - 2):atm_index + 2]
-    df = df[df["strike"].isin(selected_strikes)]
-    # KEEP CE + PE
-    df = df[df["instrument_type"].isin(["CE", "PE"])]
+#     # Keep only 100-point strikes
+#     strikes = sorted([
+#         strike
+#         for strike in df["strike"].unique()
+#         if strike % 100 == 0
+#     ])
+#     strikes_bank = sorted([
+#         strikes_bank
+#         for strikes_bank in df_bank["strike"].unique()
+#         if strikes_bank % 100 == 0
+#     ])
+
+#     log1(f"100-point strikes: {strikes[:10]}")
+
+#     # =========================
+#     # FIND ATM
+#     # =========================
+
+#     atm = min(strikes,key=lambda x: abs(x - spot))
+#     atm_index = strikes.index(atm)
+#     selected_strikes = strikes[max(0, atm_index - 2):atm_index + 2]
+#     df = df[df["strike"].isin(selected_strikes)]
+#     # KEEP CE + PE
+#     df = df[df["instrument_type"].isin(["CE", "PE"])]
     
-    atm = min(strikes_bank,key=lambda x: abs(x - spot_bank))
-    atm_index = strikes_bank.index(atm)
-    selected_strikes = strikes_bank[max(0, atm_index - 2):atm_index + 2]
-    df_bank = df_bank[df_bank["strike"].isin(selected_strikes)]
-    # KEEP CE + PE
-    df_bank = df_bank[df_bank["instrument_type"].isin(["CE", "PE"])]
+#     atm = min(strikes_bank,key=lambda x: abs(x - spot_bank))
+#     atm_index = strikes_bank.index(atm)
+#     selected_strikes = strikes_bank[max(0, atm_index - 2):atm_index + 2]
+#     df_bank = df_bank[df_bank["strike"].isin(selected_strikes)]
+#     # KEEP CE + PE
+#     df_bank = df_bank[df_bank["instrument_type"].isin(["CE", "PE"])]
 
-    return df, df_bank
+#     return df, df_bank
 
-# =========================
-# OPTION ANALYSIS
-# =========================
+# # =========================
+# # OPTION ANALYSIS
+# # =========================
 
-def analyze_option(kite, instrument_token, timeframe):
+# def analyze_option(kite, instrument_token, timeframe):
 
-    try:
+#     try:
 
-        from datetime import datetime, timedelta
-        to_date = datetime.now()
-        from_date = to_date - timedelta(days=5)
-        access_token = read_access_token()
+#         from datetime import datetime, timedelta
+#         to_date = datetime.now()
+#         from_date = to_date - timedelta(days=5)
+#         access_token = read_access_token()
 
-        kite_local = KiteConnect(api_key=API_KEY)
-        kite_local.set_access_token(access_token)
+#         kite_local = KiteConnect(api_key=API_KEY)
+#         kite_local.set_access_token(access_token)
 
-        candles = kite_local.historical_data(
-            instrument_token,
-            from_date,
-            to_date,
-            timeframe,
-            oi=True
-        )
+#         candles = kite_local.historical_data(
+#             instrument_token,
+#             from_date,
+#             to_date,
+#             timeframe,
+#             oi=True
+#         )
         
-        df = pd.DataFrame(candles)
-        if df.empty:
-            return None
-        df.rename(columns={
+#         df = pd.DataFrame(candles)
+#         if df.empty:
+#             return None
+#         df.rename(columns={
 
-            'open':'Open',
-            'high':'High',
-            'low':'Low',
-            'close':'Close',
-            'volume':'Volume',
-            'oi':'OI'
+#             'open':'Open',
+#             'high':'High',
+#             'low':'Low',
+#             'close':'Close',
+#             'volume':'Volume',
+#             'oi':'OI'
 
-        }, inplace=True)
-        latest = df.iloc[-1]
-        oi = 0
-        oi_change = 0
+#         }, inplace=True)
+#         latest = df.iloc[-1]
+#         oi = 0
+#         oi_change = 0
 
-        if len(df) >= 2:
+#         if len(df) >= 2:
 
-            previous = df.iloc[-2]
-            oi = int(latest.get("OI", 0))
-            oi_change = oi - int(previous.get("OI", 0))
-        # =========================
-        # SIMPLE ANALYSIS
-        # =========================
+#             previous = df.iloc[-2]
+#             oi = int(latest.get("OI", 0))
+#             oi_change = oi - int(previous.get("OI", 0))
+#         # =========================
+#         # SIMPLE ANALYSIS
+#         # =========================
         
-        df_analysis, df = stock_data_analysis(df, "1d")
-        # latest = df.iloc[-1]
-        log1("Latest value ------------------")
-        log1(latest)
-        log1("Latest value ------------------ Close")
+#         df_analysis, df = stock_data_analysis(df, "1d")
+#         # latest = df.iloc[-1]
+#         log1("Latest value ------------------")
+#         log1(latest)
+#         log1("Latest value ------------------ Close")
 
-        # trend = "Bullish"
+#         # trend = "Bullish"
 
-        # if latest["close"] < latest["open"]:
+#         # if latest["close"] < latest["open"]:
 
-        #     trend = "Bearish"
+#         #     trend = "Bearish"
 
-        volume_avg = df["Volume"].tail(10).mean()
+#         volume_avg = df["Volume"].tail(10).mean()
 
-        volume_ratio = 0
+#         volume_ratio = 0
 
-        if volume_avg > 0:
+#         if volume_avg > 0:
 
-            volume_ratio = latest["Volume"] / volume_avg
+#             volume_ratio = latest["Volume"] / volume_avg
 
-        # signal = "Normal"
+#         # signal = "Normal"
 
-        # if volume_ratio > 2:
+#         # if volume_ratio > 2:
 
-        #     signal = "High Volume"
-        result = {
+#         #     signal = "High Volume"
+#         result = {
 
-            "ltp": round(latest["Close"], 2),
+#             "ltp": round(latest["Close"], 2),
 
-            "open": round(latest["Open"], 2),
+#             "open": round(latest["Open"], 2),
 
-            "high": round(latest["High"], 2),
+#             "high": round(latest["High"], 2),
 
-            "low": round(latest["Low"], 2),
+#             "low": round(latest["Low"], 2),
 
-            "volume_ratio": round(volume_ratio, 2),
-            "OI": round(oi, 2),
-            "OI_change": round(oi_change, 2)
+#             "volume_ratio": round(volume_ratio, 2),
+#             "OI": round(oi, 2),
+#             "OI_change": round(oi_change, 2)
 
-        }
-        result.update(df_analysis if isinstance(df_analysis, dict) else {})
+#         }
+#         result.update(df_analysis if isinstance(df_analysis, dict) else {})
 
-        return result
+#         return result
 
-    except Exception as e:
+#     except Exception as e:
 
-        log1(f"error in fetching data process -- {e}")
+#         log1(f"error in fetching data process -- {e}")
 
-        return None
+#         return None
 
 
 # ---------------------- MAIN ----------------------

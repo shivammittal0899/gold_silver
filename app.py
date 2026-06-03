@@ -4333,10 +4333,10 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
     """
     try:
         # Get historical data
-        quote = kite_local.quote(['NSE:NIFTY 50'])
-        log1(quote)
-        quote = kite_local.quote([symbol])
-        log1(quote)
+        # quote = kite_local.quote(['NSE:NIFTY 50'])
+        # log1(quote)
+        # quote = kite_local.quote([symbol])
+        # log1(quote)
         df = get_historical_data(symbol, name, timeframe, kite_local)
         
         if df is None or len(df) < 2:
@@ -4356,10 +4356,10 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         # Run analysis
         analysis = stock_data_analysis(df, timeframe)
         analysis['symbol'] = name
-        analysis['high'] = df['High']
-        analysis['low'] = df['Low']
-        analysis['open'] = df['Open']
-        analysis['volume'] = df['Volume']
+        analysis['high'] = float(df['High'].iloc[-1])
+        analysis['low'] = float(df['Low'].iloc[-1])
+        analysis['open'] = float(df['Open'].iloc[-1])
+        analysis['volume'] = int(df['Volume'].iloc[-1])
         return analysis
     
     except Exception as e:

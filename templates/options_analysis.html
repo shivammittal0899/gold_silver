@@ -278,7 +278,7 @@
                 <div class="form-group">
                     <label for="timeframe">Select Timeframe:</label>
                     <select id="timeframe">
-                        <option value="1minute">1 Minute</option>
+                        <option value="minute">1 Minute</option>
                         <option value="5minute" selected>5 Minute</option>
                         <option value="15minute">15 Minute</option>
                         <option value="30minute">30 Minute</option>
@@ -307,6 +307,7 @@
                             <th>Symbol</th>
                             <th>LTP</th>
                             <th>Return %</th>
+                            <th>Return6 %</th>
                             <th>High</th>
                             <th>Low</th>
                             <th>Signal</th>
@@ -419,7 +420,7 @@
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td>${data.symbol}</td>
-                <td><strong>₹${formatNumber(data.ltp)}</strong></td>
+                <td><strong>₹${formatNumber(data.price)}</strong></td>
                 <td class="${data.ret1 >= 0 ? 'positive' : 'negative'}">
                     ${data.ret1 >= 0 ? '+' : ''}${data.ret1}%
                 </td>
@@ -451,13 +452,16 @@
             row.innerHTML = `
                 <td>${data.symbol}</td>
                 <td><strong>₹${formatNumber(data.price)}</strong></td>
-                <td class="${data.return >= 0 ? 'positive' : 'negative'}">
-                    ${data.return >= 0 ? '+' : ''}${data.return.toFixed(2)}%
+                <td class="${data.ret1 >= 0 ? 'positive' : 'negative'}">
+                    ${data.ret1 >= 0 ? '+' : ''}${data.ret1}%
+                </td>
+                <td class="${data.ret6 >= 0 ? 'positive' : 'negative'}">
+                    ${data.ret6 >= 0 ? '+' : ''}${data.ret6}%
                 </td>
                 <td>₹${formatNumber(data.high)}</td>
                 <td>₹${formatNumber(data.low)}</td>
                 <td>${getSignalBadge(data.signal)}</td>
-                <td><strong>${data.hl_trend}</strong></td>
+                <td><strong>${data.trend}</strong></td>
                 <td>₹${formatNumber(data.vwap)}</td>
                 <td>${data.rsi.toFixed(2)}</td>
                 <td>₹${formatNumber(data.price_tenkan)}</td>

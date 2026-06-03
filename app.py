@@ -4507,7 +4507,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         log1("in option analysis")
         # log1(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
         df = get_historical_data(item['token'], name, timeframe, kite_local)
-        log1(df.tail())
+        log1(df.tail(5))
         
         # if df is None or len(df) < 2:
         #     return None
@@ -4535,6 +4535,8 @@ def get_historical_data(symbol, name, timeframe, kite_local):
             token = INSTRUMENT_MAP.get(name)
         else:
             token = symbol
+        
+        log1(token)
         # Define date range
         to_date = datetime.now()
         from_date = to_date - timedelta(days=5)
@@ -4562,8 +4564,6 @@ def get_historical_data(symbol, name, timeframe, kite_local):
             'oi':'OI'
 
         }, inplace=True)
-        # df['date'] = pd.to_datetime(df['date'])
-        # df = df.sort_values('date')
         
         return df
     

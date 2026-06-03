@@ -4404,9 +4404,19 @@ def get_historical_data(symbol, timeframe, kite_local):
         
         # Convert to DataFrame
         df = pd.DataFrame(data)
+        df.rename(columns={
+
+            'open':'Open',
+            'high':'High',
+            'low':'Low',
+            'close':'Close',
+            'volume':'Volume',
+            'oi':'OI'
+
+        }, inplace=True)
         log1(df.tail(5))
-        df['date'] = pd.to_datetime(df['date'])
-        df = df.sort_values('date')
+        # df['date'] = pd.to_datetime(df['date'])
+        # df = df.sort_values('date')
         
         return df
     

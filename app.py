@@ -4362,7 +4362,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
             'open': float(df['Open'].iloc[-1]),
         }
         log1(analysis)
-        data = stock_data_analysis(df, timeframe)
+        data, df = stock_data_analysis(df, timeframe)
         log1("analysis send here")
         # log1(analysis)
         analysis.update(data if isinstance(data, dict) else {})

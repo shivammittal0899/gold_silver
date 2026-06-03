@@ -474,8 +474,11 @@
                 }
 
                 // Update tables
-                updateNiftyTable(data.nifty);
-                updateBankNiftyTable(data.banknifty);
+                // updateNiftyTable(data.nifty);
+                // updateBankNiftyTable(data.banknifty);
+                // Update tables
+                updateIndexTable('niftyTable', data.nifty);
+                updateIndexTable('bankNiftyTable', data.banknifty);
                 // Display strikes
                 displayStrikes('niftyStrikes', data.nifty_strikes);
                 displayStrikes('bankNiftyStrikes', data.banknifty_strikes);
@@ -624,34 +627,34 @@
                 document.getElementById('loading').classList.add('show');
                 document.getElementById('error').classList.remove('show');
 
-                // const response = await fetch('/analyze_options', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({
-                //         selected_strikes: {
-                //             nifty: niftyStrikes,
-                //             banknifty: bankNiftyStrikes
-                //         },
-                //         timeframe: timeframe,
-                //         expiry: expiry
-                //     })
-                // });
+                const response = await fetch('/analyze_options', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        selected_strikes: {
+                            nifty: niftyStrikes,
+                            banknifty: bankNiftyStrikes
+                        },
+                        timeframe: timeframe,
+                        expiry: expiry
+                    })
+                });
 
-                // const data = await response.json();
+                const data = await response.json();
 
-                // if (!response.ok) {
-                //     throw new Error(data.message || 'Analysis failed');
-                // }
+                if (!response.ok) {
+                    throw new Error(data.message || 'Analysis failed');
+                }
 
-                // // Update options tables
-                // updateOptionsTable('niftyOptionsTable', data.nifty_options);
-                // updateOptionsTable('bankNiftyOptionsTable', data.banknifty_options);
+                // Update options tables
+                updateOptionsTable('niftyOptionsTable', data.nifty_options);
+                updateOptionsTable('bankNiftyOptionsTable', data.banknifty_options);
 
-                // // Show options analysis section
-                // document.getElementById('optionsAnalysisSection').style.display = 'block';
+                // Show options analysis section
+                document.getElementById('optionsAnalysisSection').style.display = 'block';
 
-                // document.getElementById('success').textContent = `✅ Options analyzed`;
-                // document.getElementById('success').classList.add('show');
+                document.getElementById('success').textContent = `✅ Options analyzed`;
+                document.getElementById('success').classList.add('show');
 
             } catch (error) {
                 console.error(error);

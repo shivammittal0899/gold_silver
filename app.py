@@ -4357,6 +4357,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         log1("analysis start here")
         analysis = stock_data_analysis(df, timeframe)
         log1("analysis send here")
+        log1(analysis)
         analysis['symbol'] = name
         analysis['high'] = float(df['High'].iloc[-1])
         analysis['low'] = float(df['Low'].iloc[-1])

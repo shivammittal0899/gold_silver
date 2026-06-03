@@ -4314,7 +4314,7 @@ def analyze_index():
         nifty_data = fetch_and_analyze('NSE:NIFTY 50', 'NIFTY 50', timeframe, kite_local)
         
         # Fetch Bank Nifty data
-        banknifty_data = fetch_and_analyze('NSE:NIFTY BANK', 'BANK NIFTY', timeframe, kite_local)
+        banknifty_data = fetch_and_analyze('NSE:NIFTY BANK', 'NIFTY BANK', timeframe, kite_local)
         
         return jsonify({
             'status': 'success',
@@ -4337,7 +4337,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         log1(quote)
         quote = kite_local.quote([symbol])
         log1(quote)
-        df = get_historical_data(symbol, timeframe, kite_local)
+        df = get_historical_data(symbol, name, timeframe, kite_local)
         
         if df is None or len(df) < 2:
             return {
@@ -4377,7 +4377,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
             'price_tenkan': 0,
         }
 
-def get_historical_data(symbol, timeframe, kite_local):
+def get_historical_data(symbol, name, timeframe, kite_local):
     """
     Get historical OHLCV data from Kite
     """
@@ -4386,7 +4386,7 @@ def get_historical_data(symbol, timeframe, kite_local):
         # Get instrument token
         # quote = kite_local.quote(["NSE:NIFTY 50"])
         # token1 = quote['instrument_token']
-        token = INSTRUMENT_MAP.get("NIFTY 50")
+        token = INSTRUMENT_MAP.get(name)
         log1(f"{symbol} token fetched  --- {token}")
 
         

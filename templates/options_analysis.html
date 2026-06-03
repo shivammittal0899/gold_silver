@@ -421,10 +421,10 @@
                 <td>${data.symbol}</td>
                 <td><strong>₹${formatNumber(data.ltp)}</strong></td>
                 <td class="${data.ret1 >= 0 ? 'positive' : 'negative'}">
-                    ${data.ret1 >= 0 ? '+' : ''}${data.ret1.toFixed(2)}%
+                    ${data.ret1 >= 0 ? '+' : ''}${data.ret1}%
                 </td>
                 <td class="${data.ret6 >= 0 ? 'positive' : 'negative'}">
-                    ${data.ret6 >= 0 ? '+' : ''}${data.ret6.toFixed(2)}%
+                    ${data.ret6 >= 0 ? '+' : ''}${data.ret6}%
                 </td>
                 <td>₹${formatNumber(data.high)}</td>
                 <td>₹${formatNumber(data.low)}</td>

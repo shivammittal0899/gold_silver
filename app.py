@@ -4376,7 +4376,7 @@ def get_historical_data(symbol, timeframe):
         
         # Define date range
         to_date = datetime.now()
-        from_date = to_date - timedelta(days=30)
+        from_date = to_date - timedelta(days=5)
         
         # Fetch data
         data = kite.historical_data(
@@ -4391,6 +4391,7 @@ def get_historical_data(symbol, timeframe):
         
         # Convert to DataFrame
         df = pd.DataFrame(data)
+        log1(df.tail(5))
         df['date'] = pd.to_datetime(df['date'])
         df = df.sort_values('date')
         

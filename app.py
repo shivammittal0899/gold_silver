@@ -4534,7 +4534,7 @@ def get_historical_data(symbol, name, timeframe, kite_local):
         if name != "option":
             token = INSTRUMENT_MAP.get(name)
         else:
-            token = str(symbol)
+            token = (symbol)
         
         log1(token)
         # Define date range
@@ -4543,7 +4543,7 @@ def get_historical_data(symbol, name, timeframe, kite_local):
         
         # Fetch data
         data = kite_local.historical_data(
-            instrument_token=token,
+            instrument_token=int(token),
             from_date=from_date.date(),
             to_date=to_date.date(),
             interval=timeframe

@@ -4374,10 +4374,11 @@ def get_historical_data(symbol, timeframe, kite_local):
     Get historical OHLCV data from Kite
     """
     try:
-        log1("historical data")
+        log1(f"{symbol} historical data")
         # Get instrument token
-        quote = kite_local.quote(symbol)
+        quote = kite_local.quote([symbol])
         token = quote['instrument_token']
+        log1(f"{symbol} token fetched")
         
         # Define date range
         to_date = datetime.now()

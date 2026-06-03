@@ -4346,6 +4346,7 @@ def analyze_index():
         banknifty_strikes = get_nearby_strikes(banknifty_atm, count=5, interval=100)
         
         expiry = get_nifty_expiry()
+        log1(expiry)
         return jsonify({
             'status': 'success',
             'nifty': nifty_data,

@@ -4338,7 +4338,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         # quote = kite_local.quote([symbol])
         # log1(quote)
         df = get_historical_data(symbol, name, timeframe, kite_local)
-        log1(df.tail(5))
+        # log1(df.tail(5))
         if df is None or len(df) < 2:
             return {
                 'symbol': name,
@@ -4359,10 +4359,15 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         log1("analysis send here")
         log1(analysis)
         analysis['symbol'] = name
+        log1("analysis add name")
         analysis['high'] = float(df['High'].iloc[-1])
+        log1("analysis add high")
         analysis['low'] = float(df['Low'].iloc[-1])
+        log1("analysis add low")
         analysis['open'] = float(df['Open'].iloc[-1])
+        log1("analysis add open")
         analysis['volume'] = int(df['Volume'].iloc[-1])
+        log1("analysis add volume")
         log1(analysis)
         return analysis
     

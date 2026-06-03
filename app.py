@@ -4534,7 +4534,7 @@ def get_historical_data(symbol, name, timeframe, kite_local):
         if "NIFTY" in symbol:
             token = INSTRUMENT_MAP.get(name)
         else:
-            token = symbol
+            token = str(symbol)
         
         log1(token)
         # Define date range

@@ -4360,6 +4360,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         analysis['low'] = float(df['Low'].iloc[-1])
         analysis['open'] = float(df['Open'].iloc[-1])
         analysis['volume'] = int(df['Volume'].iloc[-1])
+        log1(analysis)
         return analysis
     
     except Exception as e:

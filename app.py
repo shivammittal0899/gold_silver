@@ -4425,7 +4425,7 @@ def update_option_master(kite_local):
                     ins["lot_size"]
                 )
             )
-
+    create_option_master_db()
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 

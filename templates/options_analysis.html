@@ -295,9 +295,15 @@
                     </select>
                 </div>
 
-                <button class="btn btn-primary" onclick="analyzeIndexes()">
-                    🔄 Analyze Now
+                <button class="btn btn-primary" onclick="startLiveAnalysis()">
+                    🔴 START LIVE
                 </button>
+                
+                <button class="btn btn-danger" id="stopBtn" onclick="stopLiveAnalysis()" disabled>
+                    ⏹️ STOP
+                </button>
+                
+                <span class="status-badge stopped" id="statusBadge">OFFLINE</span>
             </div>
 
             <div class="loading" id="loading">⏳ Analyzing indexes...</div>
@@ -409,6 +415,78 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="niftySelectedInfo" style="background:#f8f9fa;padding:10px;margin-top:15px;border-radius:6px;display:none;">
+                    <strong>Selected:</strong>
+                    <div id="niftySelectedList" style="margin-top:8px;"></div>
+                </div>
+
+                <!-- NIFTY PARAMETERS -->
+                <div class="param-section">
+                    <h4 style="margin-top:0;">Automation Parameters</h4>
+                    <div class="param-grid">
+                        <div class="param-input">
+                            <label>Quantity</label>
+                            <input type="number" id="niftyQty" value="1" min="1">
+                        </div>
+                        <div class="param-input">
+                            <label>Risk %</label>
+                            <input type="number" id="niftyRisk" value="1" min="0.1" step="0.1">
+                        </div>
+                        <div class="param-input">
+                            <label>Target Type</label>
+                            <select id="niftyTargetType">
+                                <option value="fixed">Fixed Target</option>
+                                <option value="none">No Target</option>
+                            </select>
+                        </div>
+                        <div class="param-input">
+                            <label>Target %</label>
+                            <input type="number" id="niftyTarget" value="30" min="5">
+                        </div>
+                        <div class="param-input">
+                            <label>SL Base</label>
+                            <select id="niftySLBase">
+                                <option value="ema">EMA</option>
+                                <option value="tenkan">Tenkan</option>
+                                <option value="kijun" selected>Kijun</option>
+                            </select>
+                        </div>
+                        <div class="param-input">
+                            <label>SL %</label>
+                            <input type="number" id="niftySLPercent" value="5" min="1" step="0.5">
+                        </div>
+                        <div class="param-input">
+                            <label>SL Cap (₹)</label>
+                            <input type="number" id="niftySLCap" value="0" min="0">
+                        </div>
+                        <div class="param-input">
+                            <label>Refresh (s)</label>
+                            <input type="number" id="niftyRefresh" value="60" min="10" step="10">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NIFTY STATUS -->
+                <div class="status-display">
+                    <div class="status-box">
+                        <div class="label">Status</div>
+                        <div class="value" id="niftyStatus">STOPPED</div>
+                    </div>
+                    <div class="status-box">
+                        <div class="label">Position</div>
+                        <div class="value" id="niftyPosition">NONE</div>
+                    </div>
+                    <div class="status-box">
+                        <div class="label">Total P&L</div>
+                        <div class="value" id="niftyPnL">₹0</div>
+                    </div>
+                </div>
+
+                <!-- NIFTY CONTROLS -->
+                <div class="control-buttons">
+                    <button class="btn btn-success" onclick="startNiftyAutomation()">▶️ START</button>
+                    <button class="btn btn-danger" id="niftyStopBtn" onclick="stopNiftyAutomation()" disabled>⏹️ STOP</button>
+                </div>
             </div>
 
             <!-- Bank Nifty Options -->
@@ -440,12 +518,88 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="bankNiftySelectedInfo" style="background:#f8f9fa;padding:10px;margin-top:15px;border-radius:6px;display:none;">
+                    <strong>Selected:</strong>
+                    <div id="bankNiftySelectedList" style="margin-top:8px;"></div>
+                </div>
+
+                <!-- BANK NIFTY PARAMETERS -->
+                <div class="param-section">
+                    <h4 style="margin-top:0;">Automation Parameters</h4>
+                    <div class="param-grid">
+                        <div class="param-input">
+                            <label>Quantity</label>
+                            <input type="number" id="bankNiftyQty" value="1" min="1">
+                        </div>
+                        <div class="param-input">
+                            <label>Risk %</label>
+                            <input type="number" id="bankNiftyRisk" value="1" min="0.1" step="0.1">
+                        </div>
+                        <div class="param-input">
+                            <label>Target Type</label>
+                            <select id="bankNiftyTargetType">
+                                <option value="fixed">Fixed Target</option>
+                                <option value="none">No Target</option>
+                            </select>
+                        </div>
+                        <div class="param-input">
+                            <label>Target %</label>
+                            <input type="number" id="bankNiftyTarget" value="30" min="5">
+                        </div>
+                        <div class="param-input">
+                            <label>SL Base</label>
+                            <select id="bankNiftySLBase">
+                                <option value="ema">EMA</option>
+                                <option value="tenkan">Tenkan</option>
+                                <option value="kijun" selected>Kijun</option>
+                            </select>
+                        </div>
+                        <div class="param-input">
+                            <label>SL %</label>
+                            <input type="number" id="bankNiftySLPercent" value="5" min="1" step="0.5">
+                        </div>
+                        <div class="param-input">
+                            <label>SL Cap (₹)</label>
+                            <input type="number" id="bankNiftySLCap" value="0" min="0">
+                        </div>
+                        <div class="param-input">
+                            <label>Refresh (s)</label>
+                            <input type="number" id="bankNiftyRefresh" value="60" min="10" step="10">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BANK NIFTY STATUS -->
+                <div class="status-display">
+                    <div class="status-box">
+                        <div class="label">Status</div>
+                        <div class="value" id="bankNiftyStatus">STOPPED</div>
+                    </div>
+                    <div class="status-box">
+                        <div class="label">Position</div>
+                        <div class="value" id="bankNiftyPosition">NONE</div>
+                    </div>
+                    <div class="status-box">
+                        <div class="label">Total P&L</div>
+                        <div class="value" id="bankNiftyPnL">₹0</div>
+                    </div>
+                </div>
+
+                <!-- BANK NIFTY CONTROLS -->
+                <div class="control-buttons">
+                    <button class="btn btn-success" onclick="startBankNiftyAutomation()">▶️ START</button>
+                    <button class="btn btn-danger" id="bankNiftyStopBtn" onclick="stopBankNiftyAutomation()" disabled>⏹️ STOP</button>
+                </div>
             </div>
         </div>
 
     </div>
 
     <script>
+        let liveAnalysisRunning = false;
+        let liveUpdateInterval = null;
+        let statusUpdateInterval = null;
+        
         // Analyze Indexes
         async function analyzeIndexes() {
             try {
@@ -473,9 +627,6 @@
                     throw new Error(data.message || 'Analysis failed');
                 }
 
-                // Update tables
-                // updateNiftyTable(data.nifty);
-                // updateBankNiftyTable(data.banknifty);
                 // Update tables
                 updateIndexTable('niftyTable', data.nifty);
                 updateIndexTable('bankNiftyTable', data.banknifty);

@@ -4339,13 +4339,13 @@ def create_option_master_db():
     """)
 
     cursor.execute("""
-    CREATE INDEX IF NOT EXISTS idx_underlying_expiry
-    ON option_master(underlying, expiry)
+    CREATE INDEX IF NOT EXISTS idx_index_name_expiry
+    ON option_master(index_name, expiry)
     """)
 
     cursor.execute("""
-    CREATE INDEX IF NOT EXISTS idx_underlying_strike
-    ON option_master(underlying, strike)
+    CREATE INDEX IF NOT EXISTS idx_index_name_strike
+    ON option_master(index_name, strike)
     """)
 
     conn.commit()

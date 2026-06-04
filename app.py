@@ -4286,6 +4286,199 @@ def refresh_fundamentals():
             "message": str(e)
 
         })
+    
+# import sqlite3
+from pathlib import Path
+
+DB_PATH = "option_master.db"
+
+def create_option_master_db():
+    """
+    Create option master database and indexes if not exists.
+    """
+
+    Path(DB_PATH).touch(exist_ok=True)
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS option_master (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        index_name TEXT NOT NULL,
+        symbol TEXT NOT NULL,
+
+        strike REAL NOT NULL,
+        expiry TEXT NOT NULL,
+
+        option_type TEXT NOT NULL,
+
+        token INTEGER NOT NULL UNIQUE,
+
+        exchange TEXT,
+        lot_size INTEGER,
+
+        last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_index_name
+    ON option_master(index_name)
+    """)
+
+    cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_token
+    ON option_master(token)
+    """)
+
+    cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_expiry
+    ON option_master(expiry)
+    """)
+
+    cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_underlying_expiry
+    ON option_master(underlying, expiry)
+    """)
+
+    cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_underlying_strike
+    ON option_master(underlying, strike)
+    """)
+
+    conn.commit()
+    conn.close()
+
+    print("✅ option_master database initialized")
+
+@app.route('/refresh_option_master', methods=['POST'])
+def refresh_option_master():
+
+    try:
+        access_token = read_access_token()
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
+
+        records_saved = update_option_master(kite_local)
+
+        return jsonify({
+            "success": True,
+            "records_saved": records_saved
+        })
+
+    except Exception as e:
+
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
+
+
+def update_option_master(kite_local):
+
+    instruments = kite_local.instruments("NFO")
+
+    # Find nearest expiry for each index
+    nifty_expiry = None
+    banknifty_expiry = None
+
+    for ins in instruments:
+
+        if ins["segment"] != "NFO-OPT":
+            continue
+
+        if ins["name"] == "NIFTY":
+            if nifty_expiry is None or ins["expiry"] < nifty_expiry:
+                nifty_expiry = ins["expiry"]
+
+        elif ins["name"] == "BANKNIFTY":
+            if banknifty_expiry is None or ins["expiry"] < banknifty_expiry:
+                banknifty_expiry = ins["expiry"]
+
+    rows = []
+
+    for ins in instruments:
+
+        if ins["segment"] != "NFO-OPT":
+            continue
+
+        # Save only nearest expiry
+        if (
+            ins["name"] == "NIFTY"
+            and ins["expiry"] == nifty_expiry
+        ) or (
+            ins["name"] == "BANKNIFTY"
+            and ins["expiry"] == banknifty_expiry
+        ):
+
+            rows.append(
+                (
+                    ins["name"],
+                    ins["tradingsymbol"],
+                    ins["strike"],
+                    str(ins["expiry"]),
+                    ins["instrument_type"],
+                    ins["instrument_token"],
+                    ins["exchange"],
+                    ins["lot_size"]
+                )
+            )
+
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+
+    # Replace old data
+    cur.execute("DELETE FROM option_master")
+
+    cur.executemany("""
+        INSERT INTO option_master(
+            index_name,
+            symbol,
+            strike,
+            expiry,
+            option_type,
+            token,
+            exchange,
+            lot_size,
+            last_updated
+        )
+        VALUES(
+            ?,?,?,?,?,?,?,?,
+            CURRENT_TIMESTAMP
+        )
+    """, rows)
+
+    conn.commit()
+
+    count = len(rows)
+
+    conn.close()
+
+    log1(f"Saved {count} latest expiry contracts {rows}")
+
+    return count
+
+def get_token(index_name, strike, option_type):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT token
+        FROM option_master
+        WHERE underlying=?
+        AND strike=?
+        AND option_type=?
+    """, (index_name, strike, option_type))
+
+    row = cursor.fetchone()
+
+    conn.close()
+
+    return row[0] if row else None
+
+
 import logging
 
 logging.basicConfig(level=logging.INFO)
@@ -4312,7 +4505,7 @@ def get_nearby_strikes(atm_strike, count=5, interval=100):
     return sorted(strikes)
 
 
-    
+
 
 @app.route('/options_analysis')
 def options_analysis():

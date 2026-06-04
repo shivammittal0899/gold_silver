@@ -87,6 +87,7 @@
             color: white;
         }
 
+        
         .btn-primary:hover {
             background: #5568d3;
             transform: translateY(-2px);
@@ -98,6 +99,14 @@
             cursor: not-allowed;
             transform: none;
         }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }   
 
         /* Analysis Section */
         .analysis-section {
@@ -295,9 +304,15 @@
                     </select>
                 </div>
 
-                <button class="btn btn-primary" onclick="analyzeIndexes()">
-                    🔄 Analyze Now
-                </button>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button class="btn btn-primary" onclick="analyzeIndexes()">
+                        🔄 Analyze Now
+                    </button>
+
+                    <button class="btn btn-success" onclick="refreshMasterData()">
+                        💾 Refresh & Save Master Data
+                    </button>
+                </div>
             </div>
 
             <div class="loading" id="loading">⏳ Analyzing indexes...</div>
@@ -590,6 +605,43 @@
     </div>
 
     <script>
+
+        async function refreshMasterData() {
+            try {
+
+                document.getElementById('loading').classList.add('show');
+
+                const response = await fetch('/refresh_option_master', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message);
+                }
+
+                document.getElementById('success').textContent =
+                    `✅ Saved ${data.records_saved} option contracts`;
+
+                document.getElementById('success').classList.add('show');
+
+            } catch(error) {
+
+                document.getElementById('error').textContent =
+                    `❌ ${error.message}`;
+
+                document.getElementById('error').classList.add('show');
+
+            } finally {
+
+                document.getElementById('loading').classList.remove('show');
+
+            }
+        }
         // Analyze Indexes
         async function analyzeIndexes() {
             try {

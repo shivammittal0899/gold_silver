@@ -295,15 +295,9 @@
                     </select>
                 </div>
 
-                <button class="btn btn-primary" onclick="startLiveAnalysis()">
-                    🔴 START LIVE
+                <button class="btn btn-primary" onclick="analyzeIndexes()">
+                    🔄 Analyze Now
                 </button>
-                
-                <button class="btn btn-danger" id="stopBtn" onclick="stopLiveAnalysis()" disabled>
-                    ⏹️ STOP
-                </button>
-                
-                <span class="status-badge stopped" id="statusBadge">OFFLINE</span>
             </div>
 
             <div class="loading" id="loading">⏳ Analyzing indexes...</div>
@@ -596,10 +590,6 @@
     </div>
 
     <script>
-        let liveAnalysisRunning = false;
-        let liveUpdateInterval = null;
-        let statusUpdateInterval = null;
-        
         // Analyze Indexes
         async function analyzeIndexes() {
             try {
@@ -627,6 +617,9 @@
                     throw new Error(data.message || 'Analysis failed');
                 }
 
+                // Update tables
+                // updateNiftyTable(data.nifty);
+                // updateBankNiftyTable(data.banknifty);
                 // Update tables
                 updateIndexTable('niftyTable', data.nifty);
                 updateIndexTable('bankNiftyTable', data.banknifty);

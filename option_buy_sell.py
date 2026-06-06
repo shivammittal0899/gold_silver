@@ -125,7 +125,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         log2(f"data analysis -- {analysis}")
         analysis['symbol'] = symbol
         analysis['strike'] = item['strike']
-        analysis['type'] = item['type']
+        analysis['type'] = item['option_type']
         analysis['expiry'] = item['expiry']
         log2(analysis)
         return analysis

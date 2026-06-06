@@ -4289,71 +4289,12 @@ def refresh_fundamentals():
         })
     
 # import sqlite3
-from pathlib import Path
+# from pathlib import Path
 
 from option_buy_sell import *
 from db import create_tables
 DB_PATH = "options_automation.db"
-def create_option_master_db1():
-    """
-    Create option master database and indexes if not exists.
-    """
 
-    Path(DB_PATH).touch(exist_ok=True)
-
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS option_master (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-        index_name TEXT NOT NULL,
-        symbol TEXT NOT NULL,
-
-        strike REAL NOT NULL,
-        expiry TEXT NOT NULL,
-
-        option_type TEXT NOT NULL,
-
-        token INTEGER NOT NULL UNIQUE,
-
-        exchange TEXT,
-        lot_size INTEGER,
-
-        last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-    """)
-
-    cursor.execute("""
-    CREATE INDEX IF NOT EXISTS idx_index_name
-    ON option_master(index_name)
-    """)
-
-    cursor.execute("""
-    CREATE INDEX IF NOT EXISTS idx_token
-    ON option_master(token)
-    """)
-
-    cursor.execute("""
-    CREATE INDEX IF NOT EXISTS idx_expiry
-    ON option_master(expiry)
-    """)
-
-    cursor.execute("""
-    CREATE INDEX IF NOT EXISTS idx_index_name_expiry
-    ON option_master(index_name, expiry)
-    """)
-
-    cursor.execute("""
-    CREATE INDEX IF NOT EXISTS idx_index_name_strike
-    ON option_master(index_name, strike)
-    """)
-
-    conn.commit()
-    conn.close()
-
-    print("✅ option_master database initialized")
 
 @app.route('/refresh_option_master', methods=['POST'])
 def refresh_option_master():

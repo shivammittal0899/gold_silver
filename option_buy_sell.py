@@ -373,8 +373,8 @@ def process_index(kite_local, index_name,settings):
     try:
 
         # No entries after market cutoff
-        if not market_open_for_entries():
-            return
+        # if not market_open_for_entries():
+        #     return
         # Check existing position
         position = has_open_position(index_name)
         if position:

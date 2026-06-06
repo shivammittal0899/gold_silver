@@ -4303,7 +4303,7 @@ def refresh_option_master():
         access_token = read_access_token()
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
-
+        create_tables()
         records_saved = update_option_master(kite_local)
 
         return jsonify({

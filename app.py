@@ -4526,7 +4526,6 @@ def analyze_options():
         
         nifty_options = selected_strikes.get('nifty', [])
         banknifty_options = selected_strikes.get('banknifty', [])
-        log1(nifty_options)
         access_token = read_access_token()
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
@@ -4541,7 +4540,6 @@ def analyze_options():
             analysis = fetch_and_analyze_option(kite_local, item, 'NIFTY', timeframe)
             if analysis:
                 nifty_analysis.append(analysis)
-        log1(nifty_analysis)
         
         # Analyze Bank Nifty options
         banknifty_analysis = []
@@ -4549,7 +4547,6 @@ def analyze_options():
             analysis = fetch_and_analyze_option(kite_local, item, 'BANKNIFTY', timeframe)
             if analysis:
                 banknifty_analysis.append(analysis)
-        log1(banknifty_analysis)
         
         return jsonify({
             'status': 'success',
@@ -4569,17 +4566,16 @@ def analyze_options():
 )
 def start_automation():
     try:
+        log1("options_automation_start")
         data = request.json
-
         index_name = data["index_name"]
-
         if automation_flags.get(index_name):
             return jsonify({
                 "status":"error",
                 "message":
                 f"{index_name} already running"
             })
-
+        log1(data)
         save_automation_settings(data)
         automation_flags[index_name] = True
         thread = threading.Thread(

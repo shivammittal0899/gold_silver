@@ -4537,6 +4537,7 @@ def analyze_options():
         # Analyze Nifty options
         nifty_analysis = []
         for item in nifty_strike:
+            log1(item)
             analysis = fetch_and_analyze_option(kite_local, item, 'NIFTY', timeframe)
             if analysis:
                 nifty_analysis.append(analysis)

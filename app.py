@@ -4530,6 +4530,7 @@ def analyze_index():
     Analyze Nifty 50 and Bank Nifty
     """
     try:
+        log1("analysis of index start here")
         access_token = read_access_token()
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
@@ -4540,12 +4541,13 @@ def analyze_index():
         
         # Fetch Nifty 50 data
         nifty_data = fetch_and_analyze('NSE:NIFTY 50', 'NIFTY 50', timeframe, kite_local)
-        
         # Fetch Bank Nifty data
         banknifty_data = fetch_and_analyze('NSE:NIFTY BANK', 'NIFTY BANK', timeframe, kite_local)
+        log1(f"{nifty_data}  ---  {banknifty_data}")
         # Get ATM and nearby strikes
         nifty_atm = get_atm_strike(nifty_data['price'], 100)
         banknifty_atm = get_atm_strike(banknifty_data['price'], 100)
+        log1(f"{nifty_atm}  ---  {banknifty_atm}")
         
         nifty_strikes = get_nearby_strikes(nifty_atm, count=5, interval=100)
         banknifty_strikes = get_nearby_strikes(banknifty_atm, count=5, interval=100)

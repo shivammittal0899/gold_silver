@@ -64,6 +64,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
     Fetch data and analyze
     """
     try:
+        log2("fetch and analysis of index start here")
         # Get historical data
         df = get_historical_data(symbol, name, timeframe, kite_local)
         if df is None or len(df) < 2:
@@ -172,7 +173,7 @@ def get_historical_data(symbol, name, timeframe, kite_local):
             'oi':'OI'
 
         }, inplace=True)
-        
+        log2(f"sending historical data of index {df.columns}")
         return df
     
     except Exception as e:

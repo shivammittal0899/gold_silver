@@ -4292,8 +4292,8 @@ def refresh_fundamentals():
 from pathlib import Path
 
 from option_buy_sell import *
-DB_PATH = "option_master.db"
-
+from db import create_tables
+DB_PATH = "options_automation.db"
 def create_option_master_db1():
     """
     Create option master database and indexes if not exists.
@@ -4354,8 +4354,7 @@ def create_option_master_db1():
     conn.close()
 
     print("✅ option_master database initialized")
-from db import create_tables
-DB_PATH = "options_automation.db"
+
 @app.route('/refresh_option_master', methods=['POST'])
 def refresh_option_master():
 

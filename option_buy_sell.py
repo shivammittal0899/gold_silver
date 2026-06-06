@@ -160,7 +160,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             'expiry': item['expiry'],
             'token': item['token'],
         }
-        log1(analysis)
+        log2(analysis)
         data, df = stock_data_analysis(df, timeframe)
         analysis.update(data if isinstance(data, dict) else {})
         return analysis

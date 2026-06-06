@@ -4379,89 +4379,89 @@ def refresh_option_master():
         }), 500
 
 
-# def update_option_master(kite_local):
+def update_option_master(kite_local):
 
-#     instruments = kite_local.instruments("NFO")
+    instruments = kite_local.instruments("NFO")
 
-#     # Find nearest expiry for each index
-#     nifty_expiry = None
-#     banknifty_expiry = None
+    # Find nearest expiry for each index
+    nifty_expiry = None
+    banknifty_expiry = None
 
-#     for ins in instruments:
+    for ins in instruments:
 
-#         if ins["segment"] != "NFO-OPT":
-#             continue
+        if ins["segment"] != "NFO-OPT":
+            continue
 
-#         if ins["name"] == "NIFTY":
-#             if nifty_expiry is None or ins["expiry"] < nifty_expiry:
-#                 nifty_expiry = ins["expiry"]
+        if ins["name"] == "NIFTY":
+            if nifty_expiry is None or ins["expiry"] < nifty_expiry:
+                nifty_expiry = ins["expiry"]
 
-#         elif ins["name"] == "BANKNIFTY":
-#             if banknifty_expiry is None or ins["expiry"] < banknifty_expiry:
-#                 banknifty_expiry = ins["expiry"]
+        elif ins["name"] == "BANKNIFTY":
+            if banknifty_expiry is None or ins["expiry"] < banknifty_expiry:
+                banknifty_expiry = ins["expiry"]
 
-#     rows = []
+    rows = []
 
-#     for ins in instruments:
+    for ins in instruments:
 
-#         if ins["segment"] != "NFO-OPT":
-#             continue
+        if ins["segment"] != "NFO-OPT":
+            continue
 
-#         # Save only nearest expiry
-#         if (
-#             ins["name"] == "NIFTY"
-#             and ins["expiry"] == nifty_expiry
-#         ) or (
-#             ins["name"] == "BANKNIFTY"
-#             and ins["expiry"] == banknifty_expiry
-#         ):
+        # Save only nearest expiry
+        if (
+            ins["name"] == "NIFTY"
+            and ins["expiry"] == nifty_expiry
+        ) or (
+            ins["name"] == "BANKNIFTY"
+            and ins["expiry"] == banknifty_expiry
+        ):
 
-#             rows.append(
-#                 (
-#                     ins["tradingsymbol"],
-#                     ins["name"],
-#                     ins["strike"],
-#                     ins["instrument_type"],
-#                     str(ins["expiry"]),
-#                     ins["instrument_token"],
-#                     ins["exchange"],
-#                     ins["lot_size"]
-#                 )
-#             )
-#     # create_option_master_db()
-#     conn = sqlite3.connect(DB_PATH)
-#     cur = conn.cursor()
+            rows.append(
+                (
+                    ins["tradingsymbol"],
+                    ins["name"],
+                    ins["strike"],
+                    ins["instrument_type"],
+                    str(ins["expiry"]),
+                    ins["instrument_token"],
+                    ins["exchange"],
+                    ins["lot_size"]
+                )
+            )
+    # create_option_master_db()
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
 
-#     # Replace old data
-#     cur.execute("DELETE FROM option_master")
+    # Replace old data
+    cur.execute("DELETE FROM option_master")
 
-#     cur.executemany("""
-#         INSERT INTO option_master(
-#             symbol,
-#             index_name,
-#             strike,
-#             option_type,
-#             expiry,
-#             token,
-#             exchange,
-#             lot_size,
-#             last_updated
-#         )
-#         VALUES(
-#             ?,?,?,?,?,?,?,?,
-#             CURRENT_TIMESTAMP
-#         )
-#     """, rows)
+    cur.executemany("""
+        INSERT INTO option_master(
+            symbol,
+            index_name,
+            strike,
+            option_type,
+            expiry,
+            token,
+            exchange,
+            lot_size,
+            last_updated
+        )
+        VALUES(
+            ?,?,?,?,?,?,?,?,
+            CURRENT_TIMESTAMP
+        )
+    """, rows)
 
-#     conn.commit()
+    conn.commit()
 
-#     count = len(rows)
+    count = len(rows)
 
-#     conn.close()
+    conn.close()
 
-#     log1(f"Saved {count} latest expiry contracts {rows}")
+    log1(f"Saved {count} latest expiry contracts {rows}")
 
-#     return count
+    return count
 
 def get_tokens(strikes, index_name):
     log1("get tokens")

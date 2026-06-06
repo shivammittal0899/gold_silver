@@ -344,12 +344,13 @@ def automation_loop(index_name):
     kite_local = KiteConnect(api_key=API_KEY)
     kite_local.set_access_token(access_token)
     settings = get_automation_settings(index_name)
+
     if not settings:
         logger.info(
             f"{index_name} settings not found"
         )
         automation_flags[index_name] = False
-
+    log2(f"settings --- {settings}")
     while automation_flags.get(index_name, False):
         try:
             log2("in automation loop --- looping")
@@ -427,11 +428,11 @@ def process_index(kite_local, index_name,settings):
                 index_name,
                 timeframe
             )
-
             nifty_data = nifty_index.result()
             banknifty_data = banknifty_index.result()
             ce_data = ce_future.result()
             pe_data = pe_future.result()
+            log2(f"nifty data -- {nifty_data}")
 
         run_entry_scan(
             index_name,

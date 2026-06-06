@@ -605,7 +605,8 @@
     </div>
 
     <script>
-
+        let niftyOptionsData = [];
+        let bankniftyOptionsData = [];
         async function refreshMasterData() {
             try {
 
@@ -842,6 +843,8 @@
                 }
 
                 // Update options tables
+                niftyOptionsData = data.nifty_options
+                bankniftyOptionsData = data.banknifty_options
                 updateOptionsTable('niftyOptionsTable', data.nifty_options);
                 updateOptionsTable('bankNiftyOptionsTable', data.banknifty_options);
 
@@ -911,7 +914,128 @@
             if (num === 0 || !num) return '0.00';
             return num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
+        async function startNiftyAutomation() {
+            try {
+                if (niftyOptionsData.length === 0) {
+                    alert(
+                        "Analyze options first"
+                    );
+                    return;
+                }
+                const timeframe = document.getElementById('timeframe').value;
+                const ce = niftyOptionsData.find(x => x.type === "CE");
+                const pe = niftyOptionsData.find(x => x.type === "PE");
 
+                if (!ce || !pe) {
+                    alert(
+                        "CE or PE data missing"
+                    );
+                    return;
+                }
+                const payload = {
+                    index_name: "NIFTY",
+                    option_ce_symbol:
+                        ce.symbol,
+                    option_pe_symbol:
+                        pe.symbol,
+                    option_ce_token:
+                        ce.token,
+                    option_pe_token:
+                        pe.token,
+                    timeframe : timeframe,
+                    lot_size:
+                    ce.lot_size || 75,
+                    qty: parseInt(
+                        document.getElementById(
+                            "niftyQty"
+                        ).value
+                    ),
+                    risk_percent: parseFloat(
+                        document.getElementById(
+                            "niftyRisk"
+                        ).value
+                    ),
+                    target_type:
+                        document.getElementById(
+                            "niftyTargetType"
+                        ).value,
+                    target_percent: parseFloat(
+                        document.getElementById(
+                            "niftyTarget"
+                        ).value
+                    ),
+                    sl_base:
+                        document.getElementById(
+                            "niftySLBase"
+                        ).value,
+                    sl_percent: parseFloat(
+                        document.getElementById(
+                            "niftySLPercent"
+                        ).value
+                    ),
+                    sl_cap: parseFloat(
+                        document.getElementById(
+                            "niftySLCap"
+                        ).value
+                    ),
+                    refresh_seconds: parseInt(
+                        document.getElementById(
+                            "niftyRefresh"
+                        ).value
+                    )
+                };
+
+                const response =
+                    await fetch(
+                        "/start_automation",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify(
+                                    payload
+                                )
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (
+                    data.status !==
+                    "success"
+                ) {
+
+                    alert(
+                        data.message
+                    );
+
+                    return;
+                }
+
+                document.getElementById(
+                    "niftyStatus"
+                ).innerHTML =
+                    "RUNNING";
+
+                document.getElementById(
+                    "niftyStopBtn"
+                ).disabled = false;
+
+            }
+            catch (e) {
+
+                alert(
+                    e.message
+                );
+
+            }
+        }
         // Load on page ready
         document.addEventListener('DOMContentLoaded', function() {
             console.log('✅ Page ready');

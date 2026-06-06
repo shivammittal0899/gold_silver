@@ -10,6 +10,7 @@ import uuid
 from datetime import datetime, timedelta
 from trailling_strategy import *
 from technical_analysis import *
+from load_once import *
 from fund_analysis import *
 import pandas as pd
 import yfinance as yf
@@ -18,9 +19,9 @@ import yfinance as yf
 app = Flask(__name__)
 # api_key = "0qw10pvn638g9jid"
 # api_secret = "8bbev51ab3ov4jfkq0ddhmsw1itviexc"
-API_KEY = "0qw10pvn638g9jid"
-API_SECRET = "6przxtyeeoi9jtvyx76qga4hrv7q86qr"
-REDIRECT_URL = "http://localhost:8000/callback"
+# API_KEY = "0qw10pvn638g9jid"
+# API_SECRET = "6przxtyeeoi9jtvyx76qga4hrv7q86qr"
+# REDIRECT_URL = "http://localhost:8000/callback"
 
 kite = KiteConnect(api_key=API_KEY)
 LOGIN_URL = kite.login_url()
@@ -54,16 +55,16 @@ def init_watchlist_db():
     conn.commit()
     conn.close()
 # ---------------------- SAVE TOKEN ----------------------
-def save_access_token(token):
-    with open("access_token.txt", "w") as f:
-        f.write(token)
+# def save_access_token(token):
+#     with open("access_token.txt", "w") as f:
+#         f.write(token)
 
-# ---------------------- READ TOKEN ----------------------
-def read_access_token():
-    if os.path.exists("access_token.txt"):
-        with open("access_token.txt") as f:
-            return f.read().strip()
-    return None
+# # ---------------------- READ TOKEN ----------------------
+# def read_access_token():
+#     if os.path.exists("access_token.txt"):
+#         with open("access_token.txt") as f:
+#             return f.read().strip()
+#     return None
 
 # ---------------------- LOGIN PAGE ----------------------
 @app.route("/")
@@ -4290,9 +4291,10 @@ def refresh_fundamentals():
 # import sqlite3
 from pathlib import Path
 
+from option_buy_sell import *
 DB_PATH = "option_master.db"
 
-def create_option_master_db():
+def create_option_master_db1():
     """
     Create option master database and indexes if not exists.
     """
@@ -4352,6 +4354,7 @@ def create_option_master_db():
     conn.close()
 
     print("✅ option_master database initialized")
+from db import create_tables
 
 @app.route('/refresh_option_master', methods=['POST'])
 def refresh_option_master():
@@ -4376,111 +4379,120 @@ def refresh_option_master():
         }), 500
 
 
-def update_option_master(kite_local):
+# def update_option_master(kite_local):
 
-    instruments = kite_local.instruments("NFO")
+#     instruments = kite_local.instruments("NFO")
 
-    # Find nearest expiry for each index
-    nifty_expiry = None
-    banknifty_expiry = None
+#     # Find nearest expiry for each index
+#     nifty_expiry = None
+#     banknifty_expiry = None
 
-    for ins in instruments:
+#     for ins in instruments:
 
-        if ins["segment"] != "NFO-OPT":
-            continue
+#         if ins["segment"] != "NFO-OPT":
+#             continue
 
-        if ins["name"] == "NIFTY":
-            if nifty_expiry is None or ins["expiry"] < nifty_expiry:
-                nifty_expiry = ins["expiry"]
+#         if ins["name"] == "NIFTY":
+#             if nifty_expiry is None or ins["expiry"] < nifty_expiry:
+#                 nifty_expiry = ins["expiry"]
 
-        elif ins["name"] == "BANKNIFTY":
-            if banknifty_expiry is None or ins["expiry"] < banknifty_expiry:
-                banknifty_expiry = ins["expiry"]
+#         elif ins["name"] == "BANKNIFTY":
+#             if banknifty_expiry is None or ins["expiry"] < banknifty_expiry:
+#                 banknifty_expiry = ins["expiry"]
 
-    rows = []
+#     rows = []
 
-    for ins in instruments:
+#     for ins in instruments:
 
-        if ins["segment"] != "NFO-OPT":
-            continue
+#         if ins["segment"] != "NFO-OPT":
+#             continue
 
-        # Save only nearest expiry
-        if (
-            ins["name"] == "NIFTY"
-            and ins["expiry"] == nifty_expiry
-        ) or (
-            ins["name"] == "BANKNIFTY"
-            and ins["expiry"] == banknifty_expiry
-        ):
+#         # Save only nearest expiry
+#         if (
+#             ins["name"] == "NIFTY"
+#             and ins["expiry"] == nifty_expiry
+#         ) or (
+#             ins["name"] == "BANKNIFTY"
+#             and ins["expiry"] == banknifty_expiry
+#         ):
 
-            rows.append(
-                (
-                    ins["name"],
-                    ins["tradingsymbol"],
-                    ins["strike"],
-                    str(ins["expiry"]),
-                    ins["instrument_type"],
-                    ins["instrument_token"],
-                    ins["exchange"],
-                    ins["lot_size"]
-                )
-            )
-    create_option_master_db()
+#             rows.append(
+#                 (
+#                     ins["tradingsymbol"],
+#                     ins["name"],
+#                     ins["strike"],
+#                     ins["instrument_type"],
+#                     str(ins["expiry"]),
+#                     ins["instrument_token"],
+#                     ins["exchange"],
+#                     ins["lot_size"]
+#                 )
+#             )
+#     # create_option_master_db()
+#     conn = sqlite3.connect(DB_PATH)
+#     cur = conn.cursor()
+
+#     # Replace old data
+#     cur.execute("DELETE FROM option_master")
+
+#     cur.executemany("""
+#         INSERT INTO option_master(
+#             symbol,
+#             index_name,
+#             strike,
+#             option_type,
+#             expiry,
+#             token,
+#             exchange,
+#             lot_size,
+#             last_updated
+#         )
+#         VALUES(
+#             ?,?,?,?,?,?,?,?,
+#             CURRENT_TIMESTAMP
+#         )
+#     """, rows)
+
+#     conn.commit()
+
+#     count = len(rows)
+
+#     conn.close()
+
+#     log1(f"Saved {count} latest expiry contracts {rows}")
+
+#     return count
+
+def get_tokens(strikes, index_name):
     conn = sqlite3.connect(DB_PATH)
-    cur = conn.cursor()
-
-    # Replace old data
-    cur.execute("DELETE FROM option_master")
-
-    cur.executemany("""
-        INSERT INTO option_master(
-            index_name,
-            symbol,
-            strike,
-            expiry,
-            option_type,
-            token,
-            exchange,
-            lot_size,
-            last_updated
-        )
-        VALUES(
-            ?,?,?,?,?,?,?,?,
-            CURRENT_TIMESTAMP
-        )
-    """, rows)
-
-    conn.commit()
-
-    count = len(rows)
-
-    conn.close()
-
-    log1(f"Saved {count} latest expiry contracts {rows}")
-
-    return count
-
-def get_token(index_name, strike, option_type):
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT token
+    cur= conn.cursor()
+    placeholders = ",".join(
+        ["?"] * len(strikes)
+    )
+    query = f"""
+        SELECT *
         FROM option_master
-        WHERE underlying=?
-        AND strike=?
-        AND option_type=?
-    """, (index_name, strike, option_type))
+        WHERE index_name=?
+        AND strike IN ({placeholders})
+        ORDER BY strike
+    """
 
-    row = cursor.fetchone()
+    cur.execute(
+        query,
+        [index_name] + strikes
+    )
+
+    rows = [
+        dict(x)
+        for x in cur.fetchall()
+    ]
 
     conn.close()
 
-    return row[0] if row else None
+    return rows
 
 
 import logging
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -4573,8 +4585,9 @@ def analyze_options():
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
 
-        nifty_strike = get_option_tokens(kite_local, nifty_options, "NIFTY")
-        niftybank_strike = get_option_tokens(kite_local, banknifty_options, "BANKNIFTY")
+        nifty_strike =get_tokens(nifty_options,"NIFTY")
+        niftybank_strike =get_tokens(banknifty_options,"BANKNIFTY")
+        
         # Analyze Nifty options
         nifty_analysis = []
         for item in nifty_strike:
@@ -4582,23 +4595,14 @@ def analyze_options():
             if analysis:
                 nifty_analysis.append(analysis)
         log1(nifty_analysis)
-        # for strike in nifty_options:
-        #     for option_type in ['CE', 'PE']:
-        #         analysis = "None"
-                # symbol = f"NIFTY{expiry}{option_type}{strike}"
-                # analysis = fetch_and_analyze_option("symbol", strike, option_type, 'NIFTY', timeframe)
-                # if analysis:
-                #     nifty_analysis.append(analysis)
         
         # Analyze Bank Nifty options
         banknifty_analysis = []
-        for strike in banknifty_options:
-            for option_type in ['CE', 'PE']:
-                analysis = "NOne"
-                # symbol = f"BANKNIFTY{expiry}{option_type}{strike}"
-                # analysis = fetch_and_analyze_option(symbol, strike, option_type, 'BANKNIFTY', expiry, timeframe)
-                # if analysis:
-                #     banknifty_analysis.append(analysis)
+        for item in niftybank_strike:
+            analysis = fetch_and_analyze_option(kite_local, item, 'BANKNIFTY', timeframe)
+            if analysis:
+                banknifty_analysis.append(analysis)
+        log1(banknifty_analysis)
         
         return jsonify({
             'status': 'success',
@@ -4612,158 +4616,85 @@ def analyze_options():
     
 
 
-def get_option_tokens(kite_local, strikes, index):
-    log1("options token")
-    instruments = kite_local.instruments("NFO")
-    df = pd.DataFrame(instruments)
-    # NIFTY OPTIONS ONLY
-    df = df[(df["name"] == index)&(df["instrument_type"].isin(["CE", "PE"]))]
-    # CURRENT WEEK EXPIRY
-    df["expiry"] = pd.to_datetime(df["expiry"])
-    current_expiry = sorted(df["expiry"].unique())[0]
-    log1(f"this week expiry -- {current_expiry}")
-    df = df[df["expiry"] == current_expiry]
-    # REQUIRED STRIKES
-    df = df[df["strike"].isin(strikes)]
-    result = []
-    for _, row in df.iterrows():
-        result.append({
-            "symbol": row["tradingsymbol"],
-            "strike": int(row["strike"]),
-            "type": row["instrument_type"],
-            "token": row["instrument_token"],
-            "expiry": str(
-                row["expiry"].date()
-            )
+@app.route(
+    "/start_automation",
+    methods=["POST"]
+)
+def start_automation():
+    try:
+        data = request.json
+
+        index_name = data["index_name"]
+
+        if automation_flags.get(index_name):
+            return jsonify({
+                "status":"error",
+                "message":
+                f"{index_name} already running"
+            })
+
+        save_automation_settings(data)
+        automation_flags[index_name] = True
+        thread = threading.Thread(
+            target=automation_loop,
+            args=(index_name,),
+            daemon=True
+        )
+        automation_threads[index_name] = thread
+
+        thread.start()
+
+        return jsonify({
+            "status":"success",
+            "message":
+            f"{index_name} started"
         })
-    return sorted(
-        result,
-        key=lambda x: (
-            x["strike"],
-            x["type"]
-        )
-    )
 
-def fetch_and_analyze(symbol, name, timeframe, kite_local):
-    """
-    Fetch data and analyze
-    """
-    try:
-        # Get historical data
-        df = get_historical_data(symbol, name, timeframe, kite_local)
-        if df is None or len(df) < 2:
-            return {
-                'symbol': name,
-                'ltp': 1,
-                'return': 0,
-                'high': 0,
-                'low': 0,
-                'signal': 'NO_DATA',
-                'hl_trend': 'N/A',
-                'vwap': 0,
-                'rsi': 0,
-                'price_tenkan': 0,
-            }
-        
-        # Run analysis
-        analysis = {
-            'symbol': name,
-            'high': float(df['High'].iloc[-1]),
-            'low': float(df['Low'].iloc[-1]),
-            'open': float(df['Open'].iloc[-1]),
-        }
-        data, df = stock_data_analysis(df, timeframe)
-        analysis.update(data if isinstance(data, dict) else {})
-        return analysis
-    
     except Exception as e:
-        logger.error(f"Error fetching {symbol}: {e}")
-        return {
-            'symbol': name,
-            'ltp': 0,
-            'return': 0,
-            'high': 0,
-            'low': 0,
-            'signal': 'ERROR',
-            'hl_trend': 'N/A',
-            'vwap': 0,
-            'rsi': 0,
-            'price_tenkan': 0,
-        }
+        return jsonify({
+            "status":"error",
+            "message":str(e)
+        }),500
 
-def fetch_and_analyze_option(kite_local, item, name, timeframe):
-    symbol = item['symbol']
-    """
-    Fetch data and analyze (for options)
-    """
+@app.route(
+    "/stop_automation",
+    methods=["POST"]
+)
+def stop_automation():
     try:
-        
-        log1("in option analysis")
-        # log1(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
-        df = get_historical_data(item['token'], "option", timeframe, kite_local)
-        log1(df.tail(5))
-        
-        if df is None or len(df) < 2:
-            return None
-        
-        analysis, df = stock_data_analysis(df, timeframe)
-        analysis['symbol'] = symbol
-        analysis['strike'] = item['strike']
-        analysis['type'] = item['type']
-        analysis['expiry'] = item['expiry']
-        log1(analysis)
-        return analysis
-        # return "None"
-    
+        data = request.json
+        index_name = data["index_name"]
+        automation_flags[index_name] = False
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+        UPDATE automation_settings
+        SET enabled=0
+        WHERE index_name=?
+        """,(index_name,))
+
+        conn.commit()
+
+        conn.close()
+
+        return jsonify({
+
+            "status":"success",
+
+            "message":
+            f"{index_name} stopped"
+
+        })
+
     except Exception as e:
-        logger.error(f"Error fetching {symbol}: {e}")
-        return None
 
-def get_historical_data(symbol, name, timeframe, kite_local):
-    """
-    Get historical OHLCV data from Kite
-    """
-    try:
-        if name != "option":
-            token = INSTRUMENT_MAP.get(name)
-        else:
-            token = (symbol)
-        
-        log1(token)
-        # Define date range
-        to_date = datetime.now()
-        from_date = to_date - timedelta(days=5)
-        
-        # Fetch data
-        data = kite_local.historical_data(
-            instrument_token=int(token),
-            from_date=from_date.date(),
-            to_date=to_date.date(),
-            interval=timeframe
-        )
-        
-        if not data:
-            return None
-        
-        # Convert to DataFrame
-        df = pd.DataFrame(data)
-        df.rename(columns={
+        return jsonify({
 
-            'open':'Open',
-            'high':'High',
-            'low':'Low',
-            'close':'Close',
-            'volume':'Volume',
-            'oi':'OI'
+            "status":"error",
 
-        }, inplace=True)
-        
-        return df
-    
-    except Exception as e:
-        logger.error(f"Error fetching historical data for {symbol}: {e}")
-        return None
+            "message":str(e)
 
+        }),500
 # ============================================
 # ERROR HANDLER
 # ============================================
@@ -5144,6 +5075,7 @@ if __name__ == "__main__":
     init_watchlist_db()   # 🔥 MUST BE FIRST
     init_analysis_db()
     load_live_sl_from_db()
+    create_tables()
     # restart_analysis()
 
     try:

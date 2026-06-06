@@ -4407,6 +4407,7 @@ def update_option_master(kite_local):
 def get_tokens(strikes, index_name):
     log1("get tokens")
     conn = sqlite3.connect(DB_NAME_OP)
+    conn.row_factory = sqlite3.Row
     cur= conn.cursor()
     placeholders = ",".join(
         ["?"] * len(strikes)

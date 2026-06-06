@@ -121,15 +121,39 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         
         if df is None or len(df) < 2:
             return None
-        oi_change = round(((float(df['OI'].iloc[-1])/float(df['OI'].iloc[-2])) - 1)*100,2)
-        vol_ratio = round(float(df['Volume'].iloc[-1]) /float(df["Volume"].rolling(10).mean().iloc[-1]),2)
+        # oi_change = round(((float(df['OI'].iloc[-1])/float(df['OI'].iloc[-2])) - 1)*100,2)
+        if 'OI' not in df.columns:
+            oi_val = 0
+            oi_change = 0
+        else:
+            oi_val = float(df['OI'].iloc[-1])
+            prev_oi = float(df['OI'].iloc[-2])
+            if prev_oi > 0:
+                oi_change = round(
+                    ((oi_val/ prev_oi) - 1) * 100,
+                    2
+                )
+            else:
+                oi_change = 0
+        # vol_ratio = round(float(df['Volume'].iloc[-1]) /float(df["Volume"].rolling(10).mean().iloc[-1]),2)
+        avg_vol = float(
+            df["Volume"].rolling(10).mean().iloc[-1]
+        )
+
+        if avg_vol > 0:
+            vol_ratio = round(
+                float(df['Volume'].iloc[-1]) / avg_vol,
+                2
+            )
+        else:
+            vol_ratio = 0
         analysis = {
             'symbol': name,
             'high': float(df['High'].iloc[-1]),
             'low': float(df['Low'].iloc[-1]),
             'open': float(df['Open'].iloc[-1]),
             'volume_ratio': vol_ratio,
-            'oi': float(df['OI'].iloc[-1]),
+            'oi': oi_val,
             'oi_change': oi_change,
             'strike': item['strike'],
             'type': item['option_type'],

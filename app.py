@@ -4292,7 +4292,7 @@ def refresh_fundamentals():
 # from pathlib import Path
 
 from option_buy_sell import *
-from db import create_tables
+from db import *
 # DB_PATH = "options_automation.db"
 DB_PATH = "option_master.db"
 
@@ -4370,7 +4370,7 @@ def update_option_master(kite_local):
                 )
             )
     # create_option_master_db()
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_NAME_OP)
     cur = conn.cursor()
 
     # Replace old data
@@ -4406,7 +4406,7 @@ def update_option_master(kite_local):
 
 def get_tokens(strikes, index_name):
     log1("get tokens")
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_NAME_OP)
     cur= conn.cursor()
     placeholders = ",".join(
         ["?"] * len(strikes)

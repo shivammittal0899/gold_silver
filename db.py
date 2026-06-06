@@ -2,12 +2,12 @@
 
 import sqlite3
 
-DB_NAME = "options_automation.db"
+DB_NAME_OP = "options_automation.db"
 
 
 def get_connection():
-    conn = sqlite3.connect(DB_NAME)
-    conn.row_factory = sqlite3.Row
+    conn = sqlite3.connect(DB_NAME_OP)
+    # conn.row_factory = sqlite3.Row
     return conn
 
 

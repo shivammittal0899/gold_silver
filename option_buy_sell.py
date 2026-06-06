@@ -121,8 +121,8 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         
         if df is None or len(df) < 2:
             return None
-        oi_change = round(((float(df['Open'].iloc[-1])/float(df['Open'].iloc[-2])) - 1)*100,2)
-        vol_ratio = (float(df['Volume'].iloc[-1])/df["Volume"].rolling(10).mean())
+        oi_change = round(((float(df['OI'].iloc[-1])/float(df['OI'].iloc[-2])) - 1)*100,2)
+        vol_ratio = round(float(df['Volume'].iloc[-1]) /float(df["Volume"].rolling(10).mean().iloc[-1]),2)
         analysis = {
             'symbol': name,
             'high': float(df['High'].iloc[-1]),

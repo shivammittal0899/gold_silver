@@ -4464,6 +4464,7 @@ def refresh_option_master():
 #     return count
 
 def get_tokens(strikes, index_name):
+    log1("get tokens")
     conn = sqlite3.connect(DB_PATH)
     cur= conn.cursor()
     placeholders = ",".join(
@@ -4488,7 +4489,7 @@ def get_tokens(strikes, index_name):
     ]
 
     conn.close()
-
+    log1(rows)
     return rows
 
 

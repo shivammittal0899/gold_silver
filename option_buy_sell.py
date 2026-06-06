@@ -114,10 +114,9 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
     """
     try:
         
-        log2("in option analysis")
         # log2(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
         df = get_historical_data(item['token'], "option", timeframe, kite_local)
-        log2(df.tail(5))
+        # log2(df.tail(5))
         
         if df is None or len(df) < 2:
             return None
@@ -160,7 +159,6 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             'expiry': item['expiry'],
             'token': item['token'],
         }
-        log2(analysis)
         data, df = stock_data_analysis(df, timeframe)
         analysis.update(data if isinstance(data, dict) else {})
         return analysis
@@ -180,7 +178,6 @@ def get_historical_data(symbol, name, timeframe, kite_local):
         else:
             token = (symbol)
         
-        log2(token)
         # Define date range
         to_date = datetime.now()
         from_date = to_date - timedelta(days=5)
@@ -318,7 +315,7 @@ def has_open_position(index_name):
 
     return row
 def get_automation_settings(index_name):
-
+    log2("fetching automation settings")
     conn = get_connection()
     cur = conn.cursor()
 
@@ -355,6 +352,7 @@ def automation_loop(index_name):
 
     while automation_flags.get(index_name, False):
         try:
+            log2("in automation loop --- looping")
             process_index(kite_local, index_name, settings)
             # square_off_before_close()
         except Exception as e:

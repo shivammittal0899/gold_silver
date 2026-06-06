@@ -122,7 +122,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         if df is None or len(df) < 2:
             return None
         analysis, df = stock_data_analysis(df, timeframe)
-        log2("data analysis")
+        log2(f"data analysis -- {analysis}")
         analysis['symbol'] = symbol
         analysis['strike'] = item['strike']
         analysis['type'] = item['type']

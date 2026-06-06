@@ -4411,6 +4411,7 @@ def get_tokens(strikes, index_name):
     placeholders = ",".join(
         ["?"] * len(strikes)
     )
+    log1(f"get tokens {placeholders}")
     query = f"""
         SELECT *
         FROM option_master
@@ -4423,7 +4424,7 @@ def get_tokens(strikes, index_name):
         query,
         [index_name] + strikes
     )
-
+    log1("tokens fetched rows settings start")
     rows = [
         dict(x)
         for x in cur.fetchall()

@@ -371,7 +371,7 @@ def automation_loop(index_name):
 def process_index(kite_local, index_name,settings):
 
     try:
-
+        ptime = datetime.now()
         # No entries after market cutoff
         # if not market_open_for_entries():
         #     return
@@ -433,7 +433,7 @@ def process_index(kite_local, index_name,settings):
             ce_data = ce_future.result()
             pe_data = pe_future.result()
             log2(f"nifty data -- {nifty_data}")
-
+        log2((datetime.now() - ptime).total_seconds() )
         run_entry_scan(
             index_name,
             settings,

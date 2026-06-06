@@ -4293,7 +4293,8 @@ def refresh_fundamentals():
 
 from option_buy_sell import *
 from db import create_tables
-DB_PATH = "options_automation.db"
+# DB_PATH = "options_automation.db"
+DB_PATH = "option_master.db"
 
 
 @app.route('/refresh_option_master', methods=['POST'])

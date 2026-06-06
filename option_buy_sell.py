@@ -148,7 +148,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         else:
             vol_ratio = 0
         analysis = {
-            'symbol': item['tradingsymbol'],
+            'symbol': item['symbol'],
             'high': float(df['High'].iloc[-1]),
             'low': float(df['Low'].iloc[-1]),
             'open': float(df['Open'].iloc[-1]),
@@ -158,8 +158,9 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             'strike': item['strike'],
             'type': item['option_type'],
             'expiry': item['expiry'],
-            'token': item['token']
+            'token': item['token'],
         }
+        log1(analysis)
         data, df = stock_data_analysis(df, timeframe)
         analysis.update(data if isinstance(data, dict) else {})
         return analysis

@@ -164,7 +164,8 @@ def get_historical_data(symbol, name, timeframe, kite_local):
             instrument_token=int(token),
             from_date=from_date.date(),
             to_date=to_date.date(),
-            interval=timeframe
+            interval=timeframe,
+            oi=True
         )
         
         if not data:

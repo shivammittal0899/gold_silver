@@ -15,7 +15,26 @@ def create_tables():
 
     conn = get_connection()
     cur = conn.cursor()
-
+    cur.execute("""
+    CREATE TABLE option_user (
+        user_id INTEGER PRIMARY KEY,
+        timeframe TEXT,
+        nifty_strikes TEXT,
+        banknifty_strikes TEXT,
+        nifty_qty INTEGER,
+        nifty_risk REAL,
+        nifty_target REAL,
+        nifty_sl_base TEXT,2
+        nifty_sl_percent REAL,
+        nifty_refresh INTEGER,
+        banknifty_qty INTEGER,
+        banknifty_risk REAL,
+        banknifty_target REAL,
+        banknifty_sl_base TEXT,
+        banknifty_sl_percent REAL,
+        banknifty_refresh INTEGER
+    );
+    """)
     # Option master
     cur.execute("""
     CREATE TABLE IF NOT EXISTS option_master(
@@ -88,8 +107,6 @@ def create_tables():
         current_price REAL,
         stoploss REAL,
         target REAL,
-        highest_price REAL,
-        lowest_price REAL,
         pnl REAL DEFAULT 0,
         status TEXT DEFAULT 'OPEN',
         entry_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

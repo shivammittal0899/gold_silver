@@ -5,10 +5,22 @@ from ta.volume import VolumeWeightedAveragePrice
 import pandas as pd
 import json
 import sqlite3
+from ta.trend import ADXIndicator
+
 def indicator_values(df):
     rsi = RSIIndicator(close=df['Close'], window=14)
     df['RSI'] = rsi.rsi()
     df["ema"] = EMAIndicator(df["Close"], window=9).ema_indicator()
+    adx_indicator = ADXIndicator(
+        high=df['High'],
+        low=df['Low'],
+        close=df['Close'],
+        window=14
+    )
+
+    df['ADX'] = adx_indicator.adx()
+    df['DI_PLUS'] = adx_indicator.adx_pos()
+    df['DI_MINUS'] = adx_indicator.adx_neg()
     ichi = IchimokuIndicator(
         high=df['High'],
         low=df['Low'],
@@ -267,20 +279,38 @@ def ichimoku_analysis(df):
     }
     return ichimoku_t
 
+def get_adx_strength_signal(df):
+    row = df.loc[-1]
+    adx = row['ADX']
+    di_plus = row['DI_PLUS']
+    di_minus = row['DI_MINUS']
 
+    if adx > 40:
+        if di_plus > di_minus:
+            return 2
+        elif di_minus > di_plus:
+            return -2
+
+    elif adx > 25:
+        if di_plus > di_minus:
+            return 1
+        elif di_minus > di_plus:
+            return -1
+
+    return 0
 def signal_fun(data, df):
     signal = "Neutral"
     ret6 = data['ret6']
-    if ret6 > 200:
+    if ret6 > 2:
         ret6_ = 1
-    elif ret6 > -200:
+    elif ret6 > 0:
         ret6_ = 0
     else:
         ret6_ = -1
     ret12 = data['ret12']
-    if ret12 > 300:
+    if ret12 > 4:
         ret12_ = 1
-    elif ret12 > -300:
+    elif ret12 > -2:
         ret12_ = 0
     else:
         ret12_ = -1
@@ -333,15 +363,20 @@ def signal_fun(data, df):
         rsi_ = -1
     else:
         rsi_ = 0
-    signal_sum = ret6_ + ret12_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_
+
+    if data['vwap_a'] == "Above":
+        vwap = 2
+    else:
+        vwap = 0
+    signal_sum = ret6_ + ret12_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + data['adx_signal'] + vwap
     
-    if signal_sum >= 6:
+    if signal_sum >= 7:
         signal = "Strong Buy"
-    elif signal_sum >= 2:
+    elif signal_sum >= 3:
         signal = "Buy"
-    elif signal_sum <= -5:
+    elif signal_sum <= -7:
         signal = "Strong Sell"
-    elif signal_sum <= -2:
+    elif signal_sum <= -3:
         signal = "Sell"
     else:
         signal = "Neutral"
@@ -418,6 +453,7 @@ def stock_data_analysis(df, timeframe):
     volatility = volatility_analysis(df)
     volatility_per = volatility_per_analysis(df, timeframe)
     ichimoku_d = ichimoku_analysis(df)
+    adx_signal = get_adx_strength_signal(df)
     if price > vwap_v:
         vwap_a = "Above"
     else:
@@ -436,7 +472,8 @@ def stock_data_analysis(df, timeframe):
         "vwap": vwap_a,
         "rsi": float(round(df['RSI'].iloc[-1],2)),
         "adx": 25,
-        "volume": "High"
+        "volume": "High",
+        "adx_signal": adx_signal,
     }
     data.update(volatility if isinstance(volatility, dict) else {})
     data.update(volatility_per if isinstance(volatility_per, dict) else {})

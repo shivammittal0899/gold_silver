@@ -1564,18 +1564,7 @@ def reload_instruments_route():
 
 def get_instrument_token(symbol):
     return INSTRUMENT_MAP.get(symbol)
-    # conn = sqlite3.connect("instruments.db")
-    # c = conn.cursor()
 
-    # row = c.execute("""
-    #     SELECT instrument_token 
-    #     FROM instruments
-    #     WHERE tradingsymbol=? AND segment='EQ'
-    # """, (symbol,)).fetchone()
-
-    # conn.close()
-
-    # return row[0] if row else None
 def empty_stock_result(symbol, e):
     return {
         "symbol": symbol,
@@ -1608,13 +1597,9 @@ def empty_stock_result(symbol, e):
     }
 
 def on_ticks_ltp(ws, ticks):
-
     try:
-
         with LIVE_LTP_LOCK:
-
             for tick in ticks:
-
                 token = tick["instrument_token"]
                 ltp = tick["last_price"]
 

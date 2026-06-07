@@ -443,9 +443,7 @@ def stock_data_analysis(df, timeframe):
     vwap_v = df['VWAP'].iat[-1]
     ret1 = round((((price / df['Close'].iat[-2]) - 1)*100),2)
     ret6 = round((((price / df['Open'].iat[-6]) - 1)*100),2)
-    # ret6 = (price - df['Open'].iat[-6])
     ret12 = round((((price / df['Open'].iat[-12]) - 1)*100),2)
-    # ret12 = (price - df['Open'].iat[-12])
     trend, last_high, last_low = highlow_trend(df)
     highlow = highlow_data(df)
     if isinstance(highlow, list):

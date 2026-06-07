@@ -407,6 +407,7 @@
                                 <th>Type</th>
                                 <th>Expiry</th>
                                 <th>LTP</th>
+                                <th>Return</th>
                                 <th>Return6</th>
                                 <th>High</th>
                                 <th>Low</th>
@@ -510,6 +511,7 @@
                                 <th>Type</th>
                                 <th>Expiry</th>
                                 <th>LTP</th>
+                                <th>Return</th>
                                 <th>Return6</th>
                                 <th>High</th>
                                 <th>Low</th>
@@ -884,6 +886,9 @@
                     <td>₹${option.price}</td>
                     <td class="${option.ret1 >= 0 ? 'positive' : 'negative'}">
                         ${option.ret1 >= 0 ? '+' : ''}${option.ret1}%
+                    </td>
+                    <td class="${option.ret6 >= 0 ? 'positive' : 'negative'}">
+                        ${option.ret6 >= 0 ? '+' : ''}${option.ret6}%
                     </td>
                     <td>₹${option.high}</td>
                     <td>₹${option.low}</td>

@@ -4628,7 +4628,7 @@ def stop_automation():
 def save_option_settings():
     data = request.json
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_NAME_OP)
     cur = conn.cursor()
 
     cur.execute("DELETE FROM option_user")
@@ -4680,7 +4680,7 @@ def save_option_settings():
 @app.route('/get_option_settings')
 def get_option_settings():
 
-    conn = sqlite3.connect(DB_NAME)
+    conn = sqlite3.connect(DB_NAME_OP)
     conn.row_factory = sqlite3.Row
 
     cur = conn.cursor()

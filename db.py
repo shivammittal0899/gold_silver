@@ -50,24 +50,30 @@ def create_tables():
     # )
     # """)
     cur.execute("""
-    CREATE TABLE option_user (
-        timeframe TEXT,
-        nifty_strikes TEXT,
-        banknifty_strikes TEXT,
-        options_analyzed INTEGER DEFAULT 0;
-        nifty_qty INTEGER,
-        nifty_risk REAL,
-        nifty_target REAL,
-        nifty_sl_base TEXT,2
-        nifty_sl_percent REAL,
-        nifty_refresh INTEGER,
-        banknifty_qty INTEGER,
-        banknifty_risk REAL,
-        banknifty_target REAL,
-        banknifty_sl_base TEXT,
-        banknifty_sl_percent REAL,
-        banknifty_refresh INTEGER
-    );
+    CREATE TABLE IF NOT EXISTS option_user (
+        id INTEGER PRIMARY KEY,
+
+        timeframe TEXT DEFAULT 'minute',
+
+        nifty_strikes TEXT DEFAULT '[]',
+        banknifty_strikes TEXT DEFAULT '[]',
+
+        options_analyzed INTEGER DEFAULT 0,
+
+        nifty_qty INTEGER DEFAULT 1,
+        nifty_risk REAL DEFAULT 1,
+        nifty_target REAL DEFAULT 30,
+        nifty_sl_base TEXT DEFAULT 'kijun',
+        nifty_sl_percent REAL DEFAULT 5,
+        nifty_refresh INTEGER DEFAULT 60,
+
+        banknifty_qty INTEGER DEFAULT 1,
+        banknifty_risk REAL DEFAULT 1,
+        banknifty_target REAL DEFAULT 30,
+        banknifty_sl_base TEXT DEFAULT 'kijun',
+        banknifty_sl_percent REAL DEFAULT 5,
+        banknifty_refresh INTEGER DEFAULT 60
+    )
     """)
     cur.execute("""
     CREATE TABLE IF NOT EXISTS automation_settings(

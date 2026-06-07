@@ -4626,84 +4626,135 @@ def stop_automation():
 @app.route('/save_option_settings', methods=['POST'])
 def save_option_settings():
 
-    
-
-    conn = sqlite3.connect(DB_NAME_OP)
-    cur = conn.cursor()
-    log1("checking table")
-    # Check if option_user table exists
-    cur.execute("""
-        SELECT name
-        FROM sqlite_master
-        WHERE type='table'
-        AND name='option_user'
-    """)
-
-    if cur.fetchone() is None:
-        conn.close()
-        log1("table does not exists")
-        create_tables()
-        log1("table created")
+    try:
 
         conn = sqlite3.connect(DB_NAME_OP)
         cur = conn.cursor()
-    data = request.json
-    log1(f"save option data -- {data}")
-    cur.execute("DELETE FROM option_user")
-    log1("starting saving")
-    cur.execute("""
-    INSERT INTO option_user (
-        timeframe,
-        nifty_strikes,
-        banknifty_strikes,
-        options_analyzed,
-        nifty_qty,
-        nifty_risk,
-        nifty_target,
-        nifty_sl_base,
-        nifty_sl_percent,
-        nifty_refresh,
-        banknifty_qty,
-        banknifty_risk,
-        banknifty_target,
-        banknifty_sl_base,
-        banknifty_sl_percent,
-        banknifty_refresh
-    )
-    VALUES (
-        ?,?,?,?,?,?,
-        ?,?,?,?,?,?,
-        ?,?,?,?,?
-    )
-    """, (
-        data.get("timeframe"),
 
-        json.dumps(data.get("nifty_strikes", [])),
-        json.dumps(data.get("banknifty_strikes", [])),
+        log1("Checking option_user table")
 
-        int(data.get("options_analyzed", 0)),
+        cur.execute("""
+            SELECT name
+            FROM sqlite_master
+            WHERE type='table'
+            AND name='option_user'
+        """)
 
-        data.get("nifty_qty"),
-        data.get("nifty_risk"),
-        data.get("nifty_target"),
-        data.get("nifty_sl_base"),
-        data.get("nifty_sl_percent"),
-        data.get("nifty_refresh"),
+        if cur.fetchone() is None:
 
-        data.get("banknifty_qty"),
-        data.get("banknifty_risk"),
-        data.get("banknifty_target"),
-        data.get("banknifty_sl_base"),
-        data.get("banknifty_sl_percent"),
-        data.get("banknifty_refresh")
-    ))
+            log1("option_user table not found")
 
-    conn.commit()
-    conn.close()
+            conn.close()
 
-    return jsonify({
-        "status": "success"
-    })
+            create_tables()
+
+            conn = sqlite3.connect(DB_NAME_OP)
+            cur = conn.cursor()
+
+            log1("option_user table created")
+
+        data = request.get_json()
+
+        log1(f"Received data: {data}")
+
+        if not data:
+
+            return jsonify({
+                "status": "error",
+                "message": "No JSON data received"
+            }), 400
+
+        # Check actual table structure
+        cur.execute("PRAGMA table_info(option_user)")
+        columns = cur.fetchall()
+
+        log1(f"option_user columns: {columns}")
+
+        # Remove old settings
+        cur.execute("DELETE FROM option_user")
+
+        log1("Old settings deleted")
+
+        cur.execute("""
+        INSERT INTO option_user (
+            timeframe,
+            nifty_strikes,
+            banknifty_strikes,
+            options_analyzed,
+            nifty_qty,
+            nifty_risk,
+            nifty_target,
+            nifty_sl_base,
+            nifty_sl_percent,
+            nifty_refresh,
+            banknifty_qty,
+            banknifty_risk,
+            banknifty_target,
+            banknifty_sl_base,
+            banknifty_sl_percent,
+            banknifty_refresh
+        )
+        VALUES (
+            ?,?,?,?,?,?,
+            ?,?,?,?,?,?,
+            ?,?,?,?,?
+        )
+        """, (
+            data.get("timeframe", "minute"),
+
+            json.dumps(
+                data.get("nifty_strikes", [])
+            ),
+
+            json.dumps(
+                data.get("banknifty_strikes", [])
+            ),
+
+            int(
+                data.get(
+                    "options_analyzed",
+                    0
+                )
+            ),
+
+            data.get("nifty_qty", 1),
+            data.get("nifty_risk", 1),
+            data.get("nifty_target", 30),
+            data.get("nifty_sl_base", "kijun"),
+            data.get("nifty_sl_percent", 5),
+            data.get("nifty_refresh", 60),
+
+            data.get("banknifty_qty", 1),
+            data.get("banknifty_risk", 1),
+            data.get("banknifty_target", 30),
+            data.get("banknifty_sl_base", "kijun"),
+            data.get("banknifty_sl_percent", 5),
+            data.get("banknifty_refresh", 60)
+        ))
+
+        conn.commit()
+
+        log1("Settings saved successfully")
+
+        conn.close()
+
+        return jsonify({
+            "status": "success"
+        })
+
+    except Exception as e:
+
+        log1(f"SAVE SETTINGS ERROR: {str(e)}")
+
+        try:
+            conn.close()
+        except:
+            pass
+
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
 
 @app.route('/get_option_settings')
 def get_option_settings():

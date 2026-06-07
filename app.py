@@ -4623,6 +4623,92 @@ def stop_automation():
             "message":str(e)
 
         }),500
+    
+@app.route('/save_option_settings', methods=['POST'])
+def save_option_settings():
+    data = request.json
+
+    conn = sqlite3.connect(DB_NAME)
+    cur = conn.cursor()
+
+    cur.execute("DELETE FROM option_user")
+
+    cur.execute("""
+    INSERT INTO option_user (
+        timeframe,
+        nifty_strikes,
+        banknifty_strikes,
+        options_analyzed,
+        nifty_qty,
+        nifty_risk,
+        nifty_target,
+        nifty_sl_base,
+        nifty_sl_percent,
+        nifty_refresh,
+        banknifty_qty,
+        banknifty_risk,
+        banknifty_target,
+        banknifty_sl_base,
+        banknifty_sl_percent,
+        banknifty_refresh
+    )
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    """,(
+        data["timeframe"],
+        json.dumps(data["nifty_strikes"]),
+        json.dumps(data["banknifty_strikes"]),
+        int(data["options_analyzed"]),
+        data["nifty_qty"],
+        data["nifty_risk"],
+        data["nifty_target"],
+        data["nifty_sl_base"],
+        data["nifty_sl_percent"],
+        data["nifty_refresh"],
+        data["banknifty_qty"],
+        data["banknifty_risk"],
+        data["banknifty_target"],
+        data["banknifty_sl_base"],
+        data["banknifty_sl_percent"],
+        data["banknifty_refresh"]
+    ))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({"status":"success"})
+
+@app.route('/get_option_settings')
+def get_option_settings():
+
+    conn = sqlite3.connect(DB_NAME)
+    conn.row_factory = sqlite3.Row
+
+    cur = conn.cursor()
+
+    cur.execute("""
+    SELECT *
+    FROM option_user
+    LIMIT 1
+    """)
+
+    row = cur.fetchone()
+
+    conn.close()
+
+    if not row:
+        return jsonify({})
+
+    settings = dict(row)
+
+    settings["nifty_strikes"] = json.loads(
+        settings["nifty_strikes"] or "[]"
+    )
+
+    settings["banknifty_strikes"] = json.loads(
+        settings["banknifty_strikes"] or "[]"
+    )
+
+    return jsonify(settings)
 # ============================================
 # ERROR HANDLER
 # ============================================

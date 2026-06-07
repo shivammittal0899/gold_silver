@@ -51,10 +51,10 @@ def create_tables():
     # """)
     cur.execute("""
     CREATE TABLE option_user (
-        user_id INTEGER PRIMARY KEY,
         timeframe TEXT,
         nifty_strikes TEXT,
         banknifty_strikes TEXT,
+        options_analyzed INTEGER DEFAULT 0;
         nifty_qty INTEGER,
         nifty_risk REAL,
         nifty_target REAL,

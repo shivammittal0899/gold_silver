@@ -609,6 +609,107 @@
     <script>
         let niftyOptionsData = [];
         let bankniftyOptionsData = [];
+        let savedSettings = null;
+        async function saveOptionSettings() {
+
+            const payload = {
+
+                timeframe:
+                    document.getElementById("timeframe").value,
+
+                nifty_strikes:
+                    Array.from(
+                        document.querySelectorAll(
+                            '#niftyStrikes input:checked'
+                        )
+                    ).map(x => Number(x.value)),
+
+                banknifty_strikes:
+                    Array.from(
+                        document.querySelectorAll(
+                            '#bankNiftyStrikes input:checked'
+                        )
+                    ).map(x => Number(x.value)),
+                options_analyzed:
+                    document.getElementById("optionsAnalysisSection").style.display !== "none",
+
+                nifty_qty:
+                    document.getElementById("niftyQty").value,
+
+                nifty_risk:
+                    document.getElementById("niftyRisk").value,
+
+                nifty_target:
+                    document.getElementById("niftyTarget").value,
+
+                nifty_sl_base:
+                    document.getElementById("niftySLBase").value,
+
+                nifty_sl_percent:
+                    document.getElementById("niftySLPercent").value,
+
+                nifty_refresh:
+                    document.getElementById("niftyRefresh").value,
+
+                banknifty_qty:
+                    document.getElementById("bankNiftyQty").value,
+
+                banknifty_risk:
+                    document.getElementById("bankNiftyRisk").value,
+
+                banknifty_target:
+                    document.getElementById("bankNiftyTarget").value,
+
+                banknifty_sl_base:
+                    document.getElementById("bankNiftySLBase").value,
+
+                banknifty_sl_percent:
+                    document.getElementById("bankNiftySLPercent").value,
+
+                banknifty_refresh:
+                    document.getElementById("bankNiftyRefresh").value
+            };
+
+            await fetch(
+                "/save_option_settings",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":"application/json"
+                    },
+                    body: JSON.stringify(payload)
+                }
+            );
+        }
+        function restoreStrikes(containerId,strikeList) {
+            strikeList.forEach(strike => {
+                const cb = document.querySelector(`#${containerId} input[value="${strike}"]`);
+                if (cb) {
+                    cb.checked = true;
+                }
+            });
+        }
+        if(savedSettings){
+            if(containerId === "niftyStrikes"){
+                restoreStrikes(
+                    containerId,
+                    savedSettings.nifty_strikes || []
+                );
+            }
+            if(containerId === "bankNiftyStrikes"){
+                restoreStrikes(
+                    containerId,
+                    savedSettings.banknifty_strikes || []
+                );
+            }
+            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener(
+                    "change",
+                    saveOptionSettings
+                );
+            });
+        }
+        
         async function refreshMasterData() {
             try {
 
@@ -853,6 +954,7 @@
 
                 // Show options analysis section
                 document.getElementById('optionsAnalysisSection').style.display = 'block';
+                await saveOptionSettings();
 
                 document.getElementById('success').textContent = `✅ Options analyzed`;
                 document.getElementById('success').classList.add('show');
@@ -1043,9 +1145,149 @@
 
             }
         }
-        // Load on page ready
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('✅ Page ready');
+        function attachSaveEvents(){
+
+            const ids = [
+
+                "timeframe",
+
+                "niftyQty",
+                "niftyRisk",
+                "niftyTarget",
+                "niftySLBase",
+                "niftySLPercent",
+                "niftyRefresh",
+
+                "bankNiftyQty",
+                "bankNiftyRisk",
+                "bankNiftyTarget",
+                "bankNiftySLBase",
+                "bankNiftySLPercent",
+                "bankNiftyRefresh"
+            ];
+
+            ids.forEach(id => {
+
+                const el =
+                    document.getElementById(id);
+
+                if(el){
+
+                    el.addEventListener(
+                        "change",
+                        saveOptionSettings
+                    );
+
+                }
+
+            });
+
+        }
+        
+        document.addEventListener("DOMContentLoaded", async function(){
+            attachSaveEvents();
+
+            const response = await fetch("/get_option_settings");
+
+            savedSettings = await response.json();
+
+            if(!savedSettings || Object.keys(savedSettings).length === 0){
+                return;
+            }
+
+            document.getElementById("timeframe").value = savedSettings.timeframe || "minute";
+            await analyzeIndexes();
+
+                document.getElementById(
+                    "niftyQty"
+                ).value =
+                    savedSettings.nifty_qty || 1;
+
+                document.getElementById(
+                    "niftyRisk"
+                ).value =
+                    savedSettings.nifty_risk || 1;
+
+                document.getElementById(
+                    "niftyTarget"
+                ).value =
+                    savedSettings.nifty_target || 30;
+
+                document.getElementById(
+                    "niftySLBase"
+                ).value =
+                    savedSettings.nifty_sl_base || "kijun";
+
+                document.getElementById(
+                    "niftySLPercent"
+                ).value =
+                    savedSettings.nifty_sl_percent || 5;
+
+                document.getElementById(
+                    "niftyRefresh"
+                ).value =
+                    savedSettings.nifty_refresh || 60;
+
+                document.getElementById(
+                    "bankNiftyQty"
+                ).value =
+                    savedSettings.banknifty_qty || 1;
+
+                document.getElementById(
+                    "bankNiftyRisk"
+                ).value =
+                    savedSettings.banknifty_risk || 1;
+
+                document.getElementById(
+                    "bankNiftyTarget"
+                ).value =
+                    savedSettings.banknifty_target || 30;
+
+                document.getElementById(
+                    "bankNiftySLBase"
+                ).value =
+                    savedSettings.banknifty_sl_base || "kijun";
+
+                document.getElementById(
+                    "bankNiftySLPercent"
+                ).value =
+                    savedSettings.banknifty_sl_percent || 5;
+
+                document.getElementById(
+                    "bankNiftyRefresh"
+                ).value =
+                    savedSettings.banknifty_refresh || 60;
+
+                await analyzeIndexes();
+
+                if(
+                    savedSettings.options_analyzed
+                ){
+
+                    setTimeout(
+                        async () => {
+
+                            await analyzeSelectedOptions();
+
+                        },
+                        1000
+                    );
+
+                }
+
+            }
+        );
+        document
+        .querySelectorAll(
+            '#timeframe, #niftyQty, #niftyRisk, #niftyTarget, #niftySLBase, #niftySLPercent, #niftyRefresh, #bankNiftyQty, #bankNiftyRisk, #bankNiftyTarget, #bankNiftySLBase, #bankNiftySLPercent, #bankNiftyRefresh'
+        )
+        .forEach(el => {
+
+            el.addEventListener(
+                'change',
+                saveOptionSettings
+            );
+
         });
     </script>
 

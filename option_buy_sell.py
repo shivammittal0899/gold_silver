@@ -415,7 +415,7 @@ def process_index(kite_local, index_name,settings):
                 {
                     "symbol": settings["option_ce_symbol"],
                     "token": settings["option_ce_token"],
-                    "type":"CE",
+                    "option_type":"CE",
                     "strike":0,
                     "expiry":""
                 },
@@ -428,7 +428,7 @@ def process_index(kite_local, index_name,settings):
                 {
                     "symbol": settings["option_pe_symbol"],
                     "token": settings["option_pe_token"],
-                    "type":"PE",
+                    "option_type":"PE",
                     "strike":0,
                     "expiry":""
                 },
@@ -439,7 +439,7 @@ def process_index(kite_local, index_name,settings):
             banknifty_data = banknifty_index.result()
             ce_data = ce_future.result()
             pe_data = pe_future.result()
-            log2(f"nifty data -- {nifty_data}")
+            log2(f"nifty data -- {nifty_data}  -- {banknifty_index}  -- {ce_future}  -- {pe_future}")
         log2((datetime.now() - ptime).total_seconds() )
         run_entry_scan(
             index_name,

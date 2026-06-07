@@ -465,15 +465,16 @@ def run_entry_scan(index_name,
     logger.info(f"Scanning {index_name}")
     log2("Scanning start")
     signal_map = {
-        "BUY": 1,
-        "STRONG BUY": 2,
-        "SELL": -1,
-        "STRONG SELL": -2
+        "Buy": 1,
+        "Strong Buy": 2,
+        "Sell": -1,
+        "Strong Sell": -2
     }
 
     index_signal_score = signal_map.get(nifty_data['signal'].upper(), 0) + signal_map.get(banknifty_data['signal'].upper(), 0)
     ce_signal_score = signal_map.get(ce_data['signal'].upper(), 0)
     pe_signal_score = signal_map.get(pe_data['signal'].upper(), 0)
+    log2(f"scanning complete execution --- {index_signal_score} -- {ce_signal_score} -- {pe_signal_score}")
     if ((index_signal_score >= 3) and (ce_signal_score >= 2) and (pe_signal_score <= -1)) or True:
         log2("Entry in CE")
         process_bullish_entry(index_name,ce_data,settings)

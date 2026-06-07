@@ -4697,7 +4697,7 @@ def save_option_settings():
         VALUES (
             ?,?,?,?,?,?,
             ?,?,?,?,?,?,
-            ?,?,?,?,?
+            ?,?,?,?
         )
         """, (
             data.get("timeframe", "minute"),

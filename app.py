@@ -4626,12 +4626,29 @@ def stop_automation():
 @app.route('/save_option_settings', methods=['POST'])
 def save_option_settings():
 
-    data = request.json
-    log1(f"save option data -- {data}")
+    
 
     conn = sqlite3.connect(DB_NAME_OP)
     cur = conn.cursor()
+    log1("checking table")
+    # Check if option_user table exists
+    cur.execute("""
+        SELECT name
+        FROM sqlite_master
+        WHERE type='table'
+        AND name='option_user'
+    """)
 
+    if cur.fetchone() is None:
+        conn.close()
+        log1("table does not exists")
+        create_tables()
+        log1("table created")
+
+        conn = sqlite3.connect(DB_NAME_OP)
+        cur = conn.cursor()
+    data = request.json
+    log1(f"save option data -- {data}")
     cur.execute("DELETE FROM option_user")
     log1("starting saving")
     cur.execute("""

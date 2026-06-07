@@ -4679,7 +4679,7 @@ def save_option_settings():
 
 @app.route('/get_option_settings')
 def get_option_settings():
-
+    create_tables()
     conn = sqlite3.connect(DB_NAME_OP)
     conn.row_factory = sqlite3.Row
 

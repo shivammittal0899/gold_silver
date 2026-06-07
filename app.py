@@ -4623,13 +4623,12 @@ def stop_automation():
             "message":str(e)
 
         }),500
-    
 @app.route('/save_option_settings', methods=['POST'])
 def save_option_settings():
+
     data = request.json
 
     conn = sqlite3.connect(DB_NAME_OP)
-    conn.row_factory = sqlite3.Row
     cur = conn.cursor()
 
     cur.execute("DELETE FROM option_user")
@@ -4653,30 +4652,40 @@ def save_option_settings():
         banknifty_sl_percent,
         banknifty_refresh
     )
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    """,(
-        data["timeframe"],
-        json.dumps(data["nifty_strikes"]),
-        json.dumps(data["banknifty_strikes"]),
-        int(data["options_analyzed"]),
-        data["nifty_qty"],
-        data["nifty_risk"],
-        data["nifty_target"],
-        data["nifty_sl_base"],
-        data["nifty_sl_percent"],
-        data["nifty_refresh"],
-        data["banknifty_qty"],
-        data["banknifty_risk"],
-        data["banknifty_target"],
-        data["banknifty_sl_base"],
-        data["banknifty_sl_percent"],
-        data["banknifty_refresh"]
+    VALUES (
+        ?,?,?,?,?,?,
+        ?,?,?,?,?,?,
+        ?,?,?,?,?
+    )
+    """, (
+        data.get("timeframe"),
+
+        json.dumps(data.get("nifty_strikes", [])),
+        json.dumps(data.get("banknifty_strikes", [])),
+
+        int(data.get("options_analyzed", 0)),
+
+        data.get("nifty_qty"),
+        data.get("nifty_risk"),
+        data.get("nifty_target"),
+        data.get("nifty_sl_base"),
+        data.get("nifty_sl_percent"),
+        data.get("nifty_refresh"),
+
+        data.get("banknifty_qty"),
+        data.get("banknifty_risk"),
+        data.get("banknifty_target"),
+        data.get("banknifty_sl_base"),
+        data.get("banknifty_sl_percent"),
+        data.get("banknifty_refresh")
     ))
 
     conn.commit()
     conn.close()
 
-    return jsonify({"status":"success"})
+    return jsonify({
+        "status": "success"
+    })
 
 @app.route('/get_option_settings')
 def get_option_settings():

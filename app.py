@@ -4627,12 +4627,13 @@ def stop_automation():
 def save_option_settings():
 
     data = request.json
+    log1(f"save option data -- {data}")
 
     conn = sqlite3.connect(DB_NAME_OP)
     cur = conn.cursor()
 
     cur.execute("DELETE FROM option_user")
-
+    log1("starting saving")
     cur.execute("""
     INSERT INTO option_user (
         timeframe,

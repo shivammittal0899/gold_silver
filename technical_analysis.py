@@ -11,6 +11,7 @@ def indicator_values(df):
     rsi = RSIIndicator(close=df['Close'], window=14)
     df['RSI'] = rsi.rsi()
     df["ema"] = EMAIndicator(df["Close"], window=9).ema_indicator()
+    df["ema_20"] = EMAIndicator(df["Close"], window=20).ema_indicator()
     adx_indicator = ADXIndicator(
         high=df['High'],
         low=df['Low'],
@@ -115,7 +116,7 @@ def highlow_trend(df):
     swing_lows  = df[df['swing_low'].notna()]['Low'].tail(lookback).values
 
     if len(swing_highs) < 3 or len(swing_lows) < 3:
-        return "UNKNOWN"
+        return "UNKNOWN", [], None
 
     hh = sum(1 for i in range(1, len(swing_highs)) if swing_highs[i] > swing_highs[i-1])
     lh = sum(1 for i in range(1, len(swing_highs)) if swing_highs[i] < swing_highs[i-1])
@@ -190,7 +191,7 @@ def volatility_analysis(df):
         "atr_val": float(round(atr,2)),
         "volatility_regime": regime,
         # "volatility_exp": expansion
-        "volatility_exp": "expansion"
+        "volatility_exp": "Expansion" if expansion else "Contraction"
     }
 
 def volatility_per_analysis(df, timeframe):
@@ -280,7 +281,7 @@ def ichimoku_analysis(df):
     return ichimoku_t
 
 def get_adx_strength_signal(df):
-    row = df.loc[-1]
+    row = df.iloc[-1]
     adx = row['ADX']
     di_plus = row['DI_PLUS']
     di_minus = row['DI_MINUS']
@@ -364,7 +365,7 @@ def signal_fun(data, df):
     else:
         rsi_ = 0
 
-    if data['vwap_a'] == "Above":
+    if data['vwap'] == "Above":
         vwap = 2
     else:
         vwap = 0
@@ -420,7 +421,7 @@ def data_analysis(df, timeframe):
         "highlow": highlow,
         "vwap": vwap_a,
         "rsi": float(round(df['RSI'].iloc[-1],2)),
-        "adx": 25,
+        "adx": round(float(df['ADX'].iloc[-1]), 2),
         "volume": "High"
     }
     data.update(volatility if isinstance(volatility, dict) else {})

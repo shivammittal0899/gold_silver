@@ -868,22 +868,3 @@ def get_current_option_price(position_id):
         return pos["current_price"]
     return 0
 
-def get_live_price(token):
-
-    try:
-
-        quote = kite.ltp(
-            [f"NFO:{token}"]
-        )
-
-        return list(
-            quote.values()
-        )[0]["last_price"]
-
-    except Exception as e:
-
-        logger.exception(
-            f"Failed to fetch LTP for token {token}: {e}"
-        )
-
-        return None

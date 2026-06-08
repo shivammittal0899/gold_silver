@@ -738,6 +738,7 @@ def close_position(position_id, exit_price, exit_reason):
         if not position:
             return False
         pnl = calculate_pnl(position["entry_price"], exit_price, position["qty"])
+        log2(f"pnl --- {pnl}")
         cur.execute("""
             INSERT INTO trade_history(
                 index_name,
@@ -815,7 +816,7 @@ def close_all_positions(index_name, exit_reason="MANUAL_STOP"):
         kite_local.set_access_token(access_token)
         for pos in positions:
 
-            token = pos["token"]
+            token = pos["symbol"]
             exit_price = get_live_price(kite_local,token)
             log2(exit_price)
             # exit_price = LIVE_PRICES.get(
@@ -845,7 +846,7 @@ def get_live_price(kite_local,token):
         quote = kite_local.ltp(
             [f"NFO:{token}"]
         )
-
+        log2(quote)
         return list(
             quote.values()
         )[0]["last_price"]

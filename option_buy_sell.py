@@ -495,10 +495,8 @@ def process_bullish_entry(index_name, ce_data, settings):
             f"{index_name} Bullish Entry Found "
             f"{ce_data['symbol']}"
         )
-
-
-        ce_symbol = settings['symbol']
-        ce_token = settings['token']
+        ce_symbol = settings['option_ce_symbol']
+        ce_token = settings['option_pe_token']
         pos_type = "CE"
         qty = settings['qty']
 
@@ -544,8 +542,8 @@ def process_bearish_entry(index_name, pe_data, settings):
         f"{index_name} Bullish Entry Found "
         f"{pe_data['symbol']}"
     )
-    pe_symbol = settings['symbol']
-    pe_token = settings['token']
+    pe_symbol = settings['option_pe_symbol']
+    pe_token = settings['option_pe_token']
     pos_type = "PE"
     qty = settings['qty']
     entry_price = pe_data['price']

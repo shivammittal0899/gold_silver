@@ -795,6 +795,7 @@ def close_all_positions(index_name, exit_reason="MANUAL_STOP"):
     conn = get_connection()
     cur = conn.cursor()
     try:
+        closed_count = 0
         positions = cur.execute("""
             SELECT *
             FROM live_positions

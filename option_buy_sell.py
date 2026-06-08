@@ -302,7 +302,7 @@ def save_automation_settings(data):
     conn.close()
 
 def has_open_position(index_name):
-
+    log2(f"checking live positions -- {index_name}")
     conn = get_connection()
 
     cur = conn.cursor()
@@ -492,6 +492,8 @@ def process_bullish_entry(index_name, ce_data, settings):
         f"{index_name} Bullish Entry Found "
         f"{ce_data['symbol']}"
     )
+    logger.info(f"settings data -- {settings}")
+    logger.info(f"ce data --- {ce_data}")
     ce_symbol = settings['symbol']
     ce_token = settings['token']
     pos_type = "CE"

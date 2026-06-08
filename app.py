@@ -4821,6 +4821,49 @@ def get_trade_history():
 
     return jsonify([dict(x) for x in rows])
 
+@app.route(
+    "/stop_automation",
+    methods=["POST"]
+)
+def stop_automation():
+    data = request.json
+    index_name = data["index_name"]
+    automation_flags[index_name] = False
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+
+        cur.execute("""
+            UPDATE automation_settings
+            SET
+                enabled = 0,
+                position_side = 'NONE'
+            WHERE index_name = ?
+        """,(
+            index_name,
+        ))
+        conn.commit()
+        closed_count = close_all_positions(index_name,"MANUAL_STOP")
+
+        return jsonify({
+            "status":"success",
+            "message":
+                f"{index_name} stopped. "
+                f"{closed_count} position(s) closed."
+        })
+
+    except Exception as e:
+
+        conn.rollback()
+
+        return jsonify({
+            "status":"error",
+            "message":str(e)
+        }),500
+
+    finally:
+
+        conn.close()
 # ============================================
 # ERROR HANDLER
 # ============================================

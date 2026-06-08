@@ -714,3 +714,176 @@ def market_open_for_entries():
 
 def square_off_before_close():
     return None
+
+def calculate_pnl(entry_price,exit_price,qty,side="BUY"):
+    if side == "BUY":
+        pnl = (float(exit_price) - float(entry_price)) * qty
+    else:
+        pnl = (float(entry_price) - float(exit_price)) * qty
+
+    return round(pnl, 2)
+
+def close_position(position_id, exit_price, exit_reason):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        position = cur.execute("""
+            SELECT *
+            FROM live_positions
+            WHERE id = ?
+            AND status = 'OPEN'
+        """,(position_id,)).fetchone()
+        if not position:
+            return False
+        pnl = calculate_pnl(position["entry_price"], exit_price, position["qty"])
+        cur.execute("""
+            INSERT INTO trade_history(
+                index_name,
+                symbol,
+                token,
+                position_type,
+                qty,
+                entry_price,
+                exit_price,
+                pnl,
+                exit_reason,
+                entry_time,
+                exit_time
+            )
+            VALUES(
+                ?,?,?,?,?,?,?,?,?,?,
+                CURRENT_TIMESTAMP
+            )
+        """,(
+            position["index_name"],
+            position["symbol"],
+            position["token"],
+            position["position_type"],
+            position["qty"],
+            position["entry_price"],
+            exit_price,
+            pnl,
+            exit_reason,
+            position["entry_time"]
+        ))
+
+        cur.execute("""
+            UPDATE live_positions
+            SET
+                current_price = ?,
+                pnl = ?,
+                status = 'CLOSED',
+                exit_time = CURRENT_TIMESTAMP
+            WHERE id = ?
+        """,(
+            exit_price,
+            pnl,
+            position_id
+        ))
+        conn.commit()
+        return True
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+def close_all_positions(index_name, exit_reason="MANUAL_STOP"):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        positions = cur.execute("""
+            SELECT *
+            FROM live_positions
+            WHERE index_name = ?
+            AND status = 'OPEN'
+        """,(
+            index_name,
+        )).fetchall()
+        # ids = []
+        # for pos in positions:
+        #     ids.append(pos["id"])
+        # conn.close()
+        # for pid in ids:
+        #     close_position(pid,get_current_option_price(pid),exit_reason)
+
+        # return len(ids)
+        access_token = read_access_token()
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
+        for pos in positions:
+
+            token = pos["token"]
+            exit_price = get_live_price(kite_local,token)
+            # exit_price = LIVE_PRICES.get(
+            #     token,
+            #     pos["current_price"] or pos["entry_price"]
+            # )
+
+            success = close_position(
+                pos["id"],
+                exit_price,
+                exit_reason
+            )
+
+            if success:
+                closed_count += 1
+
+        return closed_count
+
+    except:
+
+        conn.close()
+        raise
+def get_live_price(kite_local,token):
+
+    try:
+
+        quote = kite_local.ltp(
+            [f"NFO:{token}"]
+        )
+
+        return list(
+            quote.values()
+        )[0]["last_price"]
+
+    except Exception as e:
+
+        logger.exception(
+            f"Failed to fetch LTP for token {token}: {e}"
+        )
+
+        return None
+def get_current_option_price(position_id):
+    conn = get_connection()
+    pos = conn.execute("""
+        SELECT current_price
+        FROM live_positions
+        WHERE id = ?
+    """,(
+        position_id,
+    )).fetchone()
+    conn.close()
+    if pos:
+        return pos["current_price"]
+    return 0
+
+def get_live_price(token):
+
+    try:
+
+        quote = kite.ltp(
+            [f"NFO:{token}"]
+        )
+
+        return list(
+            quote.values()
+        )[0]["last_price"]
+
+    except Exception as e:
+
+        logger.exception(
+            f"Failed to fetch LTP for token {token}: {e}"
+        )
+
+        return None

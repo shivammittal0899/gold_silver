@@ -557,7 +557,7 @@ def process_bearish_entry(index_name, pe_data, settings):
 
 
 
-def create_position(index_name, symbol, ce_token, pos_type, qty, entry_price, sl_price, tg_price):
+def create_position(index_name, symbol, token, pos_type, qty, entry_price, sl_price, tg_price):
     try:
         conn = get_connection()
         cur = conn.cursor()
@@ -588,7 +588,7 @@ def create_position(index_name, symbol, ce_token, pos_type, qty, entry_price, sl
         """,(
             index_name,
             symbol,
-            ce_token,
+            token,
             pos_type,
             qty,
             entry_price,
@@ -617,7 +617,7 @@ def create_position(index_name, symbol, ce_token, pos_type, qty, entry_price, sl
             f"{index_name} Position Created "
             f"{symbol} @ {entry_price}"
         )
-
+        log2("table updated")
         return True
 
     except Exception as e:
@@ -656,7 +656,7 @@ def target_price(ce_data, settings):
     if tg_type == "fixed":
         tg_per = settings['target_percent']
         return (ltp + (ltp*tg_per)/100)
-    return None
+    return 0
 
 
 def monitor_open_positions():

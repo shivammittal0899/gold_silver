@@ -950,7 +950,6 @@
         
         // Display Strikes
         
-
         function displayStrikes(containerId, strikes) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
@@ -1371,16 +1370,16 @@
 
                     row.innerHTML = `
                         <td>${position.index_name || ""}</td>
-                        <td>${position.position_side || ""}</td>
                         <td>${position.symbol || ""}</td>
+                        <td>${position.position_type || ""}</td>
+                        <td>${position.qty || ""}</td>
                         <td>${position.entry_price || ""}</td>
-                        <td>${position.quantity || ""}</td>
                         <td>${position.current_price || ""}</td>
-                        <td>${position.pnl || ""}</td>
+                        <td>${position.stoploss || ""}</td>
                         <td>${position.target || ""}</td>
-                        <td>${position.stop_loss || ""}</td>
-                        <td>${position.entry_time || ""}</td>
+                        <td>${position.pnl || ""}</td>
                         <td>${position.status || ""}</td>
+                        <td>${position.entry_time || ""}</td>
                     `;
 
                     tbody.appendChild(row);

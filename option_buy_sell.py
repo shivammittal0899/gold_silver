@@ -163,7 +163,9 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         analysis.update(data if isinstance(data, dict) else {})
         df_values = {
             'kijun': float(df['kijun'].iloc[-1]),
-            'tenkan': float(df['tenkan'].iloc[-1])
+            'tenkan': float(df['tenkan'].iloc[-1]),
+            'max_10': float(df['Close'].tail(10).max()),
+            'min_10': float(df['Close'].tail(10).min())
         }
         analysis.update(df_values if isinstance(df_values, dict) else {})
         return analysis
@@ -652,12 +654,12 @@ def stoploss_value(ce_data, settings):
     sl_per = settings['sl_percent']
     sl_cap = settings['sl_cap']
     ltp = ce_data['price']
-    l_high = ce_data['l_high']
-    logger.info(f"sl data -- {risk_percent} -- {sl_base} -- {sl_per} -- {sl_cap} -- {l_high}")
+    high = ce_data['max_10']
+    logger.info(f"sl data -- {risk_percent} -- {sl_base} -- {sl_per} -- {sl_cap} -- {high}")
     if sl_base == "kijun":
         sl_base_value = ce_data['kijun']
     
-    sl1 = l_high - (l_high *risk_percent)/100
+    sl1 = high - (high *risk_percent)/100
     sl2 = sl_base_value - (sl_base_value*sl_per)/100
     sl3 = sl_base_value - sl_cap
 

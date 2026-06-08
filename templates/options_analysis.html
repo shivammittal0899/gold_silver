@@ -681,33 +681,35 @@
                 }
             );
         }
-        function restoreStrikes(containerId,strikeList) {
+        function restoreStrikes(
+            containerId,
+            strikeList
+        ){
+
+            console.log(
+                "Restoring",
+                containerId,
+                strikeList
+            );
+
             strikeList.forEach(strike => {
-                const cb = document.querySelector(`#${containerId} input[value="${strike}"]`);
-                if (cb) {
+
+                const cb =
+                    document.querySelector(
+                        `#${containerId} input[value="${strike}"]`
+                    );
+
+                console.log(
+                    strike,
+                    cb
+                );
+
+                if(cb){
                     cb.checked = true;
                 }
+
             });
-        }
-        if(savedSettings){
-            if(containerId === "niftyStrikes"){
-                restoreStrikes(
-                    containerId,
-                    savedSettings.nifty_strikes || []
-                );
-            }
-            if(containerId === "bankNiftyStrikes"){
-                restoreStrikes(
-                    containerId,
-                    savedSettings.banknifty_strikes || []
-                );
-            }
-            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                cb.addEventListener(
-                    "change",
-                    saveOptionSettings
-                );
-            });
+
         }
         
         async function refreshMasterData() {
@@ -893,19 +895,57 @@
         
         
         // Display Strikes
+        
+
         function displayStrikes(containerId, strikes) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-
             strikes.forEach(strike => {
                 const div = document.createElement('div');
                 div.className = 'strike-checkbox';
                 div.innerHTML = `
-                    <input type="checkbox" id="strike_${strike}" value="${strike}">
-                    <label for="strike_${strike}">${strike}</label>
+                    <input type="checkbox" id="${containerId}_${strike}" value="${strike}">
+                    <label for="${containerId}_${strike}">${strike}</label>
                 `;
+
                 container.appendChild(div);
+
             });
+
+            // RESTORE SAVED STRIKES
+            if(savedSettings){
+                if(containerId === "niftyStrikes"){
+
+                    restoreStrikes(
+                        containerId,
+                        savedSettings.nifty_strikes || []
+                    );
+
+                }
+
+                if(containerId === "bankNiftyStrikes"){
+
+                    restoreStrikes(
+                        containerId,
+                        savedSettings.banknifty_strikes || []
+                    );
+
+                }
+
+            }
+
+            // SAVE ON CHANGE
+            container.querySelectorAll(
+                'input[type="checkbox"]'
+            ).forEach(cb => {
+
+                cb.addEventListener(
+                    'change',
+                    saveOptionSettings
+                );
+
+            });
+
         }
 
         // Analyze Selected Options
@@ -1258,7 +1298,7 @@
                 ).value =
                     savedSettings.banknifty_refresh || 60;
 
-                await analyzeIndexes();
+                // await analyzeIndexes();
 
                 if(
                     savedSettings.options_analyzed

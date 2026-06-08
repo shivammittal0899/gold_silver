@@ -489,14 +489,13 @@ def run_entry_scan(index_name,
 
 def process_bullish_entry(index_name, ce_data, settings):
     try:
-
+        logger.info(f"settings data -- {settings}")
+        logger.info(f"ce data --- {ce_data}")
         logger.info(
             f"{index_name} Bullish Entry Found "
             f"{ce_data['symbol']}"
         )
 
-        logger.info(f"settings data -- {settings}")
-        logger.info(f"ce data --- {ce_data}")
 
         ce_symbol = settings['symbol']
         ce_token = settings['token']
@@ -505,15 +504,8 @@ def process_bullish_entry(index_name, ce_data, settings):
 
         entry_price = ce_data['price']
 
-        sl_price = stoploss_value(
-            ce_data,
-            settings
-        )
-
-        tg_price = target_price(
-            ce_data,
-            settings
-        )
+        sl_price = stoploss_value(ce_data,settings)
+        tg_price = target_price(ce_data,settings)
 
         create_position(
             index_name,
@@ -546,12 +538,12 @@ def process_bullish_entry(index_name, ce_data, settings):
 
 
 def process_bearish_entry(index_name, pe_data, settings):
+    logger.info(f"settings data -- {settings}")
+    logger.info(f"ce data --- {pe_data}")
     logger.info(
         f"{index_name} Bullish Entry Found "
         f"{pe_data['symbol']}"
     )
-    logger.info(f"settings data -- {settings}")
-    logger.info(f"ce data --- {pe_data}")
     pe_symbol = settings['symbol']
     pe_token = settings['token']
     pos_type = "PE"

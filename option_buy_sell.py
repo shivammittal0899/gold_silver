@@ -559,7 +559,6 @@ def process_bearish_entry(index_name, pe_data, settings):
 
 def create_position(index_name, symbol, ce_token, pos_type, qty, entry_price, sl_price, tg_price):
     try:
-
         conn = get_connection()
         cur = conn.cursor()
         cur.execute("""
@@ -580,39 +579,22 @@ def create_position(index_name, symbol, ce_token, pos_type, qty, entry_price, sl
             status,
 
             entry_time
-
         )
-
         VALUES(
-
             ?,?,?,?,?,?,?,?,?,
             'OPEN',
             CURRENT_TIMESTAMP
-
         )
         """,(
-
             index_name,
-
             symbol,
-
             ce_token,
-
             pos_type,
-
             qty,
-
             entry_price,
-
             entry_price,
-
             sl_price,
-
-            tg_price,
-
-            entry_price,
-
-            entry_price
+            tg_price
 
         ))
 

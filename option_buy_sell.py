@@ -488,22 +488,61 @@ def run_entry_scan(index_name,
 
 
 def process_bullish_entry(index_name, ce_data, settings):
-    logger.info(
-        f"{index_name} Bullish Entry Found "
-        f"{ce_data['symbol']}"
-    )
-    logger.info(f"settings data -- {settings}")
-    logger.info(f"ce data --- {ce_data}")
-    ce_symbol = settings['symbol']
-    ce_token = settings['token']
-    pos_type = "CE"
-    qty = settings['qty']
-    entry_price = ce_data['price']
-    sl_price = stoploss_value(ce_data, settings)
-    tg_price = target_price(ce_data, settings)
+    try:
 
-    create_position(index_name, ce_symbol, ce_token, pos_type, qty, entry_price, sl_price, tg_price)
-    return True
+        logger.info(
+            f"{index_name} Bullish Entry Found "
+            f"{ce_data['symbol']}"
+        )
+
+        logger.info(f"settings data -- {settings}")
+        logger.info(f"ce data --- {ce_data}")
+
+        ce_symbol = settings['symbol']
+        ce_token = settings['token']
+        pos_type = "CE"
+        qty = settings['qty']
+
+        entry_price = ce_data['price']
+
+        sl_price = stoploss_value(
+            ce_data,
+            settings
+        )
+
+        tg_price = target_price(
+            ce_data,
+            settings
+        )
+
+        create_position(
+            index_name,
+            ce_symbol,
+            ce_token,
+            pos_type,
+            qty,
+            entry_price,
+            sl_price,
+            tg_price
+        )
+
+        logger.info(
+            f"{index_name} CE Position Created | "
+            f"Symbol={ce_symbol} "
+            f"Entry={entry_price} "
+            f"SL={sl_price} "
+            f"Target={tg_price}"
+        )
+
+        return True
+
+    except Exception as e:
+
+        logger.exception(
+            f"{index_name} Error while creating bullish entry: {e}"
+        )
+
+        return False
 
 
 def process_bearish_entry(index_name, pe_data, settings):

@@ -1235,8 +1235,7 @@
                 return;
             }
 
-            document.getElementById("timeframe").value = savedSettings.timeframe || "minute";
-            await analyzeIndexes();
+            
 
                 document.getElementById(
                     "niftyQty"
@@ -1299,6 +1298,8 @@
                     savedSettings.banknifty_refresh || 60;
 
                 // await analyzeIndexes();
+                document.getElementById("timeframe").value = savedSettings.timeframe || "minute";
+            await analyzeIndexes();
 
                 if(
                     savedSettings.options_analyzed

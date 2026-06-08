@@ -539,7 +539,7 @@ def process_bearish_entry(index_name, pe_data, settings):
     logger.info(f"settings data -- {settings}")
     logger.info(f"ce data --- {pe_data}")
     logger.info(
-        f"{index_name} Bullish Entry Found "
+        f"{index_name} Bearish Entry Found "
         f"{pe_data['symbol']}"
     )
     pe_symbol = settings['option_pe_symbol']
@@ -653,6 +653,7 @@ def stoploss_value(ce_data, settings):
     sl_cap = settings['sl_cap']
     ltp = ce_data['price']
     l_high = ce_data['l_high']
+    logger.info(f"sl data -- {risk_percent} -- {sl_base} -- {sl_per} -- {sl_cap} -- {l_high}")
     if sl_base == "kijun":
         sl_base_value = ce_data['kijun']
     

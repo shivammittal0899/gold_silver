@@ -478,10 +478,10 @@ def run_entry_scan(index_name,
     pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
 
     log2(f"scanning complete execution --- {index_signal_score} -- {ce_signal_score} -- {pe_signal_score}")
-    if ((index_signal_score >= 3) and (ce_signal_score >= 2) and (pe_signal_score <= -1)) or True:
+    if ((index_signal_score >= 3) and (ce_signal_score >= 2) and (pe_signal_score <= -1)):
         log2("Entry in CE")
         process_bullish_entry(index_name,ce_data,settings)
-    if (index_signal_score <= -3) and (ce_signal_score <= -1) and (pe_signal_score >= 2):
+    elif (index_signal_score <= -3) and (ce_signal_score <= -1) and (pe_signal_score >= 2):
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
     
@@ -550,6 +550,8 @@ def process_bearish_entry(index_name, pe_data, settings):
         f"{index_name} Bullish Entry Found "
         f"{pe_data['symbol']}"
     )
+    logger.info(f"settings data -- {settings}")
+    logger.info(f"ce data --- {pe_data}")
     pe_symbol = settings['symbol']
     pe_token = settings['token']
     pos_type = "PE"
@@ -557,7 +559,7 @@ def process_bearish_entry(index_name, pe_data, settings):
     entry_price = pe_data['price']
     sl_price = stoploss_value(pe_data, settings)
     tg_price = target_price(pe_data, settings)
-
+    log2("going to update table")
     create_position(index_name, pe_symbol, pe_token, pos_type, qty, entry_price, sl_price, tg_price)
     return True
 

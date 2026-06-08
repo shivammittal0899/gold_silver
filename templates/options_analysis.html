@@ -603,7 +603,61 @@
                 </div>
             </div>
         </div>
+        <div class="analysis-section">
+            <h2>📈 Live Positions</h2>
 
+            <div class="table-wrapper">
+                <table id="livePositionsTable">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Symbol</th>
+                            <th>Type</th>
+                            <th>Qty</th>
+                            <th>Entry</th>
+                            <th>Current</th>
+                            <th>SL</th>
+                            <th>Target</th>
+                            <th>P&L</th>
+                            <th>Status</th>
+                            <th>Entry Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="11">No Open Positions</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="analysis-section">
+            <h2>📜 Trade History</h2>
+
+            <div class="table-wrapper">
+                <table id="tradeHistoryTable">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Symbol</th>
+                            <th>Type</th>
+                            <th>Qty</th>
+                            <th>Entry</th>
+                            <th>Exit</th>
+                            <th>P&L</th>
+                            <th>Reason</th>
+                            <th>Entry Time</th>
+                            <th>Exit Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="10">No Trade History</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1234,102 +1288,158 @@
             if(!savedSettings || Object.keys(savedSettings).length === 0){
                 return;
             }
+                document.getElementById("niftyQty").value = savedSettings.nifty_qty || 1;
+                document.getElementById("niftyRisk").value = savedSettings.nifty_risk || 1;
+                document.getElementById("niftyTarget").value = savedSettings.nifty_target || 30;
+                document.getElementById("niftySLBase").value = savedSettings.nifty_sl_base || "kijun";
+                document.getElementById("niftySLPercent").value = savedSettings.nifty_sl_percent || 5;
+                document.getElementById("niftyRefresh").value = savedSettings.nifty_refresh || 60;
 
-            
-
-                document.getElementById(
-                    "niftyQty"
-                ).value =
-                    savedSettings.nifty_qty || 1;
-
-                document.getElementById(
-                    "niftyRisk"
-                ).value =
-                    savedSettings.nifty_risk || 1;
-
-                document.getElementById(
-                    "niftyTarget"
-                ).value =
-                    savedSettings.nifty_target || 30;
-
-                document.getElementById(
-                    "niftySLBase"
-                ).value =
-                    savedSettings.nifty_sl_base || "kijun";
-
-                document.getElementById(
-                    "niftySLPercent"
-                ).value =
-                    savedSettings.nifty_sl_percent || 5;
-
-                document.getElementById(
-                    "niftyRefresh"
-                ).value =
-                    savedSettings.nifty_refresh || 60;
-
-                document.getElementById(
-                    "bankNiftyQty"
-                ).value =
-                    savedSettings.banknifty_qty || 1;
-
-                document.getElementById(
-                    "bankNiftyRisk"
-                ).value =
-                    savedSettings.banknifty_risk || 1;
-
-                document.getElementById(
-                    "bankNiftyTarget"
-                ).value =
-                    savedSettings.banknifty_target || 30;
-
-                document.getElementById(
-                    "bankNiftySLBase"
-                ).value =
-                    savedSettings.banknifty_sl_base || "kijun";
-
-                document.getElementById(
-                    "bankNiftySLPercent"
-                ).value =
-                    savedSettings.banknifty_sl_percent || 5;
-
-                document.getElementById(
-                    "bankNiftyRefresh"
-                ).value =
-                    savedSettings.banknifty_refresh || 60;
-
+                document.getElementById("bankNiftyQty").value = savedSettings.banknifty_qty || 1;
+                document.getElementById("bankNiftyRisk").value = savedSettings.banknifty_risk || 1;
+                document.getElementById("bankNiftyTarget").value = savedSettings.banknifty_target || 30;
+                document.getElementById("bankNiftySLBase").value = savedSettings.banknifty_sl_base || "kijun";
+                document.getElementById("bankNiftySLPercent").value = savedSettings.banknifty_sl_percent || 5;
+                document.getElementById("bankNiftyRefresh").value = savedSettings.banknifty_refresh || 60;
+                
+                
                 // await analyzeIndexes();
                 document.getElementById("timeframe").value = savedSettings.timeframe || "minute";
-            await analyzeIndexes();
+                await analyzeIndexes();
 
-                if(
-                    savedSettings.options_analyzed
-                ){
-
+                if(savedSettings.options_analyzed){
                     setTimeout(
-                        async () => {
-
-                            await analyzeSelectedOptions();
-
-                        },
-                        1000
+                        async () => {await analyzeSelectedOptions();
+                        },1000
                     );
-
                 }
+                loadLivePositions();
+                loadTradeHistory();
+
+                setInterval(() => {
+
+                    loadLivePositions();
+                    loadTradeHistory();
+
+                }, 30000);
 
             }
         );
-        document
-        .querySelectorAll(
-            '#timeframe, #niftyQty, #niftyRisk, #niftyTarget, #niftySLBase, #niftySLPercent, #niftyRefresh, #bankNiftyQty, #bankNiftyRisk, #bankNiftyTarget, #bankNiftySLBase, #bankNiftySLPercent, #bankNiftyRefresh'
-        )
-        .forEach(el => {
+        const settingFields = [
+            "#timeframe",
+            "#niftyQty",
+            "#niftyRisk",
+            "#niftyTarget",
+            "#niftySLBase",
+            "#niftySLPercent",
+            "#niftyRefresh",
+            "#bankNiftyQty",
+            "#bankNiftyRisk",
+            "#bankNiftyTarget",
+            "#bankNiftySLBase",
+            "#bankNiftySLPercent",
+            "#bankNiftyRefresh"
+        ];
 
-            el.addEventListener(
-                'change',
-                saveOptionSettings
-            );
+        document.querySelectorAll(settingFields.join(","))
+            .forEach(el => {
+                el.addEventListener("change", saveOptionSettings);
+            });
 
-        });
+        async function loadLivePositions() {
+            try {
+                const response = await fetch("/get_live_positions");
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                const tbody = document.querySelector(
+                    "#livePositionsTable tbody"
+                );
+                tbody.innerHTML = "";
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="11">No Open Positions</td>
+                        </tr>
+                    `;
+                    return;
+                }
+                // Add rows here
+                data.forEach(position => {
+                    const row = document.createElement("tr");
+
+                    row.innerHTML = `
+                        <td>${position.index_name || ""}</td>
+                        <td>${position.position_side || ""}</td>
+                        <td>${position.symbol || ""}</td>
+                        <td>${position.entry_price || ""}</td>
+                        <td>${position.quantity || ""}</td>
+                        <td>${position.current_price || ""}</td>
+                        <td>${position.pnl || ""}</td>
+                        <td>${position.target || ""}</td>
+                        <td>${position.stop_loss || ""}</td>
+                        <td>${position.entry_time || ""}</td>
+                        <td>${position.status || ""}</td>
+                    `;
+
+                    tbody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Error loading live positions:", error);
+
+                document.querySelector(
+                    "#livePositionsTable tbody"
+                ).innerHTML = `
+                    <tr>
+                        <td colspan="11">Failed to load positions</td>
+                    </tr>
+                `;
+            }
+        }
+        async function loadTradeHistory(){
+
+            const response =
+                await fetch("/get_trade_history");
+
+            const data =
+                await response.json();
+
+            const tbody =
+                document.querySelector(
+                    "#tradeHistoryTable tbody"
+                );
+
+            tbody.innerHTML = "";
+
+            if(data.length === 0){
+
+                tbody.innerHTML =
+                    '<tr><td colspan="10">No Trade History</td></tr>';
+
+                return;
+            }
+
+            data.forEach(trade => {
+
+                tbody.innerHTML += `
+                <tr>
+                    <td>${trade.index_name}</td>
+                    <td>${trade.symbol}</td>
+                    <td>${trade.position_type}</td>
+                    <td>${trade.qty}</td>
+                    <td>${trade.entry_price}</td>
+                    <td>${trade.exit_price}</td>
+                    <td class="${trade.pnl >= 0 ? 'positive':'negative'}">
+                        ₹${trade.pnl.toFixed(2)}
+                    </td>
+                    <td>${trade.exit_reason}</td>
+                    <td>${trade.entry_time}</td>
+                    <td>${trade.exit_time}</td>
+                </tr>`;
+            });
+        }
     </script>
 
 </body>

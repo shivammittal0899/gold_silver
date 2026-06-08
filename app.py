@@ -4788,6 +4788,39 @@ def get_option_settings():
     )
 
     return jsonify(settings)
+
+@app.route("/get_live_positions")
+def get_live_positions():
+
+    conn = get_connection()
+
+    rows = conn.execute("""
+        SELECT *
+        FROM live_positions
+        WHERE status='OPEN'
+        ORDER BY entry_time DESC
+    """).fetchall()
+
+    conn.close()
+
+    return jsonify([dict(x) for x in rows])
+
+@app.route("/get_trade_history")
+def get_trade_history():
+
+    conn = get_connection()
+
+    rows = conn.execute("""
+        SELECT *
+        FROM trade_history
+        ORDER BY exit_time DESC
+        LIMIT 100
+    """).fetchall()
+
+    conn.close()
+
+    return jsonify([dict(x) for x in rows])
+
 # ============================================
 # ERROR HANDLER
 # ============================================

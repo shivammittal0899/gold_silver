@@ -716,6 +716,8 @@ def square_off_before_close():
     return None
 
 def calculate_pnl(entry_price,exit_price,qty,side="BUY"):
+    log2(exit_price)
+    log2(entry_price)
     if side == "BUY":
         pnl = (float(exit_price) - float(entry_price)) * qty
     else:
@@ -815,6 +817,7 @@ def close_all_positions(index_name, exit_reason="MANUAL_STOP"):
 
             token = pos["token"]
             exit_price = get_live_price(kite_local,token)
+            log2(exit_price)
             # exit_price = LIVE_PRICES.get(
             #     token,
             #     pos["current_price"] or pos["entry_price"]

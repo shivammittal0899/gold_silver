@@ -4584,45 +4584,45 @@ def start_automation():
             "message":str(e)
         }),500
 
-@app.route(
-    "/stop_automation",
-    methods=["POST"]
-)
-def stop_automation():
-    try:
-        data = request.json
-        index_name = data["index_name"]
-        automation_flags[index_name] = False
-        conn = get_connection()
-        cur = conn.cursor()
-        cur.execute("""
-        UPDATE automation_settings
-        SET enabled=0
-        WHERE index_name=?
-        """,(index_name,))
+# @app.route(
+#     "/stop_automation",
+#     methods=["POST"]
+# )
+# def stop_automation():
+#     try:
+#         data = request.json
+#         index_name = data["index_name"]
+#         automation_flags[index_name] = False
+#         conn = get_connection()
+#         cur = conn.cursor()
+#         cur.execute("""
+#         UPDATE automation_settings
+#         SET enabled=0
+#         WHERE index_name=?
+#         """,(index_name,))
 
-        conn.commit()
+#         conn.commit()
 
-        conn.close()
+#         conn.close()
 
-        return jsonify({
+#         return jsonify({
 
-            "status":"success",
+#             "status":"success",
 
-            "message":
-            f"{index_name} stopped"
+#             "message":
+#             f"{index_name} stopped"
 
-        })
+#         })
 
-    except Exception as e:
+#     except Exception as e:
 
-        return jsonify({
+#         return jsonify({
 
-            "status":"error",
+#             "status":"error",
 
-            "message":str(e)
+#             "message":str(e)
 
-        }),500
+#         }),500
 @app.route('/save_option_settings', methods=['POST'])
 def save_option_settings():
 

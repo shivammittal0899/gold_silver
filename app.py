@@ -4375,7 +4375,7 @@ def update_option_master(kite_local):
         )
         VALUES(
             ?,?,?,?,?,?,?,?,
-            CURRENT_TIMESTAMP
+            ist_now()
         )
     """, rows)
 

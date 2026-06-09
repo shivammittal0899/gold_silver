@@ -1,5 +1,5 @@
 # db.py
-
+from datetime import datetime
 import sqlite3
 
 DB_NAME_OP = "options_automation.db"
@@ -27,7 +27,7 @@ def create_tables():
         token INTEGER UNIQUE,
         exchange TEXT,
         lot_size INTEGER,
-        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        last_updated TIMESTAMP DEFAULT datetime('now', '+5 hours', '+30 minutes')
     )
     """)
 
@@ -46,7 +46,7 @@ def create_tables():
     #     sl_percent REAL DEFAULT 5,
     #     sl_cap REAL DEFAULT 0,
     #     refresh_seconds INTEGER DEFAULT 60,
-    #     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    #     updated_at TIMESTAMP DEFAULT datetime('now', '+5 hours', '+30 minutes')
     # )
     # """)
     cur.execute("""
@@ -96,7 +96,7 @@ def create_tables():
         position_side TEXT DEFAULT 'NONE',
         last_trade_time TIMESTAMP,
         last_error TEXT,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        updated_at TIMESTAMP DEFAULT datetime('now', '+5 hours', '+30 minutes')
     )
     """)
 
@@ -115,7 +115,7 @@ def create_tables():
         target REAL,
         pnl REAL DEFAULT 0,
         status TEXT DEFAULT 'OPEN',
-        entry_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        entry_time TIMESTAMP DEFAULT datetime('now', '+5 hours', '+30 minutes'),
         exit_time TIMESTAMP
     )
     """)

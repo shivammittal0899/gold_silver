@@ -265,7 +265,7 @@ def save_automation_settings(data):
         ?,?,?,?,?,?,?,
         1,
         ?,?,?,?,?,?,?,?,
-        CURRENT_TIMESTAMP
+        ist_now()
     )
     """,(
 
@@ -555,7 +555,13 @@ def process_bearish_entry(index_name, pe_data, settings):
     create_position(index_name, pe_symbol, pe_token, pos_type, qty, entry_price, sl_price, tg_price)
     return True
 
+def ist_now():
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
 
+    return datetime.now(
+        ZoneInfo("Asia/Kolkata")
+    ).strftime("%Y-%m-%d %H:%M:%S")
 
 def create_position(index_name, symbol, token, pos_type, qty, entry_price, sl_price, tg_price):
     try:
@@ -583,7 +589,7 @@ def create_position(index_name, symbol, token, pos_type, qty, entry_price, sl_pr
         VALUES(
             ?,?,?,?,?,?,?,?,?,
             'OPEN',
-            CURRENT_TIMESTAMP
+            ist_now()
         )
         """,(
             index_name,
@@ -602,7 +608,7 @@ def create_position(index_name, symbol, token, pos_type, qty, entry_price, sl_pr
         UPDATE automation_settings
         SET
             position_side=?,
-            last_trade_time=CURRENT_TIMESTAMP
+            last_trade_time=ist_now()
         WHERE index_name=?
         """,(
             pos_type,
@@ -755,7 +761,7 @@ def close_position(position_id, exit_price, exit_reason):
             )
             VALUES(
                 ?,?,?,?,?,?,?,?,?,?,
-                CURRENT_TIMESTAMP
+                ist_now()
             )
         """,(
             position["index_name"],
@@ -776,7 +782,7 @@ def close_position(position_id, exit_price, exit_reason):
                 current_price = ?,
                 pnl = ?,
                 status = 'CLOSED',
-                exit_time = CURRENT_TIMESTAMP
+                exit_time = ist_now()
             WHERE id = ?
         """,(
             exit_price,

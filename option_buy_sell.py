@@ -265,7 +265,7 @@ def save_automation_settings(data):
         ?,?,?,?,?,?,?,
         1,
         ?,?,?,?,?,?,?,?,
-        ist_now()
+        datetime('now', '+5 hours', '+30 minutes')
     )
     """,(
 
@@ -589,7 +589,7 @@ def create_position(index_name, symbol, token, pos_type, qty, entry_price, sl_pr
         VALUES(
             ?,?,?,?,?,?,?,?,?,
             'OPEN',
-            ist_now()
+            datetime('now', '+5 hours', '+30 minutes')
         )
         """,(
             index_name,
@@ -608,7 +608,7 @@ def create_position(index_name, symbol, token, pos_type, qty, entry_price, sl_pr
         UPDATE automation_settings
         SET
             position_side=?,
-            last_trade_time=ist_now()
+            last_trade_time=datetime('now', '+5 hours', '+30 minutes')
         WHERE index_name=?
         """,(
             pos_type,
@@ -761,7 +761,7 @@ def close_position(position_id, exit_price, exit_reason):
             )
             VALUES(
                 ?,?,?,?,?,?,?,?,?,?,
-                ist_now()
+                datetime('now', '+5 hours', '+30 minutes')
             )
         """,(
             position["index_name"],
@@ -782,7 +782,7 @@ def close_position(position_id, exit_price, exit_reason):
                 current_price = ?,
                 pnl = ?,
                 status = 'CLOSED',
-                exit_time = ist_now()
+                exit_time = datetime('now', '+5 hours', '+30 minutes')
             WHERE id = ?
         """,(
             exit_price,

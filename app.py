@@ -4375,7 +4375,7 @@ def update_option_master(kite_local):
         )
         VALUES(
             ?,?,?,?,?,?,?,?,
-            ist_now()
+            datetime('now', '+5 hours', '+30 minutes')
         )
     """, rows)
 

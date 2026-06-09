@@ -20,7 +20,33 @@ def log2(msg):
     with open("static/logs.txt", "a") as f:
         f.write(f"{msg}\n")
 
+def wait_until_next_target_second(target_second):
 
+    now = datetime.now()
+    if target_second == 60:
+        next_time = (
+            now.replace(
+                second=0,
+                microsecond=0
+            )
+            + timedelta(minutes=1)
+        )
+
+    else:
+
+        next_time = now.replace(
+            second=target_second,
+            microsecond=0
+        )
+
+        if now.second >= target_second:
+            next_time += timedelta(minutes=1)
+
+    wait_seconds = (
+        next_time - now
+    ).total_seconds()
+
+    time.sleep(wait_seconds)
 def get_connection():
     conn = sqlite3.connect(DB_NAME)
     conn.row_factory = sqlite3.Row
@@ -351,7 +377,7 @@ def automation_loop(index_name):
     kite_local = KiteConnect(api_key=API_KEY)
     kite_local.set_access_token(access_token)
     settings = get_automation_settings(index_name)
-
+    
     if not settings:
         logger.info(f"{index_name} settings not found")
         automation_flags[index_name] = False
@@ -368,7 +394,9 @@ def automation_loop(index_name):
             )
             automation_flags[index_name] = False
             break
-        time.sleep(30)
+        # time.sleep(30)
+        refresh_seconds = settings['refresh_seconds']
+        wait_until_next_target_second(refresh_seconds)
     logger.info(
         f"{index_name} automation stopped"
     )

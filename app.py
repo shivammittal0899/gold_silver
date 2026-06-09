@@ -4584,45 +4584,6 @@ def start_automation():
             "message":str(e)
         }),500
 
-# @app.route(
-#     "/stop_automation",
-#     methods=["POST"]
-# )
-# def stop_automation():
-#     try:
-#         data = request.json
-#         index_name = data["index_name"]
-#         automation_flags[index_name] = False
-#         conn = get_connection()
-#         cur = conn.cursor()
-#         cur.execute("""
-#         UPDATE automation_settings
-#         SET enabled=0
-#         WHERE index_name=?
-#         """,(index_name,))
-
-#         conn.commit()
-
-#         conn.close()
-
-#         return jsonify({
-
-#             "status":"success",
-
-#             "message":
-#             f"{index_name} stopped"
-
-#         })
-
-#     except Exception as e:
-
-#         return jsonify({
-
-#             "status":"error",
-
-#             "message":str(e)
-
-#         }),500
 @app.route('/save_option_settings', methods=['POST'])
 def save_option_settings():
 

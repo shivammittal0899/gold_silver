@@ -353,10 +353,9 @@ def automation_loop(index_name):
     settings = get_automation_settings(index_name)
 
     if not settings:
-        logger.info(
-            f"{index_name} settings not found"
-        )
+        logger.info(f"{index_name} settings not found")
         automation_flags[index_name] = False
+        return
     log2(f"settings --- {settings}")
     while automation_flags.get(index_name, False):
         try:
@@ -385,7 +384,7 @@ def process_index(kite_local, index_name,settings):
         # Check existing position
         position = has_open_position(index_name)
         if position:
-            # monitor_position(position)
+            monitor_position(kite_local, position, settings)
             return
         timeframe = settings['timeframe']
         nifty_symbol = "NSE:NIFTY 50"
@@ -443,14 +442,7 @@ def process_index(kite_local, index_name,settings):
             pe_data = pe_future.result()
             log2(f"nifty data -- {nifty_data}  -- {banknifty_index}  -- {ce_future}  -- {pe_future}")
         log2((datetime.now() - ptime).total_seconds() )
-        run_entry_scan(
-            index_name,
-            settings,
-            nifty_data,
-            banknifty_data,
-            ce_data,
-            pe_data
-        )
+        run_entry_scan(index_name, settings, nifty_data, banknifty_data, ce_data, pe_data)
 
     except Exception as e:
         logger.error(
@@ -487,8 +479,6 @@ def run_entry_scan(index_name,
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
     
-
-
 def process_bullish_entry(index_name, ce_data, settings):
     try:
         logger.info(f"settings data -- {settings}")
@@ -498,7 +488,7 @@ def process_bullish_entry(index_name, ce_data, settings):
             f"{ce_data['symbol']}"
         )
         ce_symbol = settings['option_ce_symbol']
-        ce_token = settings['option_pe_token']
+        ce_token = settings['option_ce_token']
         pos_type = "CE"
         qty = settings['qty']
 
@@ -539,7 +529,7 @@ def process_bullish_entry(index_name, ce_data, settings):
 
 def process_bearish_entry(index_name, pe_data, settings):
     logger.info(f"settings data -- {settings}")
-    logger.info(f"ce data --- {pe_data}")
+    logger.info(f"pe data --- {pe_data}")
     logger.info(
         f"{index_name} Bearish Entry Found "
         f"{pe_data['symbol']}"
@@ -554,14 +544,6 @@ def process_bearish_entry(index_name, pe_data, settings):
     log2("going to update table")
     create_position(index_name, pe_symbol, pe_token, pos_type, qty, entry_price, sl_price, tg_price)
     return True
-
-def ist_now():
-    from datetime import datetime
-    from zoneinfo import ZoneInfo
-
-    return datetime.now(
-        ZoneInfo("Asia/Kolkata")
-    ).strftime("%Y-%m-%d %H:%M:%S")
 
 def create_position(index_name, symbol, token, pos_type, qty, entry_price, sl_price, tg_price):
     try:
@@ -635,17 +617,17 @@ def create_position(index_name, symbol, token, pos_type, qty, entry_price, sl_pr
         return False
 
 
-def stoploss_value(ce_data, settings):
+def stoploss_value(option_data, settings):
     
     risk_percent = settings['risk_percent']
     sl_base = settings['sl_base']
     sl_per = settings['sl_percent']
     sl_cap = settings['sl_cap']
-    ltp = ce_data['price']
-    high = ce_data['max_10']
+    ltp = option_data['price']
+    high = option_data['max_10']
     logger.info(f"sl data -- {risk_percent} -- {sl_base} -- {sl_per} -- {sl_cap} -- {high}")
     if sl_base == "kijun":
-        sl_base_value = ce_data['kijun']
+        sl_base_value = option_data['kijun']
     
     sl1 = high - (high *risk_percent)/100
     sl2 = sl_base_value - (sl_base_value*sl_per)/100
@@ -685,7 +667,89 @@ def monitor_open_positions():
 
         monitor_position(position)
 
-def monitor_position(position):
+def monitor_position(kite_local,position, settings):
+    pos_type = position['position_type']
+    sl_price = position['stoploss']
+    tg_price = position['target']
+    with ThreadPoolExecutor(
+        max_workers=2
+    ) as executor:
+
+        ce_future = executor.submit(
+            fetch_and_analyze_option,
+            kite_local,
+            {
+                "symbol": settings["option_ce_symbol"],
+                "token": settings["option_ce_token"],
+                "option_type":"CE",
+                "strike":0,
+                "expiry":""
+            },
+            position["index_name"],
+            settings["timeframe"]
+        )
+        pe_future = executor.submit(
+            fetch_and_analyze_option,
+            kite_local,
+            {
+                "symbol": settings["option_pe_symbol"],
+                "token": settings["option_pe_token"],
+                "option_type":"PE",
+                "strike":0,
+                "expiry":""
+            },
+            position["index_name"],
+            settings["timeframe"]
+        )
+        ce_data = ce_future.result()
+        pe_data = pe_future.result()
+    if not ce_data or not pe_data:
+        logger.warning("Option data unavailable")
+        return
+    if pos_type == "CE":
+        cur_price = ce_data['price']
+    elif pos_type == "PE":
+        cur_price = pe_data['price']
+    
+    ## check stoploss hit or not
+    if sl_price > cur_price:
+        log2("Stoploss hit -- close positions")
+        close_position(position['id'], sl_price, "Stoploss Hit")
+        return
+    if tg_price < cur_price:
+        log2("Target hit -- close positions")
+        close_position(position['id'], tg_price, "Target Hit")
+        return
+    signal_map = {
+        "Buy": 1,
+        "Strong Buy": 2,
+        "Sell": -1,
+        "Strong Sell": -2
+    }
+    ce_signal_score = signal_map.get(ce_data['signal'].title(), 0)
+    pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
+    if pos_type == "CE":
+        if (ce_signal_score <= -1) or (pe_signal_score >= 1):
+            close_position(position['id'], cur_price, "Sell Condition")
+            return
+        else:
+            sl_value = stoploss_value(ce_data, settings)
+            if round(sl_price, 2) != round(sl_value, 2):
+                update_position(position['id'], sl_value, cur_price, position)
+
+    elif pos_type == "PE":
+        if (pe_signal_score <= -1) or (ce_signal_score >= 1):
+            close_position(position['id'], cur_price, "Sell Condition")
+            return
+        else:
+            sl_value = stoploss_value(pe_data, settings)
+            if round(sl_price, 2) != round(sl_value, 2):
+                update_position(position['id'], sl_value, cur_price, position)
+    
+
+    
+
+    
     """
     1 Update Current Price
 
@@ -706,6 +770,28 @@ def monitor_position(position):
     """
     return None
 
+def update_position(position_id, new_stoploss, cur_price, position):
+    try:
+        pnl = calculate_pnl(position["entry_price"],cur_price,position["qty"],side="BUY")
+        with get_connection() as conn:
+            conn.execute("""
+                UPDATE live_positions
+                SET
+                    stoploss = ?,
+                    current_price = ?,
+                    pnl = ?
+                WHERE id = ?
+                AND status = 'OPEN'
+            """, (
+                new_stoploss,
+                cur_price,
+                pnl,
+                position_id
+            ))
+    except Exception:
+        logger.exception(f"SL update failed: {position_id}")
+        
+
 def market_open_for_entries():
 
     now = datetime.now()
@@ -722,8 +808,8 @@ def square_off_before_close():
     return None
 
 def calculate_pnl(entry_price,exit_price,qty,side="BUY"):
-    log2(exit_price)
-    log2(entry_price)
+    log2(f"pnl calculation -- {exit_price}")
+    log2(f"pnl calculation -- {entry_price}")
     if side == "BUY":
         pnl = (float(exit_price) - float(entry_price)) * qty
     else:
@@ -798,60 +884,44 @@ def close_position(position_id, exit_price, exit_reason):
         conn.close()
 
 def close_all_positions(index_name, exit_reason="MANUAL_STOP"):
-    conn = get_connection()
-    cur = conn.cursor()
-    try:
-        closed_count = 0
-        positions = cur.execute("""
+
+    with get_connection() as conn:
+
+        positions = conn.execute("""
             SELECT *
             FROM live_positions
             WHERE index_name = ?
             AND status = 'OPEN'
-        """,(
-            index_name,
-        )).fetchall()
-        # ids = []
-        # for pos in positions:
-        #     ids.append(pos["id"])
-        # conn.close()
-        # for pid in ids:
-        #     close_position(pid,get_current_option_price(pid),exit_reason)
+        """, (index_name,)).fetchall()
 
-        # return len(ids)
-        access_token = read_access_token()
-        kite_local = KiteConnect(api_key=API_KEY)
-        kite_local.set_access_token(access_token)
-        for pos in positions:
+    access_token = read_access_token()
 
-            token = pos["symbol"]
-            exit_price = get_live_price(kite_local,token)
-            log2(exit_price)
-            # exit_price = LIVE_PRICES.get(
-            #     token,
-            #     pos["current_price"] or pos["entry_price"]
-            # )
+    kite_local = KiteConnect(api_key=API_KEY)
+    kite_local.set_access_token(access_token)
 
-            success = close_position(
-                pos["id"],
-                exit_price,
-                exit_reason
-            )
+    closed_count = 0
 
-            if success:
-                closed_count += 1
+    for pos in positions:
 
-        return closed_count
+        exit_price = get_live_price(
+            kite_local,
+            pos["symbol"]
+        ) or pos["entry_price"]
 
-    except:
+        if close_position(
+            pos["id"],
+            exit_price,
+            exit_reason
+        ):
+            closed_count += 1
 
-        conn.close()
-        raise
-def get_live_price(kite_local,token):
+    return closed_count
+def get_live_price(kite_local,symbol):
 
     try:
 
         quote = kite_local.ltp(
-            [f"NFO:{token}"]
+            [f"NFO:{symbol}"]
         )
         log2(quote)
         return list(

@@ -500,10 +500,10 @@ def run_entry_scan(index_name,
     pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
 
     log2(f"scanning complete execution --- {index_signal_score} -- {ce_signal_score} -- {pe_signal_score}")
-    if ((index_signal_score >= 3) and (ce_signal_score >= 2) and (pe_signal_score <= -1)):
+    if ((index_signal_score >= 3) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
         log2("Entry in CE")
         process_bullish_entry(index_name,ce_data,settings)
-    elif (index_signal_score <= -3) and (ce_signal_score <= -1) and (pe_signal_score >= 2):
+    elif (index_signal_score <= -3) and (ce_signal_score <= -1) and (pe_signal_score >= 1):
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
     
@@ -739,9 +739,11 @@ def monitor_position(kite_local,position, settings):
         cur_price = ce_data['price']
     elif pos_type == "PE":
         cur_price = pe_data['price']
-    
+    log2(f"monitor prices -- {cur_price}")
+    log2(f"monitor sl prices -- {sl_price}")
     ## check stoploss hit or not
     if sl_price > cur_price:
+        # log2("stoploss hit")
         log2("Stoploss hit -- close positions")
         close_position(position['id'], sl_price, "Stoploss Hit")
         return

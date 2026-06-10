@@ -4554,23 +4554,34 @@ def start_automation():
         log1("options_automation_start")
         data = request.json
         index_name = data["index_name"]
-        if automation_flags.get(index_name):
+        thread = automation_threads.get(index_name)
+        if (thread is not None and thread.is_alive()):
             return jsonify({
                 "status":"error",
-                "message":
-                f"{index_name} already running"
+                "message":f"{index_name} already running"
             })
+        
         log1(data)
         save_automation_settings(data)
         automation_flags[index_name] = True
-        thread = threading.Thread(
-            target=automation_loop,
-            args=(index_name,),
-            daemon=True
-        )
-        automation_threads[index_name] = thread
+        automation_lock = threading.Lock()
 
-        thread.start()
+        with automation_lock:
+            thread = automation_threads.get(index_name)
+
+            if thread and thread.is_alive():
+                return jsonify({
+                    "status":"error",
+                    "message":f"{index_name} already running"
+                })
+            automation_flags[index_name] = True
+            thread = threading.Thread(
+                target=automation_loop,
+                args=(index_name,),
+                daemon=True
+            )
+            automation_threads[index_name] = thread
+            thread.start()
 
         return jsonify({
             "status":"success",

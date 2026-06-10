@@ -4558,8 +4558,6 @@ def automation_status():
     return jsonify([dict(x) for x in rows])
 
 automation_lock = Lock()
-automation_threads = {}
-automation_flags = {}
 
 # Fix start_automation endpoint
 

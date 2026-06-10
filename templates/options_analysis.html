@@ -1205,29 +1205,15 @@
                         }
                     );
 
-                const data =
-                    await response.json();
+                const data = await response.json();
 
-                if (
-                    data.status !==
-                    "success"
-                ) {
-
-                    alert(
-                        data.message
-                    );
-
-                    return;
-                }
-
-                document.getElementById(
-                    "niftyStatus"
-                ).innerHTML =
-                    "RUNNING";
-
-                document.getElementById(
-                    "niftyStopBtn"
-                ).disabled = false;
+                // if (data.status !=="success") {
+                //     return;
+                // }
+                
+                alert(data.message);
+                document.getElementById("niftyStatus").innerHTML = "RUNNING";
+                document.getElementById("niftyStopBtn").disabled = false;
 
             }
             catch (e) {

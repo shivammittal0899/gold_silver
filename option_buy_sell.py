@@ -185,7 +185,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             'expiry': item['expiry'],
             'token': item['token'],
         }
-        data, df = stock_data_analysis(df, timeframe)
+        data, df = stock_data_analysis(df, timeframe, "options")
         analysis.update(data if isinstance(data, dict) else {})
         df_values = {
             'kijun': float(df['kijun'].iloc[-1]),

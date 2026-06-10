@@ -299,22 +299,38 @@ def get_adx_strength_signal(df):
             return -1
 
     return 0
-def signal_fun(data, df):
+def signal_fun(data, df, ins_type):
     signal = "Neutral"
-    ret6 = data['ret6']
-    if ret6 > 2:
-        ret6_ = 1
-    elif ret6 > 0:
-        ret6_ = 0
+    if ins_type == "option":
+        ret6 = data['ret6']
+        if ret6 > 2:
+            ret6_ = 1
+        elif ret6 > 0:
+            ret6_ = 0
+        else:
+            ret6_ = -1
+        ret12 = data['ret12']
+        if ret12 > 4:
+            ret12_ = 1
+        elif ret12 > -2:
+            ret12_ = 0
+        else:
+            ret12_ = -1
     else:
-        ret6_ = -1
-    ret12 = data['ret12']
-    if ret12 > 4:
-        ret12_ = 1
-    elif ret12 > -2:
-        ret12_ = 0
-    else:
-        ret12_ = -1
+        ret6 = data['ret6']
+        if ret6 > 0.05:
+            ret6_ = 1
+        elif ret6 > 0:
+            ret6_ = 0
+        else:
+            ret6_ = -1
+        ret12 = data['ret12']
+        if ret12 > 0.05:
+            ret12_ = 1
+        elif ret12 > -2:
+            ret12_ = 0
+        else:
+            ret12_ = -1
     
     trend = data['trend']
     if trend == "STRONG UPTREND":
@@ -432,7 +448,7 @@ def data_analysis(df, timeframe):
     return data
 
 
-def stock_data_analysis(df, timeframe):
+def stock_data_analysis(df, timeframe, ins_type = "equity"):
 
     df = indicator_values(df)
     df = df[-100:]
@@ -477,7 +493,7 @@ def stock_data_analysis(df, timeframe):
     data.update(volatility if isinstance(volatility, dict) else {})
     data.update(volatility_per if isinstance(volatility_per, dict) else {})
     data.update(ichimoku_d if isinstance(ichimoku_d, dict) else {})
-    signal = signal_fun(data, df)
+    signal = signal_fun(data, df, ins_type)
     data.update(signal if isinstance(signal, dict) else {})
     return data, df
 

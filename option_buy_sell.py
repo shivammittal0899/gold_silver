@@ -660,7 +660,7 @@ def stoploss_value(option_data, settings):
     sl1 = high - (high *risk_percent)/100
     sl2 = sl_base_value - (sl_base_value*sl_per)/100
     sl3 = sl_base_value - sl_cap
-
+    log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3}")
     sl = max(sl1,sl2,sl3)
 
     return sl

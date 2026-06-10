@@ -654,6 +654,7 @@ def stoploss_value(option_data, settings):
     ltp = option_data['price']
     high = option_data['max_10']
     logger.info(f"sl data -- {risk_percent} -- {sl_base} -- {sl_per} -- {sl_cap} -- {high}")
+    log2(f"sl data -- {risk_percent} -- {sl_base} -- {sl_per} -- {sl_cap} -- {high}")
     if sl_base == "kijun":
         sl_base_value = option_data['kijun']
     

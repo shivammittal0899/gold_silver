@@ -4544,56 +4544,64 @@ def analyze_options():
         return jsonify({'status': 'error', 'message': str(e)}), 400
     
 
+@app.route("/automation_status")
+def automation_status():
+    conn = get_connection()
+    rows = conn.execute("""
+        SELECT
+            index_name,
+            enabled,
+            position_side
+        FROM automation_settings
+    """).fetchall()
 
-@app.route(
-    "/start_automation",
-    methods=["POST"]
-)
+    return jsonify([dict(x) for x in rows])
+
+automation_lock = Lock()
+automation_threads = {}
+automation_flags = {}
+
+# Fix start_automation endpoint
+
+@app.route("/start_automation", methods=["POST"])
 def start_automation():
     try:
-        log1("options_automation_start")
         data = request.json
         index_name = data["index_name"]
-        thread = automation_threads.get(index_name)
-        if (thread is not None and thread.is_alive()):
-            return jsonify({
-                "status":"error",
-                "message":f"{index_name} already running"
-            })
         
-        log1(data)
-        save_automation_settings(data)
-        automation_flags[index_name] = True
-        automation_lock = threading.Lock()
-
-        with automation_lock:
+        with automation_lock:  # CRITICAL: Use lock
+            # Check if already running
             thread = automation_threads.get(index_name)
-
             if thread and thread.is_alive():
                 return jsonify({
-                    "status":"error",
-                    "message":f"{index_name} already running"
+                    "status": "error",
+                    "message": f"{index_name} already running"
                 })
+            
+            # Save settings
+            save_automation_settings(data)
+            
+            # Start new thread
             automation_flags[index_name] = True
             thread = threading.Thread(
                 target=automation_loop,
                 args=(index_name,),
-                daemon=True
+                daemon=False  # Important: don't use daemon threads for trading
             )
             automation_threads[index_name] = thread
             thread.start()
-
+        
         return jsonify({
-            "status":"success",
-            "message":
-            f"{index_name} started"
+            "status": "success",
+            "message": f"{index_name} started"
         })
-
+    
     except Exception as e:
+        logger.error(f"Error starting automation: {e}")
         return jsonify({
-            "status":"error",
-            "message":str(e)
-        }),500
+            "status": "error",
+            "message": str(e)
+        }), 500
 
 @app.route('/save_option_settings', methods=['POST'])
 def save_option_settings():

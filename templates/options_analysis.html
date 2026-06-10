@@ -1386,7 +1386,93 @@
             });
 
         }
-        
+        async function loadAutomationStatus() {
+            try {
+                const response = await fetch("/automation_status");
+                const data = await response.json();
+
+                console.log("Automation Status:",data);
+                const nifty = data.find(x => x.index_name === "NIFTY");
+                const bankNifty = data.find(x => x.index_name === "BANKNIFTY");
+
+                // NIFTY
+                if (
+                    nifty &&
+                    Number(nifty.enabled) === 1
+                ) {
+
+                    document.getElementById("niftyStatus"
+                    ).innerHTML = "RUNNING";
+
+                    document.getElementById(
+                        "niftyStopBtn"
+                    ).disabled = false;
+
+                    document.getElementById(
+                        "niftyPosition"
+                    ).innerHTML =
+                        nifty.position_side ||
+                        "NONE";
+
+                } else {
+
+                    document.getElementById(
+                        "niftyStatus"
+                    ).innerHTML = "STOPPED";
+
+                    document.getElementById(
+                        "niftyStopBtn"
+                    ).disabled = true;
+
+                    document.getElementById(
+                        "niftyPosition"
+                    ).innerHTML = "NONE";
+                }
+
+                // BANKNIFTY
+                if (
+                    bankNifty &&
+                    Number(bankNifty.enabled) === 1
+                ) {
+
+                    document.getElementById(
+                        "bankNiftyStatus"
+                    ).innerHTML = "RUNNING";
+
+                    document.getElementById(
+                        "bankNiftyStopBtn"
+                    ).disabled = false;
+
+                    document.getElementById(
+                        "bankNiftyPosition"
+                    ).innerHTML =
+                        bankNifty.position_side ||
+                        "NONE";
+
+                } else {
+
+                    document.getElementById(
+                        "bankNiftyStatus"
+                    ).innerHTML = "STOPPED";
+
+                    document.getElementById(
+                        "bankNiftyStopBtn"
+                    ).disabled = true;
+
+                    document.getElementById(
+                        "bankNiftyPosition"
+                    ).innerHTML = "NONE";
+                }
+
+            } catch (e) {
+
+                console.error(
+                    "Status Load Error:",
+                    e
+                );
+
+            }
+        }
         document.addEventListener("DOMContentLoaded", async function(){
             attachSaveEvents();
 
@@ -1411,7 +1497,6 @@
                 document.getElementById("bankNiftySLPercent").value = savedSettings.banknifty_sl_percent || 5;
                 document.getElementById("bankNiftyRefresh").value = savedSettings.banknifty_refresh || 60;
                 
-                
                 // await analyzeIndexes();
                 document.getElementById("timeframe").value = savedSettings.timeframe || "minute";
                 await analyzeIndexes();
@@ -1422,6 +1507,8 @@
                         },1000
                     );
                 }
+                await loadAutomationStatus();
+                
                 loadLivePositions();
                 loadTradeHistory();
 

@@ -331,76 +331,78 @@ def save_automation_settings(data):
 
 def has_open_position(index_name):
     log2(f"checking live positions -- {index_name}")
-    conn = get_connection()
+    with get_connection() as conn:
 
-    cur = conn.cursor()
-
-    cur.execute("""
-    SELECT *
-    FROM live_positions
-    WHERE index_name=?
-    AND status='OPEN'
-    """,(index_name,))
-
-    row = cur.fetchone()
-
-    conn.close()
+        row = conn.execute("""
+        SELECT *
+        FROM live_positions
+        WHERE index_name=?
+        AND status='OPEN'
+        """,(index_name,)).fetchone()
 
     return row
 def get_automation_settings(index_name):
     log2("fetching automation settings")
-    conn = get_connection()
-    cur = conn.cursor()
+    with get_connection() as conn:
 
-    cur.execute("""
+        row = conn.execute("""
         SELECT *
         FROM automation_settings
         WHERE index_name=?
-        AND enabled=1
-    """, (index_name,))
+        """,(index_name,)).fetchone()
 
-    row = cur.fetchone()
+    return dict(row) if row else None
 
-    conn.close()
+# def restore_automations():
+#     rows = conn.execute("""
+#         SELECT index_name
+#         FROM automation_settings
+#         WHERE enabled = 1
+#     """).fetchall()
 
-    if row:
-        return dict(row)
-
-    return None
+#     for row in rows:
+#         start_thread(row["index_name"])
 
 
 def automation_loop(index_name):
-    logger.info(
-        f"{index_name} automation started"
-    )
-    access_token = read_access_token()
-    kite_local = KiteConnect(api_key=API_KEY)
-    kite_local.set_access_token(access_token)
-    settings = get_automation_settings(index_name)
-    
-    if not settings:
-        logger.info(f"{index_name} settings not found")
-        automation_flags[index_name] = False
-        return
-    log2(f"settings --- {settings}")
-    
-    while automation_flags.get(index_name, False):
-        try:
-            log2("in automation loop --- looping")
-            process_index(kite_local, index_name, settings)
-            # square_off_before_close()
-        except Exception as e:
-            logger.error(
-                f"{index_name} Error : {e}"
-            )
-            automation_flags[index_name] = False
-            break
-        # time.sleep(30)
-        refresh_seconds = settings['refresh_seconds']
-        wait_until_next_target_second(refresh_seconds)
-    logger.info(
-        f"{index_name} automation stopped"
-    )
+    try:
+        logger.info(
+            f"{index_name} automation started"
+        )
+        access_token = read_access_token()
+        kite_local = KiteConnect(api_key=API_KEY)
+        kite_local.set_access_token(access_token)
+        
+        while automation_flags.get(index_name, False):
+            try:
+                settings = get_automation_settings(index_name)
+                
+                if not settings:
+                    logger.info(f"{index_name} settings not found")
+                    automation_flags[index_name] = False
+                    return
+                log2(f"settings --- {settings}")
+                log2("in automation loop --- looping")
+                process_index(kite_local, index_name, settings)
+                # square_off_before_close()
+            except Exception as e:
+                logger.error(
+                    f"{index_name} Error : {e}"
+                )
+                automation_flags[index_name] = False
+                break
+            # time.sleep(30)
+            refresh_seconds = settings['refresh_seconds']
+            wait_until_next_target_second(refresh_seconds)
+        logger.info(
+            f"{index_name} automation stopped"
+        )
+    except Exception as e:
+        logger.exception(f"{index_name} crashed: {e}")
+    finally:
+        logger.info(f"{index_name} automation stopped")
+        automation_threads.pop(index_name, None)
+        automation_flags.pop(index_name, None)
 
 
 def process_index(kite_local, index_name,settings):
@@ -866,6 +868,7 @@ def close_position(position_id, exit_price, exit_reason):
             return False
         pnl = calculate_pnl(position["entry_price"], exit_price, position["qty"])
         log2(f"pnl --- {pnl}")
+        
         cur.execute("""
             INSERT INTO trade_history(
                 index_name,

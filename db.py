@@ -5,8 +5,8 @@ import sqlite3
 DB_NAME_OP = "options_automation.db"
 
 
-def get_connection():
-    conn = sqlite3.connect(DB_NAME_OP)
+def get_connection(DB_NAME = DB_NAME_OP):
+    conn = sqlite3.connect(DB_NAME,timeout=30)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -118,6 +118,11 @@ def create_tables():
         entry_time TIMESTAMP DEFAULT (datetime('now', '+5 hours', '+30 minutes')),
         exit_time TIMESTAMP
     )
+    """)
+    cur.execute("""
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_open_position
+    ON live_positions(index_name, status)
+    WHERE status='OPEN'
     """)
 
     cur.execute("""

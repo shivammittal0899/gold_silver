@@ -747,7 +747,7 @@ def monitor_position(kite_local,position, settings):
         log2("Stoploss hit -- close positions")
         close_position(position['id'], sl_price, "Stoploss Hit")
         return
-    if tg_price < cur_price:
+    if (tg_price != 0) and (tg_price < cur_price):
         log2("Target hit -- close positions")
         close_position(position['id'], tg_price, "Target Hit")
         return

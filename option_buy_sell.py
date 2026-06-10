@@ -498,12 +498,14 @@ def run_entry_scan(index_name,
     index_signal_score = signal_map.get(nifty_data['signal'].title(), 0) + signal_map.get(banknifty_data['signal'].title(), 0)
     ce_signal_score = signal_map.get(ce_data['signal'].title(), 0)
     pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
+    index_ce_score = index_signal_score + ce_signal_score
+    index_pe_score = index_signal_score + pe_signal_score
 
     log2(f"scanning complete execution --- {index_signal_score} -- {ce_signal_score} -- {pe_signal_score}")
-    if ((index_signal_score >= 3) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
+    if ((index_ce_score >= 3) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
         log2("Entry in CE")
         process_bullish_entry(index_name,ce_data,settings)
-    elif (index_signal_score <= -3) and (ce_signal_score <= -1) and (pe_signal_score >= 1):
+    elif (index_pe_score <= -3) and (ce_signal_score <= -1) and (pe_signal_score >= 1):
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
     
@@ -664,7 +666,7 @@ def stoploss_value(option_data, settings):
     log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3}")
     sl = max(sl1,sl2,sl3)
 
-    return sl
+    return round(sl,2)
 
     
 def target_price(ce_data, settings):
@@ -700,6 +702,7 @@ def monitor_position(kite_local,position, settings):
     pos_type = position['position_type']
     sl_price = position['stoploss']
     tg_price = position['target']
+    cur_price_o = position['current_price']
     with ThreadPoolExecutor(
         max_workers=2
     ) as executor:
@@ -765,7 +768,7 @@ def monitor_position(kite_local,position, settings):
             return
         else:
             sl_value = stoploss_value(ce_data, settings)
-            if round(sl_price, 2) != round(sl_value, 2):
+            if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
                 update_position(position['id'], sl_value, cur_price, position)
 
     elif pos_type == "PE":
@@ -774,7 +777,7 @@ def monitor_position(kite_local,position, settings):
             return
         else:
             sl_value = stoploss_value(pe_data, settings)
-            if round(sl_price, 2) != round(sl_value, 2):
+            if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
                 update_position(position['id'], sl_value, cur_price, position)
     
 

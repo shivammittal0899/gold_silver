@@ -301,16 +301,16 @@ def get_adx_strength_signal(df):
     return 0
 def signal_fun(data, df, ins_type):
     signal = "Neutral"
-    if ins_type == "option":
+    if ins_type == "options":
         ret6 = data['ret6']
-        if ret6 > 2:
+        if ret6 > 1.5:
             ret6_ = 1
         elif ret6 > 0:
             ret6_ = 0
         else:
             ret6_ = -1
         ret12 = data['ret12']
-        if ret12 > 4:
+        if ret12 > 2:
             ret12_ = 1
         elif ret12 > -2:
             ret12_ = 0

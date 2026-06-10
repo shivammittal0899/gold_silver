@@ -396,6 +396,7 @@ def automation_loop(index_name):
             # time.sleep(30)
             refresh_seconds = settings['refresh_seconds']
             wait_until_next_target_second(refresh_seconds)
+        log2("automation stopped")
         logger.info(
             f"{index_name} automation stopped"
         )

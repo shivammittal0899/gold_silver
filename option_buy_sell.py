@@ -499,7 +499,7 @@ def run_entry_scan(index_name,
     ce_signal_score = signal_map.get(ce_data['signal'].title(), 0)
     pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
     index_ce_score = index_signal_score + ce_signal_score
-    index_pe_score = index_signal_score + pe_signal_score
+    index_pe_score = index_signal_score - pe_signal_score
 
     log2(f"scanning complete execution --- {index_signal_score} -- {ce_signal_score} -- {pe_signal_score}")
     if ((index_ce_score >= 3) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
@@ -842,8 +842,8 @@ def square_off_before_close():
     return None
 
 def calculate_pnl(entry_price,exit_price,qty,side="BUY"):
-    log2(f"pnl calculation -- {exit_price}")
-    log2(f"pnl calculation -- {entry_price}")
+    log2(f"pnl calculation entry price -- {exit_price}")
+    log2(f"pnl calculation exit price -- {entry_price}")
     if side == "BUY":
         pnl = (float(exit_price) - float(entry_price)) * qty
     else:

@@ -4579,6 +4579,7 @@ def start_automation():
                 })
             
             # Save settings
+            log1(data)
             save_automation_settings(data)
             
             # Start new thread

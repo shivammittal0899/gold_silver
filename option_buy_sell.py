@@ -373,9 +373,11 @@ def automation_loop(index_name):
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
         log2(f"automation loop is going to start -- {index_name}")
+        log2(automation_flags.get(index_name, False))
         while automation_flags.get(index_name, False):
             try:
                 settings = get_automation_settings(index_name)
+                log2(settings)
                 
                 if not settings:
                     logger.info(f"{index_name} settings not found")

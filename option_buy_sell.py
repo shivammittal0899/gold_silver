@@ -372,7 +372,7 @@ def automation_loop(index_name):
         access_token = read_access_token()
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
-        
+        log2(f"automation loop is going to start -- {index_name}")
         while automation_flags.get(index_name, False):
             try:
                 settings = get_automation_settings(index_name)
@@ -784,27 +784,6 @@ def monitor_position(kite_local,position, settings):
                 update_position(position['id'], sl_value, cur_price, position)
     
 
-    
-
-    
-    """
-    1 Update Current Price
-
-    2 Update Stoploss
-
-    3 Check Stoploss
-
-    4 Check Sell Condition
-
-    5 Check Target
-
-    6 Update PnL
-
-    SL Base
-    EMA
-    TENKAN
-    KIJUN
-    """
     return None
 
 def update_position(position_id, new_stoploss, cur_price, position):

@@ -742,8 +742,7 @@ def monitor_position(kite_local,position, settings):
         cur_price = ce_data['price']
     elif pos_type == "PE":
         cur_price = pe_data['price']
-    log2(f"monitor prices -- {cur_price}")
-    log2(f"monitor sl prices -- {sl_price}")
+    log2(f"monitor prices -- {cur_price} --  sl prices -- {sl_price}")
     ## check stoploss hit or not
     if sl_price > cur_price:
         # log2("stoploss hit")
@@ -762,6 +761,7 @@ def monitor_position(kite_local,position, settings):
     }
     ce_signal_score = signal_map.get(ce_data['signal'].title(), 0)
     pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
+    log2(f"signal score -- {ce_signal_score} -- {pe_signal_score}")
     if pos_type == "CE":
         if (ce_signal_score <= -1) or (pe_signal_score >= 1):
             close_position(position['id'], cur_price, "Sell Condition")

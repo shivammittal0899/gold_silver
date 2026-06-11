@@ -770,7 +770,7 @@ def monitor_position(kite_local,position, settings):
     pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
     log2(f"signal score -- {ce_signal_score} -- {pe_signal_score}")
     if pos_type == "CE":
-        if (ce_signal_score <= 0) or (pe_signal_score >= 1):
+        if (ce_signal_score <= -1) or (pe_signal_score >= 1):
             close_position(position['id'], cur_price, "Sell Condition")
             return
         else:
@@ -779,7 +779,7 @@ def monitor_position(kite_local,position, settings):
                 update_position(position['id'], sl_value, cur_price, position)
 
     elif pos_type == "PE":
-        if (pe_signal_score <= 0) or (ce_signal_score >= 1):
+        if (pe_signal_score <= -1) or (ce_signal_score >= 1):
             close_position(position['id'], cur_price, "Sell Condition")
             return
         else:

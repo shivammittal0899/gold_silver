@@ -385,13 +385,18 @@ def signal_fun(data, df, ins_type):
         vwap = 2
     else:
         vwap = 0
-    signal_sum = ret6_ + ret12_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + data['adx_signal'] + vwap
+    #ret6_ + ret12_ + 
+    signal_sum = trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + data['adx_signal'] + vwap
     
-    if signal_sum >= 7:
+    if signal_sum >= 11:
+        signal = "Very Strong Buy"
+    elif signal_sum >= 8:
         signal = "Strong Buy"
     elif signal_sum >= 3:
         signal = "Buy"
-    elif signal_sum <= -7:
+    elif signal_sum <= -11:
+        signal = "Very Strong Sell"
+    elif signal_sum <= -8:
         signal = "Strong Sell"
     elif signal_sum <= -3:
         signal = "Sell"

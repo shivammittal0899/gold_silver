@@ -496,8 +496,10 @@ def run_entry_scan(index_name,
     signal_map = {
         "Buy": 1,
         "Strong Buy": 2,
+        "Very Strong Buy": 3,
         "Sell": -1,
-        "Strong Sell": -2
+        "Strong Sell": -2,
+        "Very Strong Sell": -3
     }
 
     # Use .title() instead of .upper()
@@ -505,14 +507,14 @@ def run_entry_scan(index_name,
     index_signal_score = signal_map.get(nifty_data['signal'].title(), 0) + signal_map.get(banknifty_data['signal'].title(), 0)
     ce_signal_score = signal_map.get(ce_data['signal'].title(), 0)
     pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
-    index_ce_score = index_signal_score + ce_signal_score
-    index_pe_score = index_signal_score - pe_signal_score
+    net_score = index_signal_score + ce_signal_score - pe_signal_score
+    # index_pe_score = index_signal_score - pe_signal_score
 
     log2(f"scanning complete execution --- {index_signal_score} -- {ce_signal_score} -- {pe_signal_score}")
-    if ((index_ce_score >= 4) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
+    if ((net_score >= 5) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
         log2("Entry in CE")
         process_bullish_entry(index_name,ce_data,settings)
-    elif (index_pe_score <= -4) and (ce_signal_score <= -1) and (pe_signal_score >= 1):
+    elif (net_score <= -5) and (ce_signal_score <= -1) and (pe_signal_score >= 1):
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
     
@@ -531,7 +533,7 @@ def process_bullish_entry(index_name, ce_data, settings):
 
         entry_price = ce_data['price']
 
-        sl_price = stoploss_value(ce_data,settings)
+        sl_price = stoploss_value(ce_data,settings, entry_price)
         tg_price = target_price(ce_data,settings)
 
         create_position(
@@ -576,7 +578,7 @@ def process_bearish_entry(index_name, pe_data, settings):
     pos_type = "PE"
     qty = settings['qty']
     entry_price = pe_data['price']
-    sl_price = stoploss_value(pe_data, settings)
+    sl_price = stoploss_value(pe_data, settings, entry_price)
     tg_price = target_price(pe_data, settings)
     log2("going to update table")
     create_position(index_name, pe_symbol, pe_token, pos_type, qty, entry_price, sl_price, tg_price)
@@ -654,7 +656,7 @@ def create_position(index_name, symbol, token, pos_type, qty, entry_price, sl_pr
         return False
 
 
-def stoploss_value(option_data, settings):
+def stoploss_value(option_data, settings, entry_price = 0):
     
     risk_percent = settings['risk_percent']
     sl_base = settings['sl_base']
@@ -670,8 +672,12 @@ def stoploss_value(option_data, settings):
     sl1 = high - (high *risk_percent)/100
     sl2 = sl_base_value - (sl_base_value*sl_per)/100
     sl3 = sl_base_value - sl_cap
-    log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3}")
-    sl = max(sl1,sl2,sl3)
+    if (high - entry_price > 15):
+        sl4 = entry_price - 5
+    else:
+        sl4 = entry_price - 10
+    log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3} -- {sl4}")
+    sl = max(sl1,sl2,sl3, sl4)
 
     return round(sl,2)
 
@@ -710,6 +716,7 @@ def monitor_position(kite_local,position, settings):
     sl_price = position['stoploss']
     tg_price = position['target']
     cur_price_o = position['current_price']
+    entry_price = position['entry_price']
     with ThreadPoolExecutor(
         max_workers=2
     ) as executor:
@@ -747,6 +754,7 @@ def monitor_position(kite_local,position, settings):
         return
     if pos_type == "CE":
         cur_price = ce_data['price']
+        low_price = ce_data['low']
     elif pos_type == "PE":
         cur_price = pe_data['price']
     log2(f"monitor prices -- {cur_price} --  sl prices -- {sl_price}")
@@ -774,7 +782,7 @@ def monitor_position(kite_local,position, settings):
             close_position(position['id'], cur_price, "Sell Condition")
             return
         else:
-            sl_value = stoploss_value(ce_data, settings)
+            sl_value = stoploss_value(ce_data, settings, entry_price)
             if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
                 update_position(position['id'], sl_value, cur_price, position)
 
@@ -783,7 +791,7 @@ def monitor_position(kite_local,position, settings):
             close_position(position['id'], cur_price, "Sell Condition")
             return
         else:
-            sl_value = stoploss_value(pe_data, settings)
+            sl_value = stoploss_value(pe_data, settings, entry_price)
             if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
                 update_position(position['id'], sl_value, cur_price, position)
     

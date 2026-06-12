@@ -251,12 +251,16 @@ def ichimoku_analysis(df):
         tenkan_kijun = "Neutral"
     
     if (tenkan_kijun == "Strong Uptrend") and (close > tenkan):
-        price_tenkan = "Strong Uptrend"
+        price_tenkan = "Very Strong Uptrend"
     elif (tenkan_kijun == "Uptrend") and (close > tenkan):
+        price_tenkan = "Strong Uptrend"
+    elif (close > tenkan) and (close > kijun):
         price_tenkan = "Uptrend"
     elif (tenkan_kijun == "Strong Downtrend") and (close < tenkan):
-        price_tenkan = "Strong Downtrend"
+        price_tenkan = "Very Strong Downtrend"
     elif (tenkan_kijun == "Downtrend") and (close < tenkan):
+        price_tenkan = "Strong Downtrend"
+    elif (close < tenkan) and (close < kijun):
         price_tenkan = "Downtrend"
     else:
         price_tenkan = "Sideways"

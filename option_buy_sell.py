@@ -511,10 +511,10 @@ def run_entry_scan(index_name,
     # index_pe_score = index_signal_score - pe_signal_score
 
     log2(f"scanning complete execution --- {index_signal_score} -- {ce_signal_score} -- {pe_signal_score}")
-    if ((net_score >= 5) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
+    if ((net_score >= 4) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
         log2("Entry in CE")
         process_bullish_entry(index_name,ce_data,settings)
-    elif (net_score <= -5) and (ce_signal_score <= -1) and (pe_signal_score >= 1):
+    elif (net_score <= -4) and (ce_signal_score <= -1) and (pe_signal_score >= 1):
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
     

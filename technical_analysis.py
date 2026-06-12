@@ -118,10 +118,10 @@ def highlow_trend(df):
     if len(swing_highs) < 3 or len(swing_lows) < 3:
         return "UNKNOWN", [], None
 
-    hh = sum(1 for i in range(1, len(swing_highs)) if swing_highs[i] > swing_highs[i-1])
+    hh = sum(1 for i in range(2, len(swing_highs)) if swing_highs[i] > swing_highs[i-2])
     lh = sum(1 for i in range(1, len(swing_highs)) if swing_highs[i] < swing_highs[i-1])
 
-    hl = sum(1 for i in range(1, len(swing_lows)) if swing_lows[i] > swing_lows[i-1])
+    hl = sum(1 for i in range(2, len(swing_lows)) if swing_lows[i] > swing_lows[i-2])
     ll = sum(1 for i in range(1, len(swing_lows)) if swing_lows[i] < swing_lows[i-1])
 
     # scoring
@@ -362,27 +362,27 @@ def signal_fun(data, df, ins_type):
     if price_tenkan == "Strong Uptrend":
         price_tenkan_ = 2
     elif price_tenkan == "Uptrend":
-        price_tenkan_ = 1
+        price_tenkan_ = 1.5
     elif price_tenkan == "Downtrend":
-        price_tenkan_ = -1
+        price_tenkan_ = -1.5
     elif price_tenkan == "Strong Downtrend":
         price_tenkan_ = -2
     else:
         price_tenkan_ = 0
     rsi = data['rsi']
-    if rsi > 70:
+    if rsi > 60:
         rsi_ = 2
-    elif rsi > 55:
+    elif rsi > 50:
         rsi_ = 1
-    elif rsi < 30:
+    elif rsi < 40:
         rsi_ = -2
-    elif rsi < 45:
+    elif rsi < 50:
         rsi_ = -1
     else:
         rsi_ = 0
 
     if data['vwap'] == "Above":
-        vwap = 2
+        vwap = 3
     else:
         vwap = 0
     #ret12_ + 

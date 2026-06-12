@@ -303,7 +303,7 @@ def signal_fun(data, df, ins_type):
     signal = "Neutral"
     if ins_type == "options":
         ret6 = data['ret6']
-        if ret6 > 1.5:
+        if ret6 > 2:
             ret6_ = 1
         elif ret6 > 0:
             ret6_ = 0
@@ -318,14 +318,14 @@ def signal_fun(data, df, ins_type):
             ret12_ = -1
     else:
         ret6 = data['ret6']
-        if ret6 > 0.05:
+        if ret6 > 0.1:
             ret6_ = 1
         elif ret6 > 0:
             ret6_ = 0
         else:
             ret6_ = -1
         ret12 = data['ret12']
-        if ret12 > 0.05:
+        if ret12 > 0.1:
             ret12_ = 1
         elif ret12 > -2:
             ret12_ = 0
@@ -334,7 +334,7 @@ def signal_fun(data, df, ins_type):
     
     trend = data['trend']
     if trend == "STRONG UPTREND":
-        trend_ = 2
+        trend_ = 3
     if trend == "UPTREND":
         trend_ = 1
     elif trend == "SIDEWAYS":
@@ -342,7 +342,7 @@ def signal_fun(data, df, ins_type):
     elif trend == "DOWNTREND":
         trend_ = -1
     elif trend == "STRONG DOWNTREND":
-        trend_ = -2
+        trend_ = -3
     else:
         trend_ = 0
     
@@ -385,8 +385,8 @@ def signal_fun(data, df, ins_type):
         vwap = 2
     else:
         vwap = 0
-    #ret6_ + ret12_ + 
-    signal_sum = trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + data['adx_signal'] + vwap
+    #ret12_ + 
+    signal_sum = ret6_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + data['adx_signal'] + vwap
     
     if signal_sum >= 11:
         signal = "Very Strong Buy"

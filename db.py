@@ -31,24 +31,6 @@ def create_tables():
     )
     """)
 
-    
-
-    # User automation settings
-    # cur.execute("""
-    # CREATE TABLE IF NOT EXISTS automation_settings(
-    #     index_name TEXT PRIMARY KEY,
-    #     enabled INTEGER DEFAULT 0,
-    #     qty INTEGER DEFAULT 1,
-    #     risk_percent REAL DEFAULT 1,
-    #     target_type TEXT DEFAULT 'fixed',
-    #     target_percent REAL DEFAULT 30,
-    #     sl_base TEXT DEFAULT 'kijun',
-    #     sl_percent REAL DEFAULT 5,
-    #     sl_cap REAL DEFAULT 0,
-    #     refresh_seconds INTEGER DEFAULT 60,
-    #     updated_at TIMESTAMP DEFAULT (datetime('now', '+5 hours', '+30 minutes'))
-    # )
-    # """)
     cur.execute("""
     CREATE TABLE IF NOT EXISTS option_user (
         id INTEGER PRIMARY KEY,
@@ -92,6 +74,8 @@ def create_tables():
         sl_base TEXT DEFAULT 'kijun',
         sl_percent REAL DEFAULT 5,
         sl_cap REAL DEFAULT 0,
+        ce_target_price REAL DEFAULT 0,
+        pe_target_price REAL DEFAULT 0,
         refresh_seconds INTEGER DEFAULT 60,
         position_side TEXT DEFAULT 'NONE',
         last_trade_time TIMESTAMP,

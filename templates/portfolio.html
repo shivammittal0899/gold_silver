@@ -80,7 +80,9 @@
 
 <!-- ===================== COMBINED PORTFOLIO ===================== -->
 <h2>📊 Combined Portfolio (Merged Holdings)</h2>
-
+<button onclick="copySelectedSymbols()">
+    📋 Copy Selected Symbols
+</button>
 <h3>
     Total P&L:
     <span id="combined-pnl" style="font-weight:bold;"></span>
@@ -89,6 +91,13 @@
 <table border="1" width="100%" cellspacing="0" cellpadding="6">
     <thead style="background:#222;color:white;">
         <tr>
+            <th>
+                <input
+                    type="checkbox"
+                    id="selectAllSymbols"
+                    onchange="toggleAllSymbols(this)"
+                >
+            </th>
             <th>Symbol</th>
             <th>Total Qty</th>
             <th>Lots</th>
@@ -278,6 +287,13 @@ function fetchCombined(data) {
         let row = `
             <tr style="background:${rowColor}">
                 <td>
+                    <input
+                        type="checkbox"
+                        class="symbol-checkbox"
+                        value="${p.tradingsymbol}"
+                    >
+                </td>
+                <td>
                     <b style="
                         color:${p.highlight ? '#1976d2' : 'black'};
                     ">
@@ -392,7 +408,46 @@ function deleteHolding(id) {
         alert("Error deleting");
     });
 }
+function toggleAllSymbols(source){
 
+    document
+        .querySelectorAll(
+            ".symbol-checkbox"
+        )
+        .forEach(cb => {
+            cb.checked =
+                source.checked;
+        });
+}
+function copySelectedSymbols(){
+    const year = String(new Date().getFullYear()).slice(-2);
+    const symbols = Array.from(document.querySelectorAll(".symbol-checkbox:checked"))
+    .map(x => x.value)
+    .map(symbol => {
+        const parts = symbol.split(year);
+        return parts[0];
+    });
+
+    const uniqueSymbols =
+        [...new Set(symbols)];
+
+    if(uniqueSymbols.length === 0){
+
+        alert(
+            "No symbols selected"
+        );
+
+        return;
+    }
+
+    navigator.clipboard.writeText(
+        uniqueSymbols.join(",")
+    );
+
+    alert(
+        `${uniqueSymbols.length} symbols copied`
+    );
+}
 /* ===================== AUTO REFRESH ===================== */
 // setInterval(fetchAll, 10000);
 

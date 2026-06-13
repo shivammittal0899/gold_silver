@@ -363,7 +363,9 @@ def signal_fun(data, df, ins_type):
         tenkan_kijun_ = 0
     
     price_tenkan = data['price_tenkan']
-    if price_tenkan == "Strong Uptrend":
+    if price_tenkan == "Very Strong Uptrend":
+        price_tenkan_ = 2.5
+    elif price_tenkan == "Strong Uptrend":
         price_tenkan_ = 2
     elif price_tenkan == "Uptrend":
         price_tenkan_ = 1.5
@@ -371,6 +373,8 @@ def signal_fun(data, df, ins_type):
         price_tenkan_ = -1.5
     elif price_tenkan == "Strong Downtrend":
         price_tenkan_ = -2
+    elif price_tenkan == "Very Strong Downtrend":
+        price_tenkan_ = -2.5
     else:
         price_tenkan_ = 0
     rsi = data['rsi']

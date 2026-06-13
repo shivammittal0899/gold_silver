@@ -191,6 +191,9 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         df_values = {
             'kijun': float(df['kijun'].iloc[-1]),
             'tenkan': float(df['tenkan'].iloc[-1]),
+            'senkou_a': float(df['senkou_a'].iloc[-1]),
+            'senkou_b': float(df['senkou_b'].iloc[-1]),
+            'max_5': float(df['Close'].tail(5).max()),
             'max_10': float(df['Close'].tail(10).max()),
             'min_10': float(df['Close'].tail(10).min())
         }
@@ -477,12 +480,57 @@ def process_index(kite_local, index_name,settings):
             pe_data = pe_future.result()
             log2(f"nifty data -- {nifty_data}  -- {banknifty_index}  -- {ce_future}  -- {pe_future}")
         log2((datetime.now() - ptime).total_seconds() )
-        run_entry_scan(index_name, settings, nifty_data, banknifty_data, ce_data, pe_data)
+        ce_target_price = settings['ce_target_price']
+        pe_target_price = settings['pe_target_price']
+        if (ce_target_price < ce_data['high']):
+            log2("CE entry target hit")
+            process_bullish_entry(index_name,ce_data,settings, ce_target_price)
+            log2(f"CE entry target hit -- {ce_target_price} -- high price - {ce_data['high']}")
+            reset_entry_targets(index_name)
+        elif (pe_target_price < pe_data['high']):
+            log2("PE entry target hit")
+            process_bearish_entry(index_name,pe_data,settings, pe_target_price)
+            log2(f"PE entry target hit -- {pe_target_price} -- high price - {pe_data['high']}")
+            reset_entry_targets(index_name)
+        else:
+            run_entry_scan(index_name, settings, nifty_data, banknifty_data, ce_data, pe_data)
+            set_entry_targets(index_name, settings, ce_data, pe_data)
+
 
     except Exception as e:
         logger.error(
             f"{index_name} Process Error : {e}"
         )
+def set_entry_targets(index_name, settings, ce_data, pe_data):
+    max_ce = max(ce_data['price'], ce_data['kijun'], ce_data['tenkan'], ce_data['senkou_a'], ce_data['senkou_b'], ce_data['max_5'])
+    max_pe = max(pe_data['price'], pe_data['kijun'], pe_data['tenkan'], pe_data['senkou_a'], pe_data['senkou_b'], pe_data['max_5'])
+    ce_entry_target = max_ce + max(max_ce*0.05, 10)
+    pe_entry_target = max_pe + max(max_pe*0.05, 10)
+    log2(f"setting new entry target price for -- CE - {ce_entry_target} and for PE - {pe_entry_target}")
+    with get_connection() as conn:
+        conn.execute("""
+            UPDATE automation_settings
+            SET
+                ce_target_price=?,
+                pe_target_price=?
+            WHERE index_name=?
+        """, (
+            round(ce_entry_target, 2),
+            round(pe_entry_target, 2),
+            index_name
+        ))
+def reset_entry_targets(index_name):
+    with get_connection() as conn:
+        conn.execute("""
+            UPDATE automation_settings
+            SET
+                ce_target_price=?,
+                pe_target_price=?
+            WHERE index_name=?
+        """, (
+            0, 0,
+            index_name
+        ))
 
 def run_entry_scan(index_name,
             settings,
@@ -508,7 +556,6 @@ def run_entry_scan(index_name,
     ce_signal_score = signal_map.get(ce_data['signal'].title(), 0)
     pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
     net_score = index_signal_score + ce_signal_score - pe_signal_score
-    # index_pe_score = index_signal_score - pe_signal_score
 
     log2(f"scanning complete execution --- {index_signal_score} -- {ce_signal_score} -- {pe_signal_score}")
     if ((net_score >= 4) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
@@ -518,7 +565,7 @@ def run_entry_scan(index_name,
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
     
-def process_bullish_entry(index_name, ce_data, settings):
+def process_bullish_entry(index_name, ce_data, settings, target_price = 0):
     try:
         logger.info(f"settings data -- {settings}")
         logger.info(f"ce data --- {ce_data}")
@@ -530,8 +577,10 @@ def process_bullish_entry(index_name, ce_data, settings):
         ce_token = settings['option_ce_token']
         pos_type = "CE"
         qty = settings['qty']
-
-        entry_price = ce_data['price']
+        if target_price != 0:
+            entry_price = target_price
+        else:
+            entry_price = ce_data['price']
 
         sl_price = stoploss_value(ce_data,settings, entry_price)
         tg_price = target_price(ce_data,settings)
@@ -566,7 +615,7 @@ def process_bullish_entry(index_name, ce_data, settings):
         return False
 
 
-def process_bearish_entry(index_name, pe_data, settings):
+def process_bearish_entry(index_name, pe_data, settings, target_price = 0):
     logger.info(f"settings data -- {settings}")
     logger.info(f"pe data --- {pe_data}")
     logger.info(
@@ -577,7 +626,10 @@ def process_bearish_entry(index_name, pe_data, settings):
     pe_token = settings['option_pe_token']
     pos_type = "PE"
     qty = settings['qty']
-    entry_price = pe_data['price']
+    if target_price != 0:
+            entry_price = target_price
+    else:
+        entry_price = pe_data['price']
     sl_price = stoploss_value(pe_data, settings, entry_price)
     tg_price = target_price(pe_data, settings)
     log2("going to update table")

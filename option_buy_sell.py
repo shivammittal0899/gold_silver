@@ -506,19 +506,37 @@ def set_entry_targets(index_name, settings, ce_data, pe_data):
     max_pe = max(pe_data['price'], pe_data['kijun'], pe_data['tenkan'], pe_data['senkou_a'], pe_data['senkou_b'], pe_data['max_5'])
     ce_entry_target = max_ce + max(max_ce*0.05, 10)
     pe_entry_target = max_pe + max(max_pe*0.05, 10)
+    old_ce_target_price = settings['ce_target_price']
+    old_pe_target_price = settings['pe_target_price']
+    update_ce = (
+        old_ce_target_price == 0 or
+        abs(ce_entry_target - old_ce_target_price) / old_ce_target_price > 0.01
+    )
+    update_pe = (
+        old_pe_target_price == 0 or
+        abs(pe_entry_target - old_pe_target_price) / old_pe_target_price > 0.01
+    )
     log2(f"setting new entry target price for -- CE - {ce_entry_target} and for PE - {pe_entry_target}")
     with get_connection() as conn:
-        conn.execute("""
-            UPDATE automation_settings
-            SET
-                ce_target_price=?,
-                pe_target_price=?
-            WHERE index_name=?
-        """, (
-            round(ce_entry_target, 2),
-            round(pe_entry_target, 2),
-            index_name
-        ))
+        if update_ce:
+            conn.execute("""
+                UPDATE automation_settings
+                SET ce_target_price = ?
+                WHERE index_name = ?
+            """, (
+                round(ce_entry_target, 2),
+                index_name
+            ))
+        if update_pe:
+            conn.execute("""
+                UPDATE automation_settings
+                SET pe_target_price = ?
+                WHERE index_name = ?
+            """, (
+                round(pe_entry_target, 2),
+                index_name
+            ))
+
 def reset_entry_targets(index_name):
     with get_connection() as conn:
         conn.execute("""

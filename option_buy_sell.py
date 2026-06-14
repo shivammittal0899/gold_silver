@@ -482,12 +482,12 @@ def process_index(kite_local, index_name,settings):
         log2((datetime.now() - ptime).total_seconds() )
         ce_target_price = settings['ce_target_price']
         pe_target_price = settings['pe_target_price']
-        if (ce_target_price < ce_data['high']):
+        if (ce_target_price < ce_data['high']) and (ce_target_price != 0):
             log2("CE entry target hit")
             process_bullish_entry(index_name,ce_data,settings, ce_target_price)
             log2(f"CE entry target hit -- {ce_target_price} -- high price - {ce_data['high']}")
             reset_entry_targets(index_name)
-        elif (pe_target_price < pe_data['high']):
+        elif (pe_target_price < pe_data['high']) and (pe_target_price != 0):
             log2("PE entry target hit")
             process_bearish_entry(index_name,pe_data,settings, pe_target_price)
             log2(f"PE entry target hit -- {pe_target_price} -- high price - {pe_data['high']}")

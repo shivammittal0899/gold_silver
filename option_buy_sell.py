@@ -755,16 +755,18 @@ def stoploss_value(option_data, settings, entry_price = 0):
         sl4 = entry_price - 10
     log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3} -- {sl4}")
     sl = max(sl1,sl2,sl3, sl4)
-
+    log2(f"final stoploss value -- {sl}")
     return round(sl,2)
 
     
 def target_price(ce_data, settings):
+    log2("fetching latest target price")
     ltp = ce_data['price']
+    log2(f"ltp of tg price -- {ltp}")
     tg_type = settings['target_type']
     if tg_type == "fixed":
-        tg_per = settings['target_percent']
-        return (ltp + (ltp*tg_per)/100)
+        tg_per = int(settings['target_percent'])/100
+        return (ltp + (ltp*tg_per))
     return 0
 
 

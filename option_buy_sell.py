@@ -757,6 +757,8 @@ def stoploss_value(option_data, settings, entry_price = 0):
         sl4 = entry_price - 10
     log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3} -- {sl4}")
     sl = max(sl1,sl2,sl3, sl4)
+    if sl > ltp:
+        sl = ltp - (sl*sl_per)/100
     log2(f"final stoploss value -- {sl}")
     return round(sl,2)
 
@@ -768,7 +770,7 @@ def target_price(ce_data, settings):
     tg_type = settings['target_type']
     if tg_type == "fixed":
         tg_per = int(settings['target_percent'])/100
-        return (ltp + (ltp*tg_per))
+        return round((ltp + (ltp*tg_per)),2)
     return 0
 
 
@@ -917,13 +919,11 @@ def square_off_before_close():
     return None
 
 def calculate_pnl(entry_price,exit_price,qty,side="BUY"):
-    log2(f"pnl calculation entry price -- {exit_price}")
-    log2(f"pnl calculation exit price -- {entry_price}")
     if side == "BUY":
         pnl = (float(exit_price) - float(entry_price)) * qty
     else:
         pnl = (float(entry_price) - float(exit_price)) * qty
-
+    log2(f"pnl value is -- {pnl}")
     return round(pnl, 2)
 
 def close_position(position_id, exit_price, exit_reason):

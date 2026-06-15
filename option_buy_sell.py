@@ -588,7 +588,7 @@ def run_entry_scan(index_name,
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
     
-def process_bullish_entry(index_name, ce_data, settings, target_price = 0):
+def process_bullish_entry(index_name, ce_data, settings, tg_entry_price = 0):
     try:
         logger.info(f"settings data -- {settings}")
         logger.info(f"ce data --- {ce_data}")
@@ -600,8 +600,8 @@ def process_bullish_entry(index_name, ce_data, settings, target_price = 0):
         ce_token = settings['option_ce_token']
         pos_type = "CE"
         qty = settings['qty']
-        if target_price != 0:
-            entry_price = target_price
+        if tg_entry_price != 0:
+            entry_price = tg_entry_price
         else:
             entry_price = ce_data['price']
 

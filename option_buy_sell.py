@@ -607,7 +607,7 @@ def process_bullish_entry(index_name, ce_data, settings, target_price = 0):
 
         sl_price = stoploss_value(ce_data,settings, entry_price)
         tg_price = target_price(ce_data,settings)
-
+        log2(f"sl and tg values -- {sl_price} -- {tg_price}")
         create_position(
             index_name,
             ce_symbol,
@@ -655,6 +655,7 @@ def process_bearish_entry(index_name, pe_data, settings, target_price = 0):
         entry_price = pe_data['price']
     sl_price = stoploss_value(pe_data, settings, entry_price)
     tg_price = target_price(pe_data, settings)
+    log2(f"sl and tg values -- {sl_price} -- {tg_price}")
     log2("going to update table")
     create_position(index_name, pe_symbol, pe_token, pos_type, qty, entry_price, sl_price, tg_price)
     return True

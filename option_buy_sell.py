@@ -90,7 +90,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
     Fetch data and analyze
     """
     try:
-        log2("fetch and analysis of index start here")
+        # log2("fetch and analysis of index start here")
         # Get historical data
         df = get_historical_data(symbol, name, timeframe, kite_local)
         if df is None or len(df) < 2:
@@ -142,11 +142,10 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         
         # log2(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
         df = get_historical_data(item['token'], "option", timeframe, kite_local)
-        # log2(df.tail(5))
+        log2(df.tail(5))
         
         if df is None or len(df) < 2:
             return None
-        # oi_change = round(((float(df['OI'].iloc[-1])/float(df['OI'].iloc[-2])) - 1)*100,2)
         # log2(f"option last candle time -- {df["date"].iloc[-1]}")
         if 'OI' not in df.columns:
             oi_val = 0
@@ -198,8 +197,8 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             'min_10': float(df['Close'].tail(10).min())
         }
         analysis.update(df_values if isinstance(df_values, dict) else {})
+        log2(analysis)
         return analysis
-        # return "None"
     
     except Exception as e:
         logger.error(f"Error fetching {symbol}: {e}")
@@ -387,7 +386,7 @@ def automation_loop(index_name):
                     logger.info(f"{index_name} settings not found")
                     automation_flags[index_name] = False
                     return
-                log2(f"settings --- {settings}")
+                # log2(f"settings --- {settings}")
                 log2("in automation loop --- looping")
                 process_index(kite_local, index_name, settings)
                 # square_off_before_close()

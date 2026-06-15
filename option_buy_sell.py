@@ -496,7 +496,7 @@ def process_index(kite_local, index_name,settings):
             reset_entry_targets(index_name)
         else:
             run_entry_scan(index_name, settings, nifty_data, banknifty_data, ce_data, pe_data)
-            set_entry_targets(index_name, settings, ce_data, pe_data)
+            
         
         log2(f"time to process the loop -- {(datetime.now() - ptime).total_seconds()}" )
 
@@ -587,6 +587,8 @@ def run_entry_scan(index_name,
     elif (net_score <= -4) and (ce_signal_score <= -1) and (pe_signal_score >= 1):
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
+    else:
+        set_entry_targets(index_name, settings, ce_data, pe_data)
     
 def process_bullish_entry(index_name, ce_data, settings, tg_entry_price = 0):
     try:

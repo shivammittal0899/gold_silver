@@ -638,7 +638,7 @@ def process_bullish_entry(index_name, ce_data, settings, target_price = 0):
         return False
 
 
-def process_bearish_entry(index_name, pe_data, settings, target_price = 0):
+def process_bearish_entry(index_name, pe_data, settings, tg_entry_price = 0):
     logger.info(f"settings data -- {settings}")
     logger.info(f"pe data --- {pe_data}")
     logger.info(
@@ -649,8 +649,8 @@ def process_bearish_entry(index_name, pe_data, settings, target_price = 0):
     pe_token = settings['option_pe_token']
     pos_type = "PE"
     qty = settings['qty']
-    if target_price != 0:
-            entry_price = target_price
+    if tg_entry_price != 0:
+            entry_price = tg_entry_price
     else:
         entry_price = pe_data['price']
     sl_price = stoploss_value(pe_data, settings, entry_price)

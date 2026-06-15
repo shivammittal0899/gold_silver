@@ -147,7 +147,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         if df is None or len(df) < 2:
             return None
         # oi_change = round(((float(df['OI'].iloc[-1])/float(df['OI'].iloc[-2])) - 1)*100,2)
-        log2(f"option last candle time -- {df["date"].iloc[-1]}")
+        # log2(f"option last candle time -- {df["date"].iloc[-1]}")
         if 'OI' not in df.columns:
             oi_val = 0
             oi_change = 0
@@ -243,7 +243,7 @@ def get_historical_data(symbol, name, timeframe, kite_local):
             'oi':'OI'
 
         }, inplace=True)
-        log2(f"sending historical data of index {df.columns}")
+        # log2(f"sending historical data of index {df.columns}")
         return df
     
     except Exception as e:
@@ -381,7 +381,7 @@ def automation_loop(index_name):
         while automation_flags.get(index_name, False):
             try:
                 settings = get_automation_settings(index_name)
-                log2(settings)
+                log2(f"automation settings are -- {settings}")
                 
                 if not settings:
                     logger.info(f"{index_name} settings not found")
@@ -478,8 +478,8 @@ def process_index(kite_local, index_name,settings):
             banknifty_data = banknifty_index.result()
             ce_data = ce_future.result()
             pe_data = pe_future.result()
-            log2(f"nifty data -- {nifty_data}  -- {banknifty_index}  -- {ce_future}  -- {pe_future}")
-        log2((datetime.now() - ptime).total_seconds() )
+            log2(f"data of ----- {nifty_data}  -- {banknifty_index}  -- {ce_future}  -- {pe_future}")
+        
         ce_target_price = settings['ce_target_price']
         pe_target_price = settings['pe_target_price']
         if (ce_target_price < ce_data['high']) and (ce_target_price != 0):
@@ -495,13 +495,15 @@ def process_index(kite_local, index_name,settings):
         else:
             run_entry_scan(index_name, settings, nifty_data, banknifty_data, ce_data, pe_data)
             set_entry_targets(index_name, settings, ce_data, pe_data)
-
+        
+        log2(f"time to process the loop -- {(datetime.now() - ptime).total_seconds()}" )
 
     except Exception as e:
         logger.error(
             f"{index_name} Process Error : {e}"
         )
 def set_entry_targets(index_name, settings, ce_data, pe_data):
+    log2(f"start setting the new targets for ce and pe buy")
     max_ce = max(ce_data['price'], ce_data['kijun'], ce_data['tenkan'], ce_data['senkou_a'], ce_data['senkou_b'], ce_data['max_5'])
     max_pe = max(pe_data['price'], pe_data['kijun'], pe_data['tenkan'], pe_data['senkou_a'], pe_data['senkou_b'], pe_data['max_5'])
     ce_entry_target = max_ce + max(max_ce*0.05, 10)

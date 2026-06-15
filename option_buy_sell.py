@@ -93,7 +93,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         # log2("fetch and analysis of index start here")
         # Get historical data
         df = get_historical_data(symbol, name, timeframe, kite_local)
-        log2(df.tail(5))
+        # log2(df.tail(5))
         if df is None or len(df) < 2:
             return {
                 'symbol': name,
@@ -117,7 +117,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         }
         data, df = stock_data_analysis(df, timeframe)
         analysis.update(data if isinstance(data, dict) else {})
-        log2(analysis)
+        # log2(analysis)
         return analysis
     
     except Exception as e:
@@ -144,7 +144,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         
         # log2(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
         df = get_historical_data(item['token'], "option", timeframe, kite_local)
-        log2(df.tail(5))
+        # log2(df.tail(5))
         
         if df is None or len(df) < 2:
             return None
@@ -199,7 +199,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             'min_10': float(df['Close'].tail(10).min())
         }
         analysis.update(df_values if isinstance(df_values, dict) else {})
-        log2(analysis)
+        # log2(analysis)
         return analysis
     
     except Exception as e:
@@ -378,7 +378,7 @@ def automation_loop(index_name):
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
         log2(f"automation loop is going to start -- {index_name}")
-        log2(automation_flags.get(index_name, False))
+        # log2(automation_flags.get(index_name, False))
         while automation_flags.get(index_name, False):
             try:
                 settings = get_automation_settings(index_name)

@@ -483,6 +483,7 @@ def process_index(kite_local, index_name,settings):
         
         ce_target_price = settings['ce_target_price']
         pe_target_price = settings['pe_target_price']
+
         if (ce_target_price < ce_data['high']) and (ce_target_price != 0):
             log2("CE entry target hit")
             process_bullish_entry(index_name,ce_data,settings, ce_target_price)
@@ -541,6 +542,7 @@ def set_entry_targets(index_name, settings, ce_data, pe_data):
             ))
 
 def reset_entry_targets(index_name):
+    log2(f"resting entry targets")
     with get_connection() as conn:
         conn.execute("""
             UPDATE automation_settings
@@ -549,7 +551,7 @@ def reset_entry_targets(index_name):
                 pe_target_price=?
             WHERE index_name=?
         """, (
-            0, 0,
+            0.0, 0.0,
             index_name
         ))
 
@@ -659,6 +661,7 @@ def process_bearish_entry(index_name, pe_data, settings, target_price = 0):
 
 def create_position(index_name, symbol, token, pos_type, qty, entry_price, sl_price, tg_price):
     try:
+        log2("updating the live position")
         conn = get_connection()
         cur = conn.cursor()
         cur.execute("""

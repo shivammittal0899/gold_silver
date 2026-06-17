@@ -479,7 +479,7 @@ def process_index(kite_local, index_name,settings):
             banknifty_data = banknifty_index.result()
             ce_data = ce_future.result()
             pe_data = pe_future.result()
-            log2(f"data of ----- {nifty_data}  -- {banknifty_index}  -- {ce_future}  -- {pe_future}")
+            log2(f"data of ----- {nifty_data}  -- {banknifty_data}  -- {ce_data}  -- {pe_data}")
         
         ce_target_price = settings['ce_target_price']
         pe_target_price = settings['pe_target_price']

@@ -752,7 +752,10 @@ def stoploss_value(option_data, settings, entry_price = 0):
     
     sl1 = high - (high *risk_percent)/100
     sl2 = sl_base_value - (sl_base_value*sl_per)/100
-    sl3 = sl_base_value - sl_cap
+    if sl_base_value > 250:
+        sl3 = sl_base_value - sl_cap - 5
+    else:
+        sl3 = sl_base_value - sl_cap
     if (high - entry_price > 15):
         sl4 = entry_price - 5
     else:
@@ -840,16 +843,19 @@ def monitor_position(kite_local,position, settings):
     if pos_type == "CE":
         cur_price = ce_data['price']
         low_price = ce_data['low']
+        high_price = ce_data['high']
     elif pos_type == "PE":
         cur_price = pe_data['price']
+        low_price = pe_data['low']
+        high_price = pe_data['high']
     log2(f"monitor prices -- {cur_price} --  sl prices -- {sl_price}")
     ## check stoploss hit or not
-    if sl_price > cur_price:
+    if sl_price > low_price:
         # log2("stoploss hit")
         log2("Stoploss hit -- close positions")
         close_position(position['id'], sl_price, "Stoploss Hit")
         return
-    if (tg_price != 0) and (tg_price < cur_price):
+    if (tg_price != 0) and (tg_price < high_price):
         log2("Target hit -- close positions")
         close_position(position['id'], tg_price, "Target Hit")
         return

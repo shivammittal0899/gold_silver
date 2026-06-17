@@ -401,7 +401,6 @@ def signal_fun(data, df, ins_type):
         vwap = 3
     else:
         vwap = -3
-    #ret12_ + 
     signal_sum = ret6_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + adx_sig + vwap
     
     if signal_sum >= 11:

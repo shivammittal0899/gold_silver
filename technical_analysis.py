@@ -455,9 +455,9 @@ def signal_fun(data, df, ins_type):
     else:
         vwap = -3
     signal_sum = chop_ + ret6_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + adx_sig + vwap
-    if (adx_sig < 0) and (vwap == -3):
+    if (adx_sig < 0) and (vwap == -3) and (ins_type == "options"):
         signal = "Neutral"
-    if signal_sum >= 11:
+    elif signal_sum >= 11:
         signal = "Very Strong Buy"
     elif signal_sum >= 8:
         signal = "Strong Buy"

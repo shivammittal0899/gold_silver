@@ -574,7 +574,7 @@ def run_entry_scan(index_name,
     }
 
     # Use .title() instead of .upper()
-    log2(f"ce data ---- {ce_data}")
+    # log2(f"ce data ---- {ce_data}")
     index_signal_score = signal_map.get(nifty_data['signal'].title(), 0) + signal_map.get(banknifty_data['signal'].title(), 0)
     ce_signal_score = signal_map.get(ce_data['signal'].title(), 0)
     pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
@@ -584,9 +584,11 @@ def run_entry_scan(index_name,
     if ((net_score >= 4) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
         log2("Entry in CE")
         process_bullish_entry(index_name,ce_data,settings)
+        reset_entry_targets(index_name)
     elif (net_score <= -4) and (ce_signal_score <= -1) and (pe_signal_score >= 1):
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
+        reset_entry_targets(index_name)
     else:
         set_entry_targets(index_name, settings, ce_data, pe_data)
     
@@ -744,7 +746,7 @@ def stoploss_value(option_data, settings, entry_price = 0):
     ltp = option_data['price']
     high = option_data['max_10']
     logger.info(f"sl data -- {risk_percent} -- {sl_base} -- {sl_per} -- {sl_cap} -- {high}")
-    log2(f"sl data -- {risk_percent} -- {sl_base} -- {sl_per} -- {sl_cap} -- {high}")
+    # log2(f"sl data -- {risk_percent} -- {sl_base} -- {sl_per} -- {sl_cap} -- {high}")
     if sl_base == "kijun":
         sl_base_value = option_data['kijun']
     
@@ -764,9 +766,9 @@ def stoploss_value(option_data, settings, entry_price = 0):
 
     
 def target_price(ce_data, settings):
-    log2("fetching latest target price")
+    # log2("fetching latest target price")
     ltp = ce_data['price']
-    log2(f"ltp of tg price -- {ltp}")
+    # log2(f"ltp of tg price -- {ltp}")
     tg_type = settings['target_type']
     if tg_type == "fixed":
         tg_per = int(settings['target_percent'])/100

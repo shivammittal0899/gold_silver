@@ -301,13 +301,14 @@ def get_adx_strength_signal(df):
             return 1
         elif di_minus > di_plus:
             return -1
-
+    elif adx < 15 :
+        return -1
     return 0
 def signal_fun(data, df, ins_type):
     signal = "Neutral"
     if ins_type == "options":
         ret6 = data['ret6']
-        if ret6 > 2:
+        if ret6 > 5:
             ret6_ = 1
         elif ret6 > 0:
             ret6_ = 0
@@ -364,7 +365,7 @@ def signal_fun(data, df, ins_type):
     
     price_tenkan = data['price_tenkan']
     if price_tenkan == "VStrong Uptrend":
-        price_tenkan_ = 2.5
+        price_tenkan_ = 3
     elif price_tenkan == "Strong Uptrend":
         price_tenkan_ = 2
     elif price_tenkan == "Uptrend":
@@ -374,7 +375,7 @@ def signal_fun(data, df, ins_type):
     elif price_tenkan == "Strong Downtrend":
         price_tenkan_ = -2
     elif price_tenkan == "VStrong Downtrend":
-        price_tenkan_ = -2.5
+        price_tenkan_ = -3
     else:
         price_tenkan_ = 0
     rsi = data['rsi']
@@ -388,13 +389,20 @@ def signal_fun(data, df, ins_type):
         rsi_ = -1
     else:
         rsi_ = 0
+    if data['adx_signal'] == -1:
+        adx_sig = -2
+    elif data['adx_signal'] == 0:
+        adx_sig = -1
+    else:
+        adx_sig = data['adx_signal']
+
 
     if data['vwap'] == "Above":
         vwap = 3
     else:
-        vwap = -1
+        vwap = -3
     #ret12_ + 
-    signal_sum = ret6_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + data['adx_signal'] + vwap
+    signal_sum = ret6_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + adx_sig + vwap
     
     if signal_sum >= 11:
         signal = "Very Strong Buy"

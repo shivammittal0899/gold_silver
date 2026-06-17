@@ -2,11 +2,50 @@ from ta.momentum import RSIIndicator
 from ta.trend import IchimokuIndicator, EMAIndicator
 from ta import volatility
 from ta.volume import VolumeWeightedAveragePrice
+import numpy as np
 import pandas as pd
 import json
 import sqlite3
 from ta.trend import ADXIndicator
+from ta.volatility import AverageTrueRange
 
+
+def calculate_choppiness_index(df, period=14):
+    """
+    Calculate Choppiness Index (CI)
+    
+    Parameters:
+    df : DataFrame with High, Low, Close columns
+    period : lookback period
+    
+    Returns:
+    DataFrame with choppiness index column
+    """
+
+    atr = AverageTrueRange(
+        high=df["High"],
+        low=df["Low"],
+        close=df["Close"],
+        window=1
+    ).average_true_range()
+
+    atr_sum = atr.rolling(period).sum()
+
+    highest_high = df["High"].rolling(period).max()
+    lowest_low = df["Low"].rolling(period).min()
+
+    choppiness = (
+        100 *
+        np.log10(
+            atr_sum / (highest_high - lowest_low)
+        )
+        /
+        np.log10(period)
+    )
+
+    df["choppiness"] = choppiness
+
+    return df
 def indicator_values(df):
     rsi = RSIIndicator(close=df['Close'], window=14)
     df['RSI'] = rsi.rsi()
@@ -22,6 +61,9 @@ def indicator_values(df):
     df['ADX'] = adx_indicator.adx()
     df['DI_PLUS'] = adx_indicator.adx_pos()
     df['DI_MINUS'] = adx_indicator.adx_neg()
+
+    df = calculate_choppiness_index(df, period=14)
+
     ichi = IchimokuIndicator(
         high=df['High'],
         low=df['Low'],
@@ -289,7 +331,7 @@ def get_adx_strength_signal(df):
     adx = row['ADX']
     di_plus = row['DI_PLUS']
     di_minus = row['DI_MINUS']
-
+    
     if adx > 40:
         if di_plus > di_minus:
             return 2
@@ -336,7 +378,18 @@ def signal_fun(data, df, ins_type):
             ret12_ = 0
         else:
             ret12_ = -1
-    
+    chop = data['chop']*data['ret1']
+    if chop > 60:
+        chop_ = -2
+    elif chop > 50:
+        chop_ = -1
+    elif chop > 40:
+        chop_ = 1
+    elif chop < 0:
+        chop_ = -2
+    else:
+        chop_ = 2
+
     trend = data['trend']
     if trend == "STRONG UPTREND":
         trend_ = 3
@@ -390,7 +443,7 @@ def signal_fun(data, df, ins_type):
     else:
         rsi_ = 0
     if data['adx_signal'] == -1:
-        adx_sig = -2
+        adx_sig = -3
     elif data['adx_signal'] == 0:
         adx_sig = -1
     else:
@@ -401,7 +454,7 @@ def signal_fun(data, df, ins_type):
         vwap = 3
     else:
         vwap = -3
-    signal_sum = ret6_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + adx_sig + vwap
+    signal_sum = chop_ + ret6_ + trend_ + tenkan_kijun_ + price_tenkan_ + rsi_ + adx_sig + vwap
     
     if signal_sum >= 11:
         signal = "Very Strong Buy"
@@ -477,6 +530,7 @@ def stock_data_analysis(df, timeframe, ins_type = "equity"):
     
     price = df['Close'].iat[-1]
     vwap_v = df['VWAP'].iat[-1]
+    chop = df['choppiness'].iloc[-1]
     ret1 = round((((price / df['Close'].iat[-2]) - 1)*100),2)
     ret6 = round((((price / df['Open'].iat[-6]) - 1)*100),2)
     ret12 = round((((price / df['Open'].iat[-12]) - 1)*100),2)
@@ -509,6 +563,7 @@ def stock_data_analysis(df, timeframe, ins_type = "equity"):
         "adx": 25,
         "volume": "High",
         "adx_signal": adx_signal,
+        "chop": chop
     }
     data.update(volatility if isinstance(volatility, dict) else {})
     data.update(volatility_per if isinstance(volatility_per, dict) else {})

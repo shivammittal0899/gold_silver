@@ -1,7 +1,8 @@
 import sqlite3
 import logging
 import pandas as pd
-from technical_analysis import *
+# from technical_analysis import *
+from technical_analysis_2 import *
 from load_once import *
 from datetime import datetime, timedelta
 import time
@@ -115,7 +116,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
             'low': float(df['Low'].iloc[-1]),
             'open': float(df['Open'].iloc[-1]),
         }
-        data, df = stock_data_analysis(df, timeframe)
+        data, df = stock_data_analysis_2(df)
         analysis.update(data if isinstance(data, dict) else {})
         # log2(analysis)
         return analysis
@@ -187,7 +188,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             'expiry': item['expiry'],
             'token': item['token'],
         }
-        data, df = stock_data_analysis(df, timeframe, "options")
+        data, df = stock_data_analysis_2(df, "options")
         analysis.update(data if isinstance(data, dict) else {})
         df_values = {
             'kijun': float(df['kijun'].iloc[-1]),
@@ -357,16 +358,6 @@ def get_automation_settings(index_name):
         """,(index_name,)).fetchone()
 
     return dict(row) if row else None
-
-# def restore_automations():
-#     rows = conn.execute("""
-#         SELECT index_name
-#         FROM automation_settings
-#         WHERE enabled = 1
-#     """).fetchall()
-
-#     for row in rows:
-#         start_thread(row["index_name"])
 
 
 def automation_loop(index_name):
@@ -581,11 +572,11 @@ def run_entry_scan(index_name,
     net_score = index_signal_score + ce_signal_score - pe_signal_score
 
     log2(f"scanning complete execution --- {index_signal_score} -- {ce_signal_score} -- {pe_signal_score}")
-    if ((net_score >= 4) and (index_signal_score >= 2) and (ce_signal_score >= 1) and (pe_signal_score <= -1)):
+    if ((net_score >= 3) and (index_signal_score >= 2) and (ce_signal_score >= 1) and (pe_signal_score <= 0)):
         log2("Entry in CE")
         process_bullish_entry(index_name,ce_data,settings)
         reset_entry_targets(index_name)
-    elif (net_score <= -4) and (index_signal_score <= -2) and (ce_signal_score <= -1) and (pe_signal_score >= 1):
+    elif (net_score <= -3) and (index_signal_score <= -2) and (ce_signal_score <= 0) and (pe_signal_score >= 1):
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
         reset_entry_targets(index_name)
@@ -860,13 +851,12 @@ def monitor_position(kite_local,position, settings):
         close_position(position['id'], tg_price, "Target Hit")
         return
     signal_map = {
-        "Buy": 1,
-        "Strong Buy": 2,
-        "Sell": -1,
-        "Strong Sell": -2
+        "EXIT_BUY": -1,
+        "EXIT_SELL": 1,
+        "HOLD": 0
     }
-    ce_signal_score = signal_map.get(ce_data['signal'].title(), 0)
-    pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
+    ce_signal_score = signal_map.get(ce_data['signal_exit'].title(), 0)
+    pe_signal_score = signal_map.get(pe_data['signal_exit'].title(), 0)
     log2(f"signal score -- {ce_signal_score} -- {pe_signal_score}")
     if pos_type == "CE":
         if (ce_signal_score <= -1) or (pe_signal_score >= 1):

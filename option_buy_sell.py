@@ -144,7 +144,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         
         # log2(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
         df = get_historical_data(item['token'], "option", timeframe, kite_local)
-        # log2(df.tail(5))
+        log2(df.tail(5))
         
         if df is None or len(df) < 2:
             return None

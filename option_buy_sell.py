@@ -193,6 +193,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             'min_10': float(df['Close'].tail(10).min())
         }
         analysis.update(df_values if isinstance(df_values, dict) else {})
+        log2(analysis)
         # log2(analysis)
         return analysis
     

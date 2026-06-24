@@ -4390,35 +4390,39 @@ def update_option_master(kite_local):
     return count
 
 def get_tokens(strikes, index_name):
-    log1("get tokens")
     conn = sqlite3.connect(DB_NAME_OP)
     conn.row_factory = sqlite3.Row
-    cur= conn.cursor()
-    placeholders = ",".join(
-        ["?"] * len(strikes)
-    )
-    log1(f"get tokens {placeholders}")
-    query = f"""
+    cur = conn.cursor()
+    query = """
         SELECT *
         FROM option_master
         WHERE index_name=?
-        AND strike IN ({placeholders})
-        ORDER BY strike
+        AND (
+            (strike=? AND option_type='CE')
+            OR
+            (strike=? AND option_type='PE')
+        )
     """
-
     cur.execute(
         query,
-        [index_name] + strikes
+        (
+            index_name,
+            strikes["ce"],
+            strikes["pe"]
+        )
     )
-    log1("tokens fetched rows settings start")
-    rows = [
-        dict(x)
-        for x in cur.fetchall()
-    ]
-
+    rows = [dict(x) for x in cur.fetchall()]
     conn.close()
-    log1(rows)
-    return rows
+    ce = next(
+        (x for x in rows if x["option_type"] == "CE"),
+        None
+    )
+    pe = next(
+        (x for x in rows if x["option_type"] == "PE"),
+        None
+    )
+
+    return ce, pe
 
 
 import logging
@@ -4515,23 +4519,39 @@ def analyze_options():
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
 
-        nifty_strike =get_tokens(nifty_options,"NIFTY")
-        niftybank_strike =get_tokens(banknifty_options,"BANKNIFTY")
-        log1(f"nifty strikes - {nifty_strike}")
+        # nifty_strike =get_tokens(nifty_options,"NIFTY")
+        # niftybank_strike =get_tokens(banknifty_options,"BANKNIFTY")
+        nifty_ce, nifty_pe = get_tokens(selected_strikes["nifty"],"NIFTY")
+        bank_ce, bank_pe = get_tokens(selected_strikes["banknifty"],"BANKNIFTY")
+        log1(f"nifty strikes - {nifty_ce} -- {nifty_pe}")
+        
         # Analyze Nifty options
-        nifty_analysis = []
-        for item in nifty_strike:
-            log1(item)
-            analysis = fetch_and_analyze_option(kite_local, item, 'NIFTY', timeframe)
-            if analysis:
-                nifty_analysis.append(analysis)
+        if nifty_ce & nifty_pe:
+            nifty_ce_analysis =fetch_and_analyze_option(kite_local, nifty_ce, 'NIFTY', timeframe)
+            nifty_pe_analysis =fetch_and_analyze_option(kite_local, nifty_pe, 'NIFTY', timeframe)
+
+            if nifty_ce_analysis & nifty_pe_analysis:
+                nifty_analysis = [nifty_ce_analysis, nifty_pe_analysis]
+
+        if bank_ce & bank_pe:
+            bank_ce_analysis =fetch_and_analyze_option(kite_local, bank_ce, 'BANKNIFTY', timeframe)
+            bank_pe_analysis =fetch_and_analyze_option(kite_local, bank_pe, 'BANKNIFTY', timeframe)
+
+            if bank_ce_analysis & bank_pe_analysis:
+                banknifty_analysis = [bank_ce_analysis, bank_pe_analysis]
+
+        # for item in nifty_strike:
+        #     log1(item)
+        #     analysis = fetch_and_analyze_option(kite_local, item, 'NIFTY', timeframe)
+        #     if analysis:
+        #         nifty_analysis.append(analysis)
         
         # Analyze Bank Nifty options
-        banknifty_analysis = []
-        for item in niftybank_strike:
-            analysis = fetch_and_analyze_option(kite_local, item, 'BANKNIFTY', timeframe)
-            if analysis:
-                banknifty_analysis.append(analysis)
+        # banknifty_analysis = []
+        # for item in niftybank_strike:
+        #     analysis = fetch_and_analyze_option(kite_local, item, 'BANKNIFTY', timeframe)
+        #     if analysis:
+        #         banknifty_analysis.append(analysis)
         
         return jsonify({
             'status': 'success',

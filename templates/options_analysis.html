@@ -977,7 +977,16 @@
 
             ceSelect.innerHTML = "";
             peSelect.innerHTML = "";
-
+            ceSelect.innerHTML += `
+                <option value="">
+                    "None"
+                </option>
+            `;
+            peSelect.innerHTML += `
+                <option value="">
+                    "None"
+                </option>
+            `;
             strikes.forEach(strike => {
 
                 ceSelect.innerHTML += `
@@ -1080,11 +1089,11 @@
                         "bankNiftyPeStrike"
                     ).value
                 );
-                if (niftyStrikes.length === 0 && bankNiftyStrikes.length === 0) {
+                if ((niftyCeStrike.length === 0 | niftyPeStrike.length === 0) && (bankNiftyCeStrike.length === 0 | bankNiftyPeStrike.length === 0)) {
                     alert('Please select at least one strike');
                     return;
                 }
-
+                console.log(niftyCeStrike, bankNiftyCeStrike, bankNiftyPeStrike)
                 document.getElementById('loading').classList.add('show');
                 document.getElementById('error').classList.remove('show');
 

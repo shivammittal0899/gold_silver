@@ -4517,7 +4517,7 @@ def analyze_options():
 
         nifty_strike =get_tokens(nifty_options,"NIFTY")
         niftybank_strike =get_tokens(banknifty_options,"BANKNIFTY")
-        
+        log1(f"nifty strikes - {nifty_strike}")
         # Analyze Nifty options
         nifty_analysis = []
         for item in nifty_strike:

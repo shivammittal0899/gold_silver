@@ -94,7 +94,6 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         # log2("fetch and analysis of index start here")
         # Get historical data
         df = get_historical_data(symbol, name, timeframe, kite_local)
-        # log2(df.tail(5))
         if df is None or len(df) < 2:
             return {
                 'symbol': name,
@@ -118,7 +117,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         }
         data, df = stock_data_analysis_2(df)
         analysis.update(data if isinstance(data, dict) else {})
-        # log2(analysis)
+        log2(analysis)
         return analysis
     
     except Exception as e:

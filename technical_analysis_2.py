@@ -873,7 +873,7 @@ def indicator_values(df):
 def stock_data_analysis_2(df, ins_type = "equity"):
 
     df = indicator_values(df)
-    df = df[100:].copy()
+    df = df[-100:].copy()
     # log()
     # print(df.tail())
     df["ret1"] = ((df["Close"] / df["Close"].shift(1) - 1) * 100).round(2)
@@ -901,7 +901,7 @@ def stock_data_analysis_2(df, ins_type = "equity"):
         "cloud_score": round(float(last['cloud_score']),2),
         "future_cloud_score": round(float(last['future_cloud_score']),2),
         "ichimoku_score": round(float(last['ichimoku_score']),2),
-        "ichimoku_signal": round(float(last['ichimoku_signal']),2),
+        "ichimoku_signal": last['ichimoku_signal'],
         "adx": round(float(last['ADX']),2),
         "adx_score": round(float(last['adx_score']),2),
         "chop_score": round(float(last['chop_score']),2),

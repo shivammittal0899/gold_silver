@@ -163,15 +163,9 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             else:
                 oi_change = 0
         # vol_ratio = round(float(df['Volume'].iloc[-1]) /float(df["Volume"].rolling(10).mean().iloc[-1]),2)
-        avg_vol = float(
-            df["Volume"].rolling(10).mean().iloc[-1]
-        )
-
+        avg_vol = float(df["Volume"].rolling(10).mean().iloc[-1])
         if avg_vol > 0:
-            vol_ratio = round(
-                float(df['Volume'].iloc[-1]) / avg_vol,
-                2
-            )
+            vol_ratio = round(float(df['Volume'].iloc[-1]) / avg_vol,2)
         else:
             vol_ratio = 0
         analysis = {

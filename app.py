@@ -4526,13 +4526,15 @@ def analyze_options():
         log1(f"nifty strikes - {nifty_ce} -- {nifty_pe}")
         
         # Analyze Nifty options
+        nifty_analysis = []
         if nifty_ce and nifty_pe:
             nifty_ce_analysis =fetch_and_analyze_option(kite_local, nifty_ce, 'NIFTY', timeframe)
             nifty_pe_analysis =fetch_and_analyze_option(kite_local, nifty_pe, 'NIFTY', timeframe)
 
             if nifty_ce_analysis and nifty_pe_analysis:
                 nifty_analysis = [nifty_ce_analysis, nifty_pe_analysis]
-
+        
+        banknifty_analysis = []
         if bank_ce and bank_pe:
             bank_ce_analysis =fetch_and_analyze_option(kite_local, bank_ce, 'BANKNIFTY', timeframe)
             bank_pe_analysis =fetch_and_analyze_option(kite_local, bank_pe, 'BANKNIFTY', timeframe)

@@ -117,7 +117,7 @@ def fetch_and_analyze(symbol, name, timeframe, kite_local):
         }
         data, df = stock_data_analysis_2(df)
         analysis.update(data if isinstance(data, dict) else {})
-        log2(analysis)
+        # log2(analysis)
         return analysis
     
     except Exception as e:
@@ -144,7 +144,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
         
         # log2(f"{symbol} -- {strike} -- {option_type} -- {index} -- {expiry} ")
         df = get_historical_data(item['token'], "option", timeframe, kite_local)
-        log2(df.tail(5))
+        # log2(df.tail(5))
         
         if df is None or len(df) < 2:
             return None
@@ -193,7 +193,7 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             'min_10': float(df['Close'].tail(10).min())
         }
         analysis.update(df_values if isinstance(df_values, dict) else {})
-        log2(analysis)
+        # log2(analysis)
         # log2(analysis)
         return analysis
     
@@ -464,7 +464,8 @@ def process_index(kite_local, index_name,settings):
             banknifty_data = banknifty_index.result()
             ce_data = ce_future.result()
             pe_data = pe_future.result()
-            log2(f"data of ----- {nifty_data}  -- {banknifty_data}  -- {ce_data}  -- {pe_data}")
+            log2(f"data of ----- {nifty_data['signal']}  -- {banknifty_data['signal']}  -- {ce_data['signal']}  -- {pe_data['signal']}")
+            log2(f"data of exit ----- {nifty_data['signal_exit']}  -- {banknifty_data['signal_exit']}  -- {ce_data['signal_exit']}  -- {pe_data['signal_exit']}")
         
         ce_target_price = settings['ce_target_price']
         pe_target_price = settings['pe_target_price']
@@ -550,13 +551,14 @@ def run_entry_scan(index_name,
     logger.info(f"Scanning {index_name}")
     log2("Scanning start")
     signal_map = {
-        "Buy": 1,
-        "Strong Buy": 2,
-        "Very Strong Buy": 3,
-        "Sell": -1,
-        "Strong Sell": -2,
-        "Very Strong Sell": -3
+        "BUY": 1,
+        "SELL": -1,
+        "SIDEWAYS": 0
     }
+        # "Strong Buy": 2,
+        # "Very Strong Buy": 3,
+        # "Strong Sell": -2,
+        # "Very Strong Sell": -3
 
     # Use .title() instead of .upper()
     # log2(f"ce data ---- {ce_data}")

@@ -562,17 +562,17 @@ def run_entry_scan(index_name,
 
     # Use .title() instead of .upper()
     # log2(f"ce data ---- {ce_data}")
-    index_signal_score = signal_map.get(nifty_data['signal'].title(), 0) + signal_map.get(banknifty_data['signal'].title(), 0)
-    ce_signal_score = signal_map.get(ce_data['signal'].title(), 0)
-    pe_signal_score = signal_map.get(pe_data['signal'].title(), 0)
+    index_signal_score = signal_map.get(nifty_data['signal'], 0) + signal_map.get(banknifty_data['signal'], 0)
+    ce_signal_score = signal_map.get(ce_data['signal'], 0)
+    pe_signal_score = signal_map.get(pe_data['signal'], 0)
     net_score = index_signal_score + ce_signal_score - pe_signal_score
 
     log2(f"scanning complete execution --- {index_signal_score} -- {ce_signal_score} -- {pe_signal_score}")
-    if ((net_score >= 3) and (index_signal_score >= 2) and (ce_signal_score >= 1) and (pe_signal_score <= 0)):
+    if ((net_score >= 3) or (index_signal_score >= 2) or (ce_signal_score >= 1)):
         log2("Entry in CE")
         process_bullish_entry(index_name,ce_data,settings)
         reset_entry_targets(index_name)
-    elif (net_score <= -3) and (index_signal_score <= -2) and (ce_signal_score <= 0) and (pe_signal_score >= 1):
+    elif (net_score <= -3) or (index_signal_score <= -2) or (pe_signal_score >= 1):
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
         reset_entry_targets(index_name)
@@ -851,8 +851,8 @@ def monitor_position(kite_local,position, settings):
         "EXIT_SELL": 1,
         "HOLD": 0
     }
-    ce_signal_score = signal_map.get(ce_data['signal_exit'].title(), 0)
-    pe_signal_score = signal_map.get(pe_data['signal_exit'].title(), 0)
+    ce_signal_score = signal_map.get(ce_data['signal_exit'], 0)
+    pe_signal_score = signal_map.get(pe_data['signal_exit'], 0)
     log2(f"signal score -- {ce_signal_score} -- {pe_signal_score}")
     if pos_type == "CE":
         if (ce_signal_score <= -1) or (pe_signal_score >= 1):

@@ -4679,57 +4679,62 @@ def save_option_settings():
         cur.execute("""
         INSERT INTO option_user (
             timeframe,
-            nifty_strikes,
-            banknifty_strikes,
+
+            nifty_ce_strike,
+            nifty_pe_strike,
+            banknifty_ce_strike,
+            banknifty_pe_strike,
+
             options_analyzed,
+
             nifty_qty,
             nifty_risk,
+            nifty_target_type,
             nifty_target,
             nifty_sl_base,
             nifty_sl_percent,
+            nifty_sl_cap,
             nifty_refresh,
+
             banknifty_qty,
             banknifty_risk,
+            banknifty_target_type,
             banknifty_target,
             banknifty_sl_base,
             banknifty_sl_percent,
+            banknifty_sl_cap,
             banknifty_refresh
         )
         VALUES (
-            ?,?,?,?,?,?,
-            ?,?,?,?,?,?,
-            ?,?,?,?
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         )
         """, (
+
             data.get("timeframe", "minute"),
 
-            json.dumps(
-                data.get("nifty_strikes", [])
-            ),
+            data.get("nifty_ce_strike"),
+            data.get("nifty_pe_strike"),
+            data.get("banknifty_ce_strike"),
+            data.get("banknifty_pe_strike"),
 
-            json.dumps(
-                data.get("banknifty_strikes", [])
-            ),
-
-            int(
-                data.get(
-                    "options_analyzed",
-                    0
-                )
-            ),
+            int(data.get("options_analyzed", 0)),
 
             data.get("nifty_qty", 1),
             data.get("nifty_risk", 1),
+            data.get("nifty_target_type", "fixed"),
             data.get("nifty_target", 30),
             data.get("nifty_sl_base", "kijun"),
             data.get("nifty_sl_percent", 5),
+            data.get("nifty_sl_cap", 0),
             data.get("nifty_refresh", 60),
 
             data.get("banknifty_qty", 1),
             data.get("banknifty_risk", 1),
+            data.get("banknifty_target_type", "fixed"),
             data.get("banknifty_target", 30),
             data.get("banknifty_sl_base", "kijun"),
             data.get("banknifty_sl_percent", 5),
+            data.get("banknifty_sl_cap", 0),
             data.get("banknifty_refresh", 60)
         ))
 
@@ -4759,16 +4764,18 @@ def save_option_settings():
 
 @app.route('/get_option_settings')
 def get_option_settings():
+
     create_tables()
+
     conn = sqlite3.connect(DB_NAME_OP)
     conn.row_factory = sqlite3.Row
 
     cur = conn.cursor()
 
     cur.execute("""
-    SELECT *
-    FROM option_user
-    LIMIT 1
+        SELECT *
+        FROM option_user
+        LIMIT 1
     """)
 
     row = cur.fetchone()
@@ -4779,14 +4786,6 @@ def get_option_settings():
         return jsonify({})
 
     settings = dict(row)
-
-    settings["nifty_strikes"] = json.loads(
-        settings["nifty_strikes"] or "[]"
-    )
-
-    settings["banknifty_strikes"] = json.loads(
-        settings["banknifty_strikes"] or "[]"
-    )
 
     return jsonify(settings)
 

@@ -689,19 +689,18 @@
                 timeframe:
                     document.getElementById("timeframe").value,
 
-                nifty_strikes:
-                    Array.from(
-                        document.querySelectorAll(
-                            '#niftyStrikes input:checked'
-                        )
-                    ).map(x => Number(x.value)),
+                nifty_ce_strike:
+                    document.getElementById("niftyCeStrike").value,
 
-                banknifty_strikes:
-                    Array.from(
-                        document.querySelectorAll(
-                            '#bankNiftyStrikes input:checked'
-                        )
-                    ).map(x => Number(x.value)),
+                nifty_pe_strike:
+                    document.getElementById("niftyPeStrike").value,
+
+                banknifty_ce_strike:
+                    document.getElementById("bankNiftyCeStrike").value,
+
+                banknifty_pe_strike:
+                    document.getElementById("bankNiftyPeStrike").value,
+
                 options_analyzed:
                     document.getElementById("optionsAnalysisSection").style.display !== "none",
 
@@ -710,7 +709,11 @@
 
                 nifty_risk:
                     document.getElementById("niftyRisk").value,
+                
+                nifty_target_type:
+                    document.getElementById("niftyTargetType").value,
 
+                
                 nifty_target:
                     document.getElementById("niftyTarget").value,
 
@@ -719,6 +722,9 @@
 
                 nifty_sl_percent:
                     document.getElementById("niftySLPercent").value,
+
+                nifty_sl_cap:
+                    document.getElementById("niftySLCap").value,
 
                 nifty_refresh:
                     document.getElementById("niftyRefresh").value,
@@ -729,6 +735,9 @@
                 banknifty_risk:
                     document.getElementById("bankNiftyRisk").value,
 
+                banknifty_target_type:
+                    document.getElementById("bankNiftyTargetType").value,
+
                 banknifty_target:
                     document.getElementById("bankNiftyTarget").value,
 
@@ -738,6 +747,9 @@
                 banknifty_sl_percent:
                     document.getElementById("bankNiftySLPercent").value,
 
+                banknifty_sl_cap:
+                    document.getElementById("bankNiftySLCap").value,
+                    
                 banknifty_refresh:
                     document.getElementById("bankNiftyRefresh").value
             };
@@ -753,36 +765,33 @@
                 }
             );
         }
-        function restoreStrikes(
-            containerId,
-            strikeList
-        ){
+        // function restoreStrikes(containerId,strikeList){
 
-            console.log(
-                "Restoring",
-                containerId,
-                strikeList
-            );
+        //     console.log(
+        //         "Restoring",
+        //         containerId,
+        //         strikeList
+        //     );
 
-            strikeList.forEach(strike => {
+        //     strikeList.forEach(strike => {
 
-                const cb =
-                    document.querySelector(
-                        `#${containerId} input[value="${strike}"]`
-                    );
+        //         const cb =
+        //             document.querySelector(
+        //                 `#${containerId} input[value="${strike}"]`
+        //             );
 
-                console.log(
-                    strike,
-                    cb
-                );
+        //         console.log(
+        //             strike,
+        //             cb
+        //         );
 
-                if(cb){
-                    cb.checked = true;
-                }
+        //         if(cb){
+        //             cb.checked = true;
+        //         }
 
-            });
+        //     });
 
-        }
+        // }
         
         async function refreshMasterData() {
             try {
@@ -847,15 +856,8 @@
                     throw new Error(data.message || 'Analysis failed');
                 }
 
-                // Update tables
-                // updateNiftyTable(data.nifty);
-                // updateBankNiftyTable(data.banknifty);
-                // Update tables
                 updateIndexTable('niftyTable', data.nifty);
                 updateIndexTable('bankNiftyTable', data.banknifty);
-                // Display strikes
-                // displayStrikes('niftyStrikes', data.nifty_strikes);
-                // displayStrikes('bankNiftyStrikes', data.banknifty_strikes);
                 populateStrikeDropdown("niftyCeStrike","niftyPeStrike",data.nifty_strikes);
 
                 populateStrikeDropdown("bankNiftyCeStrike","bankNiftyPeStrike",data.banknifty_strikes);
@@ -978,14 +980,10 @@
             ceSelect.innerHTML = "";
             peSelect.innerHTML = "";
             ceSelect.innerHTML += `
-                <option value="">
-                    "None"
-                </option>
+                <option value="">None</option>
             `;
             peSelect.innerHTML += `
-                <option value="">
-                    "None"
-                </option>
+                <option value="">None</option>
             `;
             strikes.forEach(strike => {
 
@@ -1001,57 +999,72 @@
                     </option>
                 `;
             });
-        }
-        function displayStrikes(containerId, strikes) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            strikes.forEach(strike => {
-                const div = document.createElement('div');
-                div.className = 'strike-checkbox';
-                div.innerHTML = `
-                    <input type="checkbox" id="${containerId}_${strike}" value="${strike}">
-                    <label for="${containerId}_${strike}">${strike}</label>
-                `;
 
-                container.appendChild(div);
-
-            });
-
-            // RESTORE SAVED STRIKES
             if(savedSettings){
-                if(containerId === "niftyStrikes"){
 
-                    restoreStrikes(
-                        containerId,
-                        savedSettings.nifty_strikes || []
-                    );
+                document.getElementById("niftyCeStrike").value =
+                    savedSettings.nifty_ce_strike ?? "";
 
-                }
+                document.getElementById("niftyPeStrike").value =
+                    savedSettings.nifty_pe_strike ?? "";
 
-                if(containerId === "bankNiftyStrikes"){
+                document.getElementById("bankNiftyCeStrike").value =
+                    savedSettings.banknifty_ce_strike ?? "";
 
-                    restoreStrikes(
-                        containerId,
-                        savedSettings.banknifty_strikes || []
-                    );
-
-                }
-
+                document.getElementById("bankNiftyPeStrike").value =
+                    savedSettings.banknifty_pe_strike ?? "";
             }
-
-            // SAVE ON CHANGE
-            container.querySelectorAll(
-                'input[type="checkbox"]'
-            ).forEach(cb => {
-
-                cb.addEventListener(
-                    'change',
-                    saveOptionSettings
-                );
-
-            });
-
         }
+        // function displayStrikes(containerId, strikes) {
+        //     const container = document.getElementById(containerId);
+        //     container.innerHTML = '';
+        //     strikes.forEach(strike => {
+        //         const div = document.createElement('div');
+        //         div.className = 'strike-checkbox';
+        //         div.innerHTML = `
+        //             <input type="checkbox" id="${containerId}_${strike}" value="${strike}">
+        //             <label for="${containerId}_${strike}">${strike}</label>
+        //         `;
+
+        //         container.appendChild(div);
+
+        //     });
+
+        //     // RESTORE SAVED STRIKES
+        //     if(savedSettings){
+        //         if(containerId === "niftyStrikes"){
+
+        //             restoreStrikes(
+        //                 containerId,
+        //                 savedSettings.nifty_strikes || []
+        //             );
+
+        //         }
+
+        //         if(containerId === "bankNiftyStrikes"){
+
+        //             restoreStrikes(
+        //                 containerId,
+        //                 savedSettings.banknifty_strikes || []
+        //             );
+
+        //         }
+
+        //     }
+
+        //     // SAVE ON CHANGE
+        //     container.querySelectorAll(
+        //         'input[type="checkbox"]'
+        //     ).forEach(cb => {
+
+        //         cb.addEventListener(
+        //             'change',
+        //             saveOptionSettings
+        //         );
+
+        //     });
+
+        // }
 
         // Analyze Selected Options
         async function analyzeSelectedOptions() {
@@ -1063,19 +1076,10 @@
                 //     .map(cb => parseInt(cb.value));
                 // const bankNiftyStrikes = Array.from(document.querySelectorAll('#bankNiftyStrikes input[type="checkbox"]:checked'))
                 //     .map(cb => parseInt(cb.value));
-                const niftyCeStrike =
-                parseInt(
-                    document.getElementById(
-                        "niftyCeStrike"
-                    ).value
-                );
+                const niftyCeStrike = Number(document.getElementById("niftyCeStrike").value) || null;
 
-                const niftyPeStrike =
-                parseInt(
-                    document.getElementById(
-                        "niftyPeStrike"
-                    ).value
-                );
+                const niftyPeStrike = Number(document.getElementById("niftyPeStrike").value) || null;
+                // Need to correct this later ////////////////////////
                 const bankNiftyCeStrike =
                 parseInt(
                     document.getElementById(
@@ -1089,8 +1093,13 @@
                         "bankNiftyPeStrike"
                     ).value
                 );
-                if ((niftyCeStrike.length === 0 | niftyPeStrike.length === 0) && (bankNiftyCeStrike.length === 0 | bankNiftyPeStrike.length === 0)) {
-                    alert('Please select at least one strike');
+                if (
+                    !niftyCeStrike &&
+                    !niftyPeStrike &&
+                    !bankNiftyCeStrike &&
+                    !bankNiftyPeStrike
+                ) {
+                    alert("Please select at least one strike");
                     return;
                 }
                 console.log([niftyCeStrike, bankNiftyCeStrike, bankNiftyPeStrike])
@@ -1214,8 +1223,6 @@
                     return;
                 }
                 const timeframe = document.getElementById('timeframe').value;
-                // const ce = niftyOptionsData.find(x => x.type === "CE");
-                // const pe = niftyOptionsData.find(x => x.type === "PE");
                 const selectedCeStrike =
                 parseInt(
                     document.getElementById(
@@ -1348,8 +1355,23 @@
                     return;
                 }
                 const timeframe = document.getElementById("timeframe").value;
-                const ce = bankniftyOptionsData.find(x => x.type === "CE");
-                const pe = bankniftyOptionsData.find(x => x.type === "PE");
+                const selectedCeStrike = parseInt(
+                    document.getElementById("bankNiftyCeStrike").value
+                );
+
+                const selectedPeStrike = parseInt(
+                    document.getElementById("bankNiftyPeStrike").value
+                );
+
+                const ce = bankniftyOptionsData.find(
+                    x => x.type === "CE" &&
+                        x.strike === selectedCeStrike
+                );
+
+                const pe = bankniftyOptionsData.find(
+                    x => x.type === "PE" &&
+                        x.strike === selectedPeStrike
+                );
                 console.log(ce);
                 console.log(pe);
                 if (!ce || !pe) {
@@ -1468,19 +1490,27 @@
             const ids = [
 
                 "timeframe",
+                "niftyCeStrike",
+                "niftyPeStrike",
+                "bankNiftyCeStrike",
+                "bankNiftyPeStrike",
 
                 "niftyQty",
                 "niftyRisk",
+                "niftyTargetType",
                 "niftyTarget",
                 "niftySLBase",
                 "niftySLPercent",
+                "niftySLCap",
                 "niftyRefresh",
-
+                
                 "bankNiftyQty",
                 "bankNiftyRisk",
+                "bankNiftyTargetType",
                 "bankNiftyTarget",
                 "bankNiftySLBase",
                 "bankNiftySLPercent",
+                "bankNiftySLCap",
                 "bankNiftyRefresh"
             ];
 
@@ -1600,16 +1630,21 @@
             }
                 document.getElementById("niftyQty").value = savedSettings.nifty_qty || 1;
                 document.getElementById("niftyRisk").value = savedSettings.nifty_risk || 1;
+                document.getElementById("niftyTargetType").value = savedSettings.nifty_target_type || "fixed";
+
                 document.getElementById("niftyTarget").value = savedSettings.nifty_target || 30;
                 document.getElementById("niftySLBase").value = savedSettings.nifty_sl_base || "kijun";
                 document.getElementById("niftySLPercent").value = savedSettings.nifty_sl_percent || 5;
+                document.getElementById("niftySLCap").value = savedSettings.nifty_sl_cap || 0;
                 document.getElementById("niftyRefresh").value = savedSettings.nifty_refresh || 60;
-
+                
                 document.getElementById("bankNiftyQty").value = savedSettings.banknifty_qty || 1;
                 document.getElementById("bankNiftyRisk").value = savedSettings.banknifty_risk || 1;
+                document.getElementById("bankNiftyTargetType").value = savedSettings.banknifty_target_type || "fixed";
                 document.getElementById("bankNiftyTarget").value = savedSettings.banknifty_target || 30;
                 document.getElementById("bankNiftySLBase").value = savedSettings.banknifty_sl_base || "kijun";
                 document.getElementById("bankNiftySLPercent").value = savedSettings.banknifty_sl_percent || 5;
+                document.getElementById("bankNiftySLCap").value = savedSettings.banknifty_sl_cap || 0;
                 document.getElementById("bankNiftyRefresh").value = savedSettings.banknifty_refresh || 60;
                 
                 // await analyzeIndexes();
@@ -1636,26 +1671,30 @@
 
             }
         );
-        const settingFields = [
-            "#timeframe",
-            "#niftyQty",
-            "#niftyRisk",
-            "#niftyTarget",
-            "#niftySLBase",
-            "#niftySLPercent",
-            "#niftyRefresh",
-            "#bankNiftyQty",
-            "#bankNiftyRisk",
-            "#bankNiftyTarget",
-            "#bankNiftySLBase",
-            "#bankNiftySLPercent",
-            "#bankNiftyRefresh"
-        ];
+        // const settingFields = [
+        //     "#timeframe",
+        //     "#niftyCeStrike",
+        //     "#niftyPeStrike",
+        //     "#bankNiftyCeStrike",
+        //     "#bankNiftyPeStrike",
+        //     "#niftyQty",
+        //     "#niftyRisk",
+        //     "#niftyTarget",
+        //     "#niftySLBase",
+        //     "#niftySLPercent",
+        //     "#niftyRefresh",
+        //     "#bankNiftyQty",
+        //     "#bankNiftyRisk",
+        //     "#bankNiftyTarget",
+        //     "#bankNiftySLBase",
+        //     "#bankNiftySLPercent",
+        //     "#bankNiftyRefresh"
+        // ];
 
-        document.querySelectorAll(settingFields.join(","))
-            .forEach(el => {
-                el.addEventListener("change", saveOptionSettings);
-            });
+        // document.querySelectorAll(settingFields.join(","))
+        //     .forEach(el => {
+        //         el.addEventListener("change", saveOptionSettings);
+        //     });
 
         async function loadLivePositions() {
             try {

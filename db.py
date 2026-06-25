@@ -31,29 +31,39 @@ def create_tables():
     )
     """)
 
+    
     cur.execute("""
     CREATE TABLE IF NOT EXISTS option_user (
         id INTEGER PRIMARY KEY,
 
         timeframe TEXT DEFAULT 'minute',
 
-        nifty_strikes TEXT DEFAULT '[]',
-        banknifty_strikes TEXT DEFAULT '[]',
+        -- Selected Strikes
+        nifty_ce_strike INTEGER,
+        nifty_pe_strike INTEGER,
+        banknifty_ce_strike INTEGER,
+        banknifty_pe_strike INTEGER,
 
         options_analyzed INTEGER DEFAULT 0,
 
+        -- NIFTY Settings
         nifty_qty INTEGER DEFAULT 1,
         nifty_risk REAL DEFAULT 1,
+        nifty_target_type TEXT DEFAULT 'fixed',
         nifty_target REAL DEFAULT 30,
         nifty_sl_base TEXT DEFAULT 'kijun',
         nifty_sl_percent REAL DEFAULT 5,
+        nifty_sl_cap REAL DEFAULT 0,
         nifty_refresh INTEGER DEFAULT 60,
 
+        -- BANKNIFTY Settings
         banknifty_qty INTEGER DEFAULT 1,
         banknifty_risk REAL DEFAULT 1,
+        banknifty_target_type TEXT DEFAULT 'fixed',
         banknifty_target REAL DEFAULT 30,
         banknifty_sl_base TEXT DEFAULT 'kijun',
         banknifty_sl_percent REAL DEFAULT 5,
+        banknifty_sl_cap REAL DEFAULT 0,
         banknifty_refresh INTEGER DEFAULT 60
     )
     """)

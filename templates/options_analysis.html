@@ -512,7 +512,7 @@
 
                 <!-- NIFTY CONTROLS -->
                 <div class="control-buttons">
-                    <button class="btn btn-success" onclick="startNiftyAutomation()">▶️ START</button>
+                    <button class="btn btn-success" id="niftyStartBtn" onclick="startNiftyAutomation()">▶️ START</button>
                     <button class="btn btn-danger" id="niftyStopBtn" onclick="stopAutomation('NIFTY')" disabled>⏹️ STOP</button>
                 </div>
             </div>
@@ -616,7 +616,7 @@
 
                 <!-- BANK NIFTY CONTROLS -->
                 <div class="control-buttons">
-                    <button class="btn btn-success" onclick="startBankNiftyAutomation()">▶️ START</button>
+                    <button class="btn btn-success" id="bankNiftyStartBtn" onclick="startBankNiftyAutomation()">▶️ START</button>
                     <button class="btn btn-danger" id="bankNiftyStopBtn" onclick="stopAutomation('BANKNIFTY')" disabled>⏹️ STOP</button>
                 </div>
             </div>
@@ -1336,6 +1336,7 @@
                 alert(data.message);
                 document.getElementById("niftyStatus").innerHTML = "RUNNING";
                 document.getElementById("niftyStopBtn").disabled = false;
+                document.getElementById("niftyStartBtn").disabled = true;
 
             }
             catch (e) {
@@ -1470,7 +1471,7 @@
                     "bankNiftyStatus"
                 ).innerHTML =
                     "RUNNING";
-
+                document.getElementById("bankNiftyStartBtn").disabled = true;
                 document.getElementById(
                     "bankNiftyStopBtn"
                 ).disabled =
@@ -1548,7 +1549,7 @@
 
                     document.getElementById("niftyStatus"
                     ).innerHTML = "RUNNING";
-
+                    document.getElementById("niftyStartBtn").disabled = true;
                     document.getElementById(
                         "niftyStopBtn"
                     ).disabled = false;
@@ -1564,7 +1565,7 @@
                     document.getElementById(
                         "niftyStatus"
                     ).innerHTML = "STOPPED";
-
+                    document.getElementById("niftyStartBtn").disabled = false;
                     document.getElementById(
                         "niftyStopBtn"
                     ).disabled = true;
@@ -1583,7 +1584,7 @@
                     document.getElementById(
                         "bankNiftyStatus"
                     ).innerHTML = "RUNNING";
-
+                    document.getElementById("bankNiftyStartBtn").disabled = true;
                     document.getElementById(
                         "bankNiftyStopBtn"
                     ).disabled = false;
@@ -1599,7 +1600,7 @@
                     document.getElementById(
                         "bankNiftyStatus"
                     ).innerHTML = "STOPPED";
-
+                    document.getElementById("bankNiftyStartBtn").disabled = false;
                     document.getElementById(
                         "bankNiftyStopBtn"
                     ).disabled = true;
@@ -1823,7 +1824,7 @@
                 document.getElementById(
                     "niftyPosition"
                 ).innerHTML = "NONE";
-
+                document.getElementById("niftyStartBtn").disabled = false;
                 document.getElementById(
                     "niftyStopBtn"
                 ).disabled = true;
@@ -1838,7 +1839,7 @@
                 document.getElementById(
                     "bankNiftyPosition"
                 ).innerHTML = "NONE";
-    
+                document.getElementById("bankNiftyStartBtn").disabled = false;
                 document.getElementById(
                     "bankNiftyStopBtn"
                 ).disabled = true;

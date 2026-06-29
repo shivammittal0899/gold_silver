@@ -786,21 +786,23 @@ def signal_dataframe(df, ins_type="equity"):
         (df["VWAP"] / df["VWAP"].shift(5) - 1) * 100
     )
     conditions = [
+        (df["vwap_diff"] > 5),
+        (df["vwap_diff"] > 2),
         (df["vwap_diff"] > 0.5) & (df["vwap_ret"] > 0),
         (df["vwap_diff"] > 0) & (df["vwap_ret"] > 0),
-        (df["vwap_diff"] > 2),
-        (df["vwap_diff"] > 5),
+        (df["vwap_diff"] > 0.5),
         (df["vwap_diff"] > -0.5),
         (df["vwap_diff"] > -2),
     ]
 
     choices = [
-        2,    # Ideal bullish trend
-        1,    # Normal bullish
-        2,    # Overextended
-        3,    # Overextended
-        -1,    # Near VWAP
-        -2    # Bearish
+        3,
+        2,
+        2,
+        1,
+        0,
+        -1,
+        -2
     ]
 
     df["vwap_score"] = np.select(
@@ -850,14 +852,30 @@ def indicator_values(df):
     df['senkou_a'] = df['senkou_af'].shift(26)
     df['senkou_b'] = df['senkou_bf'].shift(26)
 
-    vwap = VolumeWeightedAveragePrice(
-        high=df['High'],
-        low=df['Low'],
-        close=df['Close'],
-        volume=df['Volume']
-    )
+    # vwap = VolumeWeightedAveragePrice(
+    #     high=df['High'],
+    #     low=df['Low'],
+    #     close=df['Close'],
+    #     volume=df['Volume']
+    # )
 
-    df['VWAP'] = vwap.volume_weighted_average_price()
+    # df['VWAP'] = vwap.volume_weighted_average_price()
+    
+    df["date_only"] = pd.to_datetime(df["date"]).dt.date
+
+    df["tp"] = (
+        df["High"] +
+        df["Low"] +
+        df["Close"]
+    ) / 3
+
+    df["pv"] = df["tp"] * df["Volume"]
+
+    df["VWAP"] = (
+        df.groupby("date_only")["pv"].cumsum()
+        /
+        df.groupby("date_only")["Volume"].cumsum()
+    )
 
     df['tenkan_kijun_max'] = df[['tenkan','kijun']].max(axis=1)
     df['tenkan_kijun_min'] = df[['tenkan','kijun']].min(axis=1)
@@ -927,6 +945,7 @@ def stock_data_analysis_2(df, ins_type = "equity"):
         (latest_data['cloud_score'] > 0) &
         (latest_data['future_cloud_score'] > 0) &
         (latest_data['final_trend_score'] > 0) &
+        (latest_data['chop_score'] > 0) &
         (latest_data['vwap_score'] > 0) &
         (positive_count >= 7)
     )

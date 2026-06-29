@@ -374,7 +374,7 @@ def automation_loop(index_name):
                     automation_flags[index_name] = False
                     return
                 # log2(f"settings --- {settings}")
-                log2("in automation loop --- looping")
+                # log2("in automation loop --- looping")
                 process_index(kite_local, index_name, settings)
                 # square_off_before_close()
             except Exception as e:
@@ -571,11 +571,11 @@ def run_entry_scan(index_name,
     if ((net_score >= 3) or (index_signal_score >= 2) or (ce_signal_score >= 1)):
         log2("Entry in CE")
         process_bullish_entry(index_name,ce_data,settings)
-        reset_entry_targets(index_name)
+        # reset_entry_targets(index_name)
     elif (net_score <= -3) or (index_signal_score <= -2) or (pe_signal_score >= 1):
         log2("Entry in PE")
         process_bearish_entry(index_name,pe_data,settings)
-        reset_entry_targets(index_name)
+        # reset_entry_targets(index_name)
     else:
         set_entry_targets(index_name, settings, ce_data, pe_data)
     
@@ -855,22 +855,22 @@ def monitor_position(kite_local,position, settings):
     pe_signal_score = signal_map.get(pe_data['signal_exit'], 0)
     log2(f"signal score -- {ce_signal_score} -- {pe_signal_score}")
     if pos_type == "CE":
-        if (ce_signal_score <= -1) or (pe_signal_score >= 1):
+        if (ce_signal_score <= -1):# or (pe_signal_score >= 1):
             close_position(position['id'], cur_price, "Sell Condition")
             return
-        else:
-            sl_value = stoploss_value(ce_data, settings, entry_price)
-            if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
-                update_position(position['id'], sl_value, cur_price, position)
+        # else:
+        #     sl_value = stoploss_value(ce_data, settings, entry_price)
+        #     if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
+        #         update_position(position['id'], sl_value, cur_price, position)
 
     elif pos_type == "PE":
-        if (pe_signal_score <= -1) or (ce_signal_score >= 1):
+        if (pe_signal_score <= -1):# or (ce_signal_score >= 1):
             close_position(position['id'], cur_price, "Sell Condition")
             return
-        else:
-            sl_value = stoploss_value(pe_data, settings, entry_price)
-            if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
-                update_position(position['id'], sl_value, cur_price, position)
+        # else:
+        #     sl_value = stoploss_value(pe_data, settings, entry_price)
+        #     if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
+        #         update_position(position['id'], sl_value, cur_price, position)
     
 
     return None
@@ -1035,7 +1035,7 @@ def get_live_price(kite_local,symbol):
     except Exception as e:
 
         logger.exception(
-            f"Failed to fetch LTP for token {token}: {e}"
+            f"Failed to fetch LTP for token : {e}"
         )
 
         return None

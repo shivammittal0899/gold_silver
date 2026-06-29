@@ -837,15 +837,15 @@ def monitor_position(kite_local,position, settings):
         high_price = pe_data['high']
     log2(f"monitor prices -- {cur_price} --  sl prices -- {sl_price}")
     ## check stoploss hit or not
-    if sl_price > low_price:
-        # log2("stoploss hit")
-        log2("Stoploss hit -- close positions")
-        close_position(position['id'], sl_price, "Stoploss Hit")
-        return
-    if (tg_price != 0) and (tg_price < high_price):
-        log2("Target hit -- close positions")
-        close_position(position['id'], tg_price, "Target Hit")
-        return
+    # if sl_price > low_price:
+    #     # log2("stoploss hit")
+    #     log2("Stoploss hit -- close positions")
+    #     close_position(position['id'], sl_price, "Stoploss Hit")
+    #     return
+    # if (tg_price != 0) and (tg_price < high_price):
+    #     log2("Target hit -- close positions")
+    #     close_position(position['id'], tg_price, "Target Hit")
+    #     return
     signal_map = {
         "EXIT_BUY": -1,
         "EXIT_SELL": 1,

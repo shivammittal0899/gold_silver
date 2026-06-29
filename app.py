@@ -4513,8 +4513,8 @@ def analyze_options():
         timeframe = data.get('timeframe', '5minute')
         # expiry = data.get('expiry', '')
         
-        nifty_options = selected_strikes.get('nifty', [])
-        banknifty_options = selected_strikes.get('banknifty', [])
+        # nifty_options = selected_strikes.get('nifty', [])
+        # banknifty_options = selected_strikes.get('banknifty', [])
         access_token = read_access_token()
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)

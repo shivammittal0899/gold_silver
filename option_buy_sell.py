@@ -736,7 +736,6 @@ def stoploss_value(option_data, settings, entry_price = 0):
     # log2(f"sl data -- {risk_percent} -- {sl_base} -- {sl_per} -- {sl_cap} -- {high}")
     if sl_base == "kijun":
         sl_base_value = option_data['kijun']
-    
     sl1 = high - (high *risk_percent)/100
     sl2 = sl_base_value - (sl_base_value*sl_per)/100
     if sl_base_value > 250:
@@ -747,6 +746,8 @@ def stoploss_value(option_data, settings, entry_price = 0):
         sl4 = entry_price - 5
     else:
         sl4 = entry_price - 10
+    sl4_ = entry_price*(0.95)
+    sl4 = min(sl4, sl4_)
     log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3} -- {sl4}")
     sl = max(sl1,sl2,sl3, sl4)
     if sl > ltp:
@@ -837,15 +838,15 @@ def monitor_position(kite_local,position, settings):
         high_price = pe_data['high']
     log2(f"monitor prices -- {cur_price} --  sl prices -- {sl_price}")
     ## check stoploss hit or not
-    # if sl_price > low_price:
-    #     # log2("stoploss hit")
-    #     log2("Stoploss hit -- close positions")
-    #     close_position(position['id'], sl_price, "Stoploss Hit")
-    #     return
-    # if (tg_price != 0) and (tg_price < high_price):
-    #     log2("Target hit -- close positions")
-    #     close_position(position['id'], tg_price, "Target Hit")
-    #     return
+    if sl_price > low_price:
+        # log2("stoploss hit")
+        log2("Stoploss hit -- close positions")
+        close_position(position['id'], sl_price, "Stoploss Hit")
+        return
+    if (tg_price != 0) and (tg_price < high_price):
+        log2("Target hit -- close positions")
+        close_position(position['id'], tg_price, "Target Hit")
+        return
     signal_map = {
         "EXIT_BUY": -1,
         "EXIT_SELL": 1,
@@ -858,19 +859,19 @@ def monitor_position(kite_local,position, settings):
         if (ce_signal_score <= -1):# or (pe_signal_score >= 1):
             close_position(position['id'], cur_price, "Sell Condition")
             return
-        # else:
-        #     sl_value = stoploss_value(ce_data, settings, entry_price)
-        #     if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
-        #         update_position(position['id'], sl_value, cur_price, position)
+        else:
+            sl_value = stoploss_value(ce_data, settings, entry_price)
+            if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
+                update_position(position['id'], sl_value, cur_price, position)
 
     elif pos_type == "PE":
         if (pe_signal_score <= -1):# or (ce_signal_score >= 1):
             close_position(position['id'], cur_price, "Sell Condition")
             return
-        # else:
-        #     sl_value = stoploss_value(pe_data, settings, entry_price)
-        #     if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
-        #         update_position(position['id'], sl_value, cur_price, position)
+        else:
+            sl_value = stoploss_value(pe_data, settings, entry_price)
+            if (round(sl_price, 2) != round(sl_value, 2)) or (round(cur_price_o, 2) != round(cur_price, 2)):
+                update_position(position['id'], sl_value, cur_price, position)
     
 
     return None

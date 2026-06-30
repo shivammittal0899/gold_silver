@@ -275,6 +275,10 @@ def ichimoku_analysis_dataframe(df):
 
     cloud_max = df[['senkou_a', 'senkou_b']].max(axis=1)
     cloud_min = df[['senkou_a', 'senkou_b']].min(axis=1)
+    df["cloud_gap_pct"] = (
+        abs(df["senkou_a"] - df["senkou_b"])
+        / df["Close"]
+    ) * 100
 
     cloud_maxf = df[['senkou_af', 'senkou_bf']].max(axis=1)
     cloud_minf = df[['senkou_af', 'senkou_bf']].min(axis=1)
@@ -378,23 +382,43 @@ def ichimoku_analysis_dataframe(df):
 
     # Cloud Trend
     conditions = [
+
+        # Strong Uptrend
         (
             (df["tenkan_kijun"] == "Uptrend") &
             (df["cloud_color"] == "green")
         ),
 
+        # Uptrend
         (
-            df["Close"] > cloud_max
+            (df["Close"] > cloud_max) &
+            (
+                (df["cloud_color"] == "green") |
+                (
+                    (df["cloud_color"] == "red") &
+                    (df["cloud_gap_pct"] < 5)
+                )
+            )
         ),
 
+        # Strong Downtrend
         (
             (df["tenkan_kijun"] == "Downtrend") &
             (df["cloud_color"] == "red")
         ),
 
+        # Downtrend
         (
-            df["Close"] < cloud_min
+            (df["Close"] < cloud_min) &
+            (
+                (df["cloud_color"] == "red") |
+                (
+                    (df["cloud_color"] == "green") &
+                    (df["cloud_gap_pct"] < 5)
+                )
+            )
         )
+
     ]
 
     choices = [
@@ -567,6 +591,7 @@ def ichimoku_analysis_dataframe(df):
         ],
         default="Neutral"
     )
+
     return df
 
 def get_adx_strength_signal_dataframe(df):

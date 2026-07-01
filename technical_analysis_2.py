@@ -946,7 +946,9 @@ def indicator_values(df):
     df['price_line_min'] = (df['tenkan_kijun_min'] <= df['price_min']).rolling(6).sum() >= 4
     df['price_line'] = df['price_line_max'] & df['price_line_min']
     return df
-
+def log4(msg):
+    with open("static/logs.txt", "a") as f:
+        f.write(f"{msg}\n")
 def stock_data_analysis_2(df, ins_type = "equity"):
 
     df = indicator_values(df)
@@ -987,8 +989,9 @@ def stock_data_analysis_2(df, ins_type = "equity"):
         "vwap_score": round(float(last['vwap_score']),2),
         "signal_score": round(float(last['signal_score']),2),
         "data": last['date']
-
     }
+    log4(latest_data)
+    log4(latest_data['date'])
     positive_count = (
         (latest_data['cloud_score'] > 0) +
         (latest_data['future_cloud_score'] > 0) +

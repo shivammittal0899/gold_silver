@@ -1003,7 +1003,7 @@ def stock_data_analysis_2(df, ins_type = "equity"):
         (latest_data['signal_score'] >= 7) &
         (latest_data['cloud_score'] > 0) &
         (latest_data['future_cloud_score'] > 0) &
-        (latest_data['final_trend_score'] > 0) &
+        (latest_data['final_trend_score'] > -1) &
         (latest_data['adx_score'] > 0) &
         (latest_data['chop_score'] > -1) &
         (latest_data['vwap_score'] > 0) &
@@ -1019,6 +1019,16 @@ def stock_data_analysis_2(df, ins_type = "equity"):
         (latest_data['rsi_score'] < 0) +
         (latest_data['vwap_score'] < 0)
     )
+    negative_zero_count = (
+        (latest_data['cloud_score'] <= 0) +
+        (latest_data['future_cloud_score'] <= 0) +
+        (latest_data['adx_score'] <= 0) +
+        (latest_data['chop_score'] <= 0) +
+        (latest_data['final_trend_score'] <= 0) +
+        (latest_data['ichimoku_score'] <= 0) +
+        (latest_data['rsi_score'] <= 0) +
+        (latest_data['vwap_score'] <= 0)
+    )
     sell_condition = (
         (latest_data['signal_score'] >= -8) &
         (latest_data['cloud_score'] < 0) &
@@ -1031,7 +1041,8 @@ def stock_data_analysis_2(df, ins_type = "equity"):
     buy_exit_condition = (
         (latest_data['signal_score'] <= 5) |
         (negative_count >= 3) |
-        ((latest_data['signal_score'] == 6) & (negative_count >= 2))
+        ((latest_data['signal_score'] <= 7) & (negative_count >= 1) &
+            (negative_zero_count >= 3))
     )
 
     sell_exit_condition = (

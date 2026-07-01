@@ -55,7 +55,7 @@ def get_connection():
 
 
 def get_option_tokens(kite_local, strikes, index):
-    log2("options token")
+    # log2("options token")
     instruments = kite_local.instruments("NFO")
     df = pd.DataFrame(instruments)
     # NIFTY OPTIONS ONLY
@@ -63,7 +63,7 @@ def get_option_tokens(kite_local, strikes, index):
     # CURRENT WEEK EXPIRY
     df["expiry"] = pd.to_datetime(df["expiry"])
     current_expiry = sorted(df["expiry"].unique())[0]
-    log2(f"this week expiry -- {current_expiry}")
+    # log2(f"this week expiry -- {current_expiry}")
     df = df[df["expiry"] == current_expiry]
     # REQUIRED STRIKES
     df = df[df["strike"].isin(strikes)]
@@ -330,7 +330,7 @@ def save_automation_settings(data):
     conn.close()
 
 def has_open_position(index_name):
-    log2(f"checking live positions -- {index_name}")
+    # log2(f"checking live positions -- {index_name}")
     with get_connection() as conn:
 
         row = conn.execute("""
@@ -342,7 +342,7 @@ def has_open_position(index_name):
 
     return row
 def get_automation_settings(index_name):
-    log2("fetching automation settings")
+    # log2("fetching automation settings")
     with get_connection() as conn:
 
         row = conn.execute("""
@@ -362,12 +362,12 @@ def automation_loop(index_name):
         access_token = read_access_token()
         kite_local = KiteConnect(api_key=API_KEY)
         kite_local.set_access_token(access_token)
-        log2(f"automation loop is going to start -- {index_name}")
+        # log2(f"automation loop is going to start -- {index_name}")
         # log2(automation_flags.get(index_name, False))
         while automation_flags.get(index_name, False):
             try:
                 settings = get_automation_settings(index_name)
-                log2(f"automation settings are -- {settings}")
+                # log2(f"automation settings are -- {settings}")
                 
                 if not settings:
                     logger.info(f"{index_name} settings not found")
@@ -761,11 +761,11 @@ def stoploss_value(option_data, settings, entry_price = 0):
         sl4 = entry_price - 10
     sl4_ = entry_price*(0.95)
     sl4 = min(sl4, sl4_)
-    log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3} -- {sl4}")
+    # log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3} -- {sl4}")
     sl = max(sl1,sl2,sl3, sl4)
     if sl > ltp:
         sl = ltp - (sl*sl_per)/100
-    log2(f"final stoploss value -- {sl}")
+    # log2(f"final stoploss value -- {sl}")
     return round(sl,2)
 
     
@@ -1041,7 +1041,7 @@ def get_live_price(kite_local,symbol):
         quote = kite_local.ltp(
             [f"NFO:{symbol}"]
         )
-        log2(quote)
+        # log2(quote)
         return list(
             quote.values()
         )[0]["last_price"]

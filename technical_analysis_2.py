@@ -275,6 +275,7 @@ def ichimoku_analysis_dataframe(df):
 
     cloud_max = df[['senkou_a', 'senkou_b']].max(axis=1)
     cloud_min = df[['senkou_a', 'senkou_b']].min(axis=1)
+    cloud_gap = abs(cloud_max - cloud_min)
     df["cloud_gap_pct"] = (
         abs(df["senkou_a"] - df["senkou_b"])
         / df["Close"]
@@ -557,16 +558,49 @@ def ichimoku_analysis_dataframe(df):
         .map(cloud_map)
         .fillna(0)
     )
+    future_cloud_max = df[["senkou_af", "senkou_bf"]].max(axis=1)
+    future_cloud_min = df[["senkou_af", "senkou_bf"]].min(axis=1)
 
-    future_cloud = np.where(
-        df["senkou_af"] > df["senkou_bf"],
-        1,
-        -1
-    )
-    df["future_cloud_score"] = np.where(
-        future_cloud > 0,
-        1,
-        -1
+    df["future_cloud_gap_pct"] = (
+        abs(df["senkou_af"] - df["senkou_bf"])
+        / df["Close"]
+    ) * 100
+
+    future_cloud_green = df["senkou_af"] > df["senkou_bf"]
+    df["future_cloud_score"] = np.select(
+
+        [
+            # Bullish
+            (
+                (df["Close"] > future_cloud_max) &
+                (
+                    future_cloud_green |
+                    (
+                        ~future_cloud_green &
+                        (df["future_cloud_gap_pct"] < 5)
+                    )
+                )
+            ),
+
+            # Bearish
+            (
+                (df["Close"] < future_cloud_min) &
+                (
+                    (~future_cloud_green) |
+                    (
+                        future_cloud_green &
+                        (df["future_cloud_gap_pct"] < 5)
+                    )
+                )
+            )
+        ],
+
+        [
+            1,
+            -1
+        ],
+
+        default=0
     )
 
     df["ichimoku_score"] = (
@@ -771,7 +805,7 @@ def signal_dataframe(df, ins_type="equity"):
             (df["RSI"] > 55) & (df["rsi_ret"] > 0),
 
             # RSI high but falling (exhaustion)
-            (df["RSI"] > 70) & (df["rsi_ret"] < 0),
+            (df["RSI"] > 70) & (df["rsi_ret"] < -0.5),
 
             # Neutral zone
             (df["RSI"] > 45) & (df["RSI"] <= 55),
@@ -966,11 +1000,12 @@ def stock_data_analysis_2(df, ins_type = "equity"):
     )
 
     buy_condition = (
-        (latest_data['signal_score'] >= 8) &
+        (latest_data['signal_score'] >= 7) &
         (latest_data['cloud_score'] > 0) &
         (latest_data['future_cloud_score'] > 0) &
         (latest_data['final_trend_score'] > 0) &
-        (latest_data['chop_score'] > 0) &
+        (latest_data['adx_score'] > 0) &
+        (latest_data['chop_score'] > -1) &
         (latest_data['vwap_score'] > 0) &
         (positive_count >= 7)
     )

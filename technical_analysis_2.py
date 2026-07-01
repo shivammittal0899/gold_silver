@@ -986,6 +986,7 @@ def stock_data_analysis_2(df, ins_type = "equity"):
         "rsi_score": round(float(last['rsi_score']),2),
         "vwap_score": round(float(last['vwap_score']),2),
         "signal_score": round(float(last['signal_score']),2),
+        "data": last['date']
 
     }
     positive_count = (

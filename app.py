@@ -4669,7 +4669,7 @@ def save_option_settings():
         cur.execute("PRAGMA table_info(option_user)")
         columns = cur.fetchall()
 
-        log1(f"option_user columns: {columns}")
+        # log1(f"option_user columns: {columns}")
 
         # Remove old settings
         cur.execute("DELETE FROM option_user")

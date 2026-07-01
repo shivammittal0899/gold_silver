@@ -466,7 +466,8 @@ def process_index(kite_local, index_name,settings):
             pe_data = pe_future.result()
             log2(f"data of ----- {nifty_data['signal']}  -- {banknifty_data['signal']}  -- {ce_data['signal']}  -- {pe_data['signal']}")
             log2(f"data of exit ----- {nifty_data['signal_exit']}  -- {banknifty_data['signal_exit']}  -- {ce_data['signal_exit']}  -- {pe_data['signal_exit']}")
-        
+            log2(f"data points of ce -- cloud score - {ce_data['cloud_score']} -- {ce_data['future_cloud_score']} adx_score - {ce_data['adx_score']} chop_score - {ce_data['chop_score']} trend_score - {ce_data['final_trend_score']} ichimoku_score - {ce_data['ichimoku_score']} rsi_score - {ce_data['rsi_score']} vwap_score - {ce_data['vwap_score']}")
+            log2(f"data points of pe -- cloud score - {pe_data['cloud_score']} -- {pe_data['future_cloud_score']} adx_score - {pe_data['adx_score']} chop_score - {pe_data['chop_score']} trend_score - {pe_data['final_trend_score']} ichimoku_score - {pe_data['ichimoku_score']} rsi_score - {pe_data['rsi_score']} vwap_score - {pe_data['vwap_score']}")
         ce_target_price = settings['ce_target_price']
         pe_target_price = settings['pe_target_price']
 

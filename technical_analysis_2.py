@@ -990,8 +990,8 @@ def stock_data_analysis_2(df, ins_type = "equity"):
         "signal_score": round(float(last['signal_score']),2),
         "date": last['date'].strftime("%Y-%m-%d %H:%M:%S")
     }
-    log4(latest_data)
-    log4(latest_data['date'])
+    # log4(latest_data)
+    # log4(latest_data['date'])
     positive_count = (
         (latest_data['cloud_score'] > 0) +
         (latest_data['future_cloud_score'] > 0) +

@@ -674,10 +674,12 @@ def get_adx_strength_signal_dataframe(df):
         (df["DI_MINUS"] > df["DI_PLUS"]),
 
         (df["ADX"] < 17) &
-        (df["adx_ret"] > 1),
+        (((df["DI_P_ret"] > 10) & (df["DI_MINUS"] < df["DI_PLUS"])) |
+        (df["adx_ret"] > 5)),
 
         (df["ADX"] < 17) &
-        (df["adx_ret"] < -1),
+        (((df["DI_P_ret"] < -10) & (df["DI_MINUS"] > df["DI_PLUS"])) |
+        (df["adx_ret"] < -5)),
         # Sideways
         (df["ADX"] < 17),
 
@@ -1008,10 +1010,20 @@ def stock_data_analysis_2(df, ins_type = "equity"):
         (latest_data['cloud_score'] > 0) &
         (latest_data['future_cloud_score'] > 0) &
         (latest_data['final_trend_score'] > -1) &
+        (latest_data['price_score'] > 0) &
         (latest_data['adx_score'] > 0) &
         (latest_data['chop_score'] > -1) &
         (latest_data['vwap_score'] > 0) &
         (positive_count >= 7)
+    )
+    buy_condition_1 = (
+        (latest_data['signal_score'] >= 10) &
+        (latest_data['cloud_score'] > 0) &
+        (latest_data['future_cloud_score'] > 0) &
+        (latest_data['ichimoku_score'] > 3) &
+        (latest_data['adx_score'] > 0) &
+        (latest_data['vwap_score'] > 0) &
+        (positive_count >= 6)
     )
     negative_count = (
         (latest_data['cloud_score'] < 0) +
@@ -1056,7 +1068,7 @@ def stock_data_analysis_2(df, ins_type = "equity"):
     )
 
     # Final Signal
-    if buy_condition:
+    if buy_condition or buy_condition_1:
         signal = "BUY"
 
     elif sell_condition:

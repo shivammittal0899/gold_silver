@@ -633,6 +633,9 @@ def get_adx_strength_signal_dataframe(df):
     df["adx_ret"] = (
         (df["ADX"] / df["ADX"].shift(3) - 1) * 100
     ).round(2)
+    df["DI_P_ret"] = (
+        (df["DI_PLUS"] / df["DI_PLUS"].shift(2) - 1) * 100
+    ).round(2)
 
     conditions = [
         # Very strong trend and strengthening

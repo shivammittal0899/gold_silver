@@ -189,8 +189,8 @@ def fetch_and_analyze_option(kite_local, item, name, timeframe):
             'senkou_a': float(df['senkou_a'].iloc[-1]),
             'senkou_b': float(df['senkou_b'].iloc[-1]),
             'max_5': float(df['Close'].tail(5).max()),
-            'max_10': float(df['Close'].tail(10).max()),
-            'min_10': float(df['Close'].tail(10).min())
+            'max_10': float(df['High'].tail(10).max()),
+            'min_10': float(df['Low'].tail(10).min())
         }
         analysis.update(df_values if isinstance(df_values, dict) else {})
         # log2(analysis)
@@ -748,8 +748,8 @@ def stoploss_value(option_data, settings, entry_price = 0):
     else:
         sl_base_value = option_data[sl_base]
     
-    
-    sl1 = high - (high *risk_percent)/100
+    log2(f"sl_base_value -- {sl_base_value}")
+    sl1 = high - (high * risk_percent)/100
     sl2 = sl_base_value - (sl_base_value*sl_per)/100
     if sl_base_value > 250:
         sl3 = sl_base_value - sl_cap - 5
@@ -761,7 +761,7 @@ def stoploss_value(option_data, settings, entry_price = 0):
         sl4 = entry_price - 10
     sl4_ = entry_price*(0.95)
     sl4 = min(sl4, sl4_)
-    # log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3} -- {sl4}")
+    log2(f"stoploss values ---  {sl1} -- {sl2} -- {sl3} -- {sl4}")
     sl = max(sl1,sl2,sl3, sl4)
     if sl > ltp:
         sl = ltp - (sl*sl_per)/100

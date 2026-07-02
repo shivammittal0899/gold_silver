@@ -1091,5 +1091,5 @@ def stock_data_analysis_2(df, ins_type = "equity"):
     signal_dic = {'signal': signal,
                   'signal_exit': signal_exit}
     latest_data.update(signal_dic if isinstance(signal_dic, dict) else {})
-    
+    log4(latest_data)
     return latest_data, df
